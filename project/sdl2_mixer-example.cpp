@@ -27,7 +27,7 @@ public:
         }
 
         //Load the music
-        music = Mix_LoadMUS( "data/beat.wav" );
+        music = Mix_LoadMUS( "project_data/beat.wav" );
 
         //If there was a problem loading the music
         if( music == nullptr)
@@ -37,10 +37,10 @@ public:
         }
 
         //Load the sound effects
-        scratch = Mix_LoadWAV( "data/scratch.wav" );
-        high = Mix_LoadWAV( "data/high.wav" );
-        med = Mix_LoadWAV( "data/medium.wav" );
-        low = Mix_LoadWAV( "data/low.wav" );
+        scratch = Mix_LoadWAV( "project_data/scratch.wav" );
+        high = Mix_LoadWAV( "project_data/high.wav" );
+        med = Mix_LoadWAV( "project_data/medium.wav" );
+        low = Mix_LoadWAV( "project_data/low.wav" );
 
         if( ( scratch == nullptr ) || ( high == nullptr ) || ( med == nullptr ) || ( low == nullptr ) )
         {

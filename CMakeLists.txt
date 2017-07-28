@@ -70,7 +70,6 @@ ELSE (APPLE)
 	SET(Box2D_LIBRARY_REL "${CMAKE_SOURCE_DIR}/thirdparty/Win/Box2D/lib/Box2D.lib" CACHE STRING "Location of Box2D.lib")
 ENDIF (APPLE)
 
-
 add_subdirectory(src)
 # add_subdirectory(examples)
 add_subdirectory(project)

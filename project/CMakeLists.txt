@@ -1,16 +1,15 @@
-
-add_executable(SRE-Project project.cpp)
-add_executable(SRE-Box2d box2d-example.cpp)
-add_executable(SRE-SDL2Mixer sdl2_mixer-example.cpp)
+# List all (single file) projects
+set(projects box2d-example project sdl2_mixer-example)
 
 set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} SRE)
 
-target_link_libraries(SRE-Project ${all_libs} debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
-set_target_properties(SRE-Project PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/project")
-target_link_libraries(SRE-Box2d ${all_libs} debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
-set_target_properties(SRE-Box2d PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/project")
-target_link_libraries(SRE-SDL2Mixer ${all_libs} debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
-set_target_properties(SRE-SDL2Mixer PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/project")
+foreach (project_name ${projects})
+	add_executable("SRE-${project_name}" "${project_name}.cpp")
+	target_link_libraries("SRE-${project_name}" ${all_libs} debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
+	IF (WIN32)
+	set_target_properties("SRE-${project_name}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+ENDIF (WIN32)
+endforeach (project_name)
 
 IF (WIN32)
     SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.5/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
@@ -20,7 +19,7 @@ IF (WIN32)
     file(COPY ${DLLFileList} DESTINATION Debug)
     file(COPY ${DLLFileList} DESTINATION Release)
 ELSE (WIN32)
-    message("Copy files from ${CMAKE_SOURCE_DIR}/project/data to ")
-    file(COPY ${CMAKE_SOURCE_DIR}/project/data DESTINATION .)
-    file(COPY ${CMAKE_SOURCE_DIR}/project/data DESTINATION .)
+    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION .)
+    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION .)
 ENDIF(WIN32)
+
