@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(SimpleRenderEngine CXX)
 
+set( CMAKE_VERBOSE_MAKEFILE on )
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -32,7 +34,21 @@ ENDIF (APPLE)
 
 find_package(SDL2_IMAGE REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
-include_directories(include)
+
+find_package(SDL2_mixer REQUIRED)
+include_directories(${SDL2MIXER_INCLUDE_DIR})
+
+
+
+#### Box2D #####
+IF(APPLE)
+    INCLUDE_DIRECTORIES ( thirdparty/macOS/Box2D/include )
+    SET(Box2D_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/macOS/Box2D/lib/libBox2D.a )
+ELSE (APPLE)
+
+ENDIF (APPLE)
+
 
 add_subdirectory(src)
-add_subdirectory(examples)
+# add_subdirectory(examples)
+add_subdirectory(project)
