@@ -25,4 +25,8 @@ Open the dmg and copy the SDL2_mixer.framework to /Library/Frameworks
 
 ## Run CMake to setup project 
 
-CMake should now be able to configure your project fully.
+CMake should now be able to configure your project fully using CMake with default values.
+
+# Setup Windows (Visual Studio 2017)
+
+Every dependency is included. Run CMake and use the default options to generate the project files.
