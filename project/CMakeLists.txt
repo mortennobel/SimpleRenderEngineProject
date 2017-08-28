@@ -1,14 +1,14 @@
 # List all (single file) projects
-set(projects box2d-example project sdl2_mixer-example)
+set(projects box2d-example project sdl2_mixer-example lua-example)
 
-set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} SRE)
+set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} ${LUA_LIBRARIES} SRE)
 
 foreach (project_name ${projects})
 	add_executable("SRE-${project_name}" "${project_name}.cpp")
 	target_link_libraries("SRE-${project_name}" ${all_libs} debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
 	IF (WIN32)
-	set_target_properties("SRE-${project_name}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
-ENDIF (WIN32)
+	    set_target_properties("SRE-${project_name}" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    ENDIF (WIN32)
 endforeach (project_name)
 
 IF (WIN32)

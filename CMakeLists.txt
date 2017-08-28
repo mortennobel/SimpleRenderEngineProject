@@ -18,7 +18,6 @@ ENDIF (APPLE)
 include_directories(sre)
 include_directories(include)
 
-
 #########################################################
 # FIND OPENGL
 #########################################################
@@ -69,6 +68,20 @@ ELSE (APPLE)
 	SET(Box2D_LIBRARY_DEBUG "${CMAKE_SOURCE_DIR}/thirdparty/Win/Box2D/lib/Box2D_d.lib" CACHE STRING "Location of Box2D_d.lib")
 	SET(Box2D_LIBRARY_REL "${CMAKE_SOURCE_DIR}/thirdparty/Win/Box2D/lib/Box2D.lib" CACHE STRING "Location of Box2D.lib")
 ENDIF (APPLE)
+
+#### Lua #####
+IF(APPLE)
+    SET(LUA_INCLUDE_DIR thirdparty/macOS/Lua/include)
+    INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})
+    SET(LUA_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/macOS/Lua/lib/liblua.a )
+ELSE (APPLE)
+    SET(LUA_INCLUDE_DIR thirdparty/Win/Lua/include)
+    INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})
+    SET(LUA_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/Win/Lua/lib/lua5.3.0-static.lib )
+ENDIF (APPLE)
+
+#### Sol #####
+INCLUDE_DIRECTORIES (thirdparty/Sol/include)
 
 add_subdirectory(src)
 # add_subdirectory(examples)
