@@ -75,7 +75,9 @@ IF(APPLE)
     INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})
     SET(LUA_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/macOS/Lua/lib/liblua.a )
 ELSE (APPLE)
-    # TODO
+    SET(LUA_INCLUDE_DIR thirdparty/Win/Lua/include)
+    INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})
+    SET(LUA_LIBRARIES ${CMAKE_SOURCE_DIR}/thirdparty/Win/Lua/lib/lua5.3.0-static.lib )
 ENDIF (APPLE)
 
 #### Sol #####
