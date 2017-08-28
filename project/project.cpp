@@ -3,8 +3,6 @@
 using namespace sre;
 using namespace std;
 
-
-
 int main() {
     SDLRenderer r;
     r.init();
@@ -16,3 +14,4 @@ int main() {
 
     return 0;
 }
+
