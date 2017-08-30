@@ -10,6 +10,10 @@ target_link_libraries("SRE-project" ${all_libs})
 target_link_libraries("SRE-sdl2_mixer-example" ${all_libs})
 target_link_libraries("SRE-lua-example" ${all_libs})
 
+# Copy project data to output path
+file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Debug)
+file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Release)
+
 
 IF (WIN32)
     SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.5/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
@@ -19,12 +23,6 @@ IF (WIN32)
     # Copy dll's to output path
     file(COPY ${DLLFileList} DESTINATION Debug)
     file(COPY ${DLLFileList} DESTINATION Release)
-    # Copy project data to output path
-    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Debug)
-    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Release)
-ELSE (WIN32)
-    # Copy project data to output path
-    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION .)
-    file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION .)
+
 ENDIF(WIN32)
 
