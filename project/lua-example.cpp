@@ -49,9 +49,6 @@ public:
         r.init();
         r.setWindowTitle("Lua example");
 
-        // initialize script
-        strcpy(luaScript, "function updatepos (x, z, time) \n return math.sin(x + z*9 + time) \nend");
-
         l.addLight(Light::create().withDirectionalLight({1,1,1}).withColor({1,1,1}).build());
 
         auto mat = Shader::getStandard()->createMaterial();
@@ -121,7 +118,7 @@ public:
     }
 private:
     static const int luaScriptSize = 2048;
-    char luaScript[luaScriptSize];
+    char luaScript[luaScriptSize] = "function updatepos (x, z, time) \n return math.sin(x + z*9 + time) \nend";
 
     std::vector<ScriptableSphereObject> objects;
     SDLRenderer r;

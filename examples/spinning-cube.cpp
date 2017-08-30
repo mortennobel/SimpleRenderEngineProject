@@ -4,23 +4,9 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Camera.hpp"
-#include "sre/Mesh.hpp"
 #include "sre/Material.hpp"
-#include "sre/Shader.hpp"
 #include "sre/SDLRenderer.hpp"
-#define SDL_MAIN_HANDLED
-#include "SDL.h"
 
-#include <glm/glm.hpp>
-
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#ifdef EMSCRIPTEN
-#include "emscripten.h"
-#endif
-#include <glm/glm.hpp>
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,8 +19,8 @@ public:
     SpinningCubeExample(){
         r.init();
 
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
 
         material = Shader::getStandard()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
@@ -55,9 +41,8 @@ public:
     }
 
     void render(){
-        camera->setPerspectiveProjection(60,0.1,100);
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
@@ -66,7 +51,7 @@ public:
     }
 private:
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> material;
