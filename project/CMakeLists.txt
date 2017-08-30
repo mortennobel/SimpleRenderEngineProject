@@ -22,6 +22,11 @@ IF (WIN32)
     # Copy project data to output path
     file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Debug)
     file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION Release)
+	# Set working folder to project folder (to find project data runtime)
+	set_target_properties("SRE-box2d-example" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	set_target_properties("SRE-project" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	set_target_properties("SRE-sdl2_mixer-example" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+	set_target_properties("SRE-lua-example" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 ELSE (WIN32)
     # Copy project data to output path
     file(COPY ${CMAKE_SOURCE_DIR}/project_data DESTINATION .)
