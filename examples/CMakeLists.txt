@@ -24,8 +24,9 @@ target_link_libraries(SRE-ObjViewer ${all_libs})
 target_link_libraries(SRE-Hello-Engine-Raw ${all_libs})
 target_link_libraries(SRE-Sprite ${all_libs})
 
-file(COPY ../examples/data DESTINATION Debug)
-file(COPY ../examples/data DESTINATION Release)
+message(${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
 IF (WIN32)
     SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.5/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
