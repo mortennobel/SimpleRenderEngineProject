@@ -30,3 +30,11 @@ CMake should now be able to configure your project fully using CMake with defaul
 # Setup Windows (Visual Studio 2017)
 
 Every dependency is included. Run CMake and use the default options to generate the project files.
+
+# Setup Linux
+
+* sudo apt-get install libsdl2-dev
+* sudo apt-get install libsdl2-image-dev
+* sudo apt-get install libsdl2-mixer-dev
+* sudo apt-get install libglew-dev
+* sudo apt-get install lua5.3-dev
