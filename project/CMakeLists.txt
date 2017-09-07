@@ -19,6 +19,9 @@ file(COPY ../project_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../project_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
 IF (WIN32)
+	## Copy dll's to output path
+	file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+	file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 	# Set working folder to project folder (to find project data runtime)
 	set_target_properties("SRE-box2d-example" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	set_target_properties("SRE-project" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

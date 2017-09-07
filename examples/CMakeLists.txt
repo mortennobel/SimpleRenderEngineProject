@@ -28,7 +28,11 @@ message(${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
-IF (WIN32)
+IF (WIN32)	
+## Copy dll's to output path
+    file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+    file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
+
     # Set working folder to project folder (to find project data runtime)
 	set_target_properties("SRE-Spinning-Cube" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 	set_target_properties("SRE-Spinning-Primitives-Tex" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
