@@ -30,6 +30,7 @@ CMake should now be able to configure your project fully using CMake with defaul
 # Setup Windows (Visual Studio 2017)
 
 Every dependency is included. Run CMake and use the default options to generate the project files.
+Use x86 (64-bit is currently unsupported).
 
 # Setup Linux
 
