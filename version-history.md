@@ -1,5 +1,9 @@
 ## Version history
 
+ * 0.9.11 Improved sprite-atlas support + documentation
+ * 0.9.10 Improved Linux support
+ * 0.9.9 Minor Bugfixes
+ * 0.9.8 Update ImGUI and GLM
  * 0.9.7 Add Mesh preview and Shader preview in profiler
  * 0.9.6 Offset in shaders for calculating depth values
  * 0.9.5 Profiling 
