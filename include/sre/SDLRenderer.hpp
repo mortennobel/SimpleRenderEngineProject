@@ -1,11 +1,15 @@
 /*
- *  SimpleRenderEngine
+ *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
  *  License: MIT
  */
 
 #pragma once
+
+#ifdef _SDL_H
+#error SDL should not be included before SDLRenderer
+#endif
 
 #define SDL_MAIN_HANDLED
 
