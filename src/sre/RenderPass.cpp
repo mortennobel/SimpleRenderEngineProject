@@ -13,6 +13,7 @@
 #include "sre/Texture.hpp"
 #include "sre/impl/GL.hpp"
 #include <cassert>
+#include <algorithm>
 #include <glm/gtc/type_ptr.hpp>
 #include <sre/imgui_sre.hpp>
 #include <sre/Renderer.hpp>
@@ -80,20 +81,49 @@ namespace sre {
         return *this;
     }
 
-    RenderPass::~RenderPass(){
-        if (instance == this){
-            finish();
-        }
-    }
-
     RenderPass::RenderPass(RenderPass::RenderPassBuilder& builder)
-        :builder(builder), lastPass(instance)
+        :builder(builder)
     {
         bind(true);
     }
 
+    RenderPass::RenderPass(RenderPass &&rp) {
+        if (instance == &rp){
+            instance = this;
+        }
+        builder = rp.builder;
+        std::swap(lastBoundShader,rp.lastBoundShader);
+        std::swap(lastBoundMaterial,rp.lastBoundMaterial);
+        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
+        std::swap(projection,rp.projection);
+        std::swap(viewportOffset,rp.viewportOffset);
+        std::swap(viewportSize,rp.viewportSize);
+    }
+
+    RenderPass &RenderPass::operator=(RenderPass &&rp) {
+        if (instance == &rp){
+            instance = this;
+        }
+        builder = rp.builder;
+        std::swap(lastBoundShader,rp.lastBoundShader);
+        std::swap(lastBoundMaterial,rp.lastBoundMaterial);
+        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
+        std::swap(projection,rp.projection);
+        std::swap(viewportOffset,rp.viewportOffset);
+        std::swap(viewportSize,rp.viewportSize);
+        return *this;
+    }
+
+    RenderPass::~RenderPass(){
+        if (RenderPass::instance == this){
+            RenderPass::finish();
+            RenderPass::instance = nullptr;
+        }
+    }
+
+
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
-        assert(instance);
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
 
         Mesh* mesh = meshPtr.get();
         auto material = material_ptr.get();
@@ -104,12 +134,12 @@ namespace sre {
         if (material != lastBoundMaterial){
             builder.renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
-            lastBoundMesh = nullptr; // force mesh to rebind
+            lastBoundMeshId = -1;
             material->bind();
         }
-        if (mesh != lastBoundMesh){
+        if (mesh->meshId != lastBoundMeshId){
             builder.renderStats->stateChangesMesh++;
-            lastBoundMesh = mesh;
+            lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);
             mesh->bindIndexSet(0);
         }
@@ -124,12 +154,12 @@ namespace sre {
 
     void RenderPass::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
         if (lastBoundShader == shader){
-            if (shader->uniformLocationModel != -1){
+			if (shader->uniformLocationModel != -1){
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
             if (shader->uniformLocationNormal != -1){
-                auto normalMatrix = transpose(inverse((glm::mat3)(builder.camera.getViewTransform() * modelTransform)));
-                glUniformMatrix4fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+                auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
+				glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
         } else {
             builder.renderStats->stateChangesShader++;
@@ -156,13 +186,12 @@ namespace sre {
         }
     }
 
-
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
-        assert(instance);
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
 
         // Keep a shared mesh and material
         static auto material = Shader::getUnlit()->createMaterial();
-        static std::shared_ptr<Mesh> mesh = Mesh::create()
+        static auto mesh = Mesh::create()
                 .withPositions(verts)
                 .withMeshTopology(meshTopology)
                 .build();
@@ -190,21 +219,20 @@ namespace sre {
                 }
             }
         }
+#ifndef NDEBUG
+        checkGLError();
+#endif
     }
 
     void RenderPass::finish() {
         if (instance != nullptr){
             instance->finishInstance();
-            if (instance->lastPass){
-                instance = instance->lastPass;
-                instance->bind(false);
-            } else {
-                instance = nullptr;
-            }
+            instance = nullptr;
         }
     }
 
     std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
         std::vector<glm::vec4> res(width * height);
         std::vector<glm::u8vec4> resUnsigned(width * height);
 
@@ -220,7 +248,7 @@ namespace sre {
 
     void RenderPass::draw(std::shared_ptr<Mesh> &meshPtr, glm::mat4 modelTransform,
                           std::vector<std::shared_ptr<Material>> &materials) {
-        assert(instance);
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
         if (materials.size() == 1){
             draw(meshPtr, modelTransform, materials[0]);
             return;
@@ -239,12 +267,12 @@ namespace sre {
             if (material != lastBoundMaterial) {
                 builder.renderStats->stateChangesMaterial++;
                 lastBoundMaterial = material;
-                lastBoundMesh = nullptr; // force mesh to rebind
+                lastBoundMeshId = -1; // force mesh to rebind
                 material->bind();
             }
-            if (mesh != lastBoundMesh) {
+            if (mesh->meshId != lastBoundMeshId) {
                 builder.renderStats->stateChangesMesh++;
-                lastBoundMesh = mesh;
+                lastBoundMeshId = mesh->meshId;
                 mesh->bind(shader);
             }
             mesh->bindIndexSet(i);
@@ -259,6 +287,16 @@ namespace sre {
     }
 
     void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
+        if (spriteBatch == nullptr) return;
+
+        for (int i=0;i<spriteBatch->materials.size();i++) {
+            draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
+        }
+    }
+
+    void RenderPass::draw(std::shared_ptr<SpriteBatch>&& spriteBatch, glm::mat4 modelTransform) {
+        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
         if (spriteBatch == nullptr) return;
 
         for (int i=0;i<spriteBatch->materials.size();i++) {
@@ -267,13 +305,25 @@ namespace sre {
     }
 
     void RenderPass::bind(bool newFrame) {
+        if (RenderPass::instance != nullptr){
+            RenderPass::instance->finishInstance();
+        }
         instance = this;
-        glBindFramebuffer(GL_FRAMEBUFFER, builder.framebuffer!=nullptr?builder.framebuffer->frameBufferObjectId:0);
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();
         } else {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+
+        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
+        if (builder.framebuffer){
+            windowSize = builder.framebuffer->size;
+        }
+        viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
+        viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
         if (newFrame) {
             GLbitfield clear = 0;
             if (builder.clearColor) {
@@ -298,15 +348,7 @@ namespace sre {
             }
         }
 
-        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
-        if (builder.framebuffer){
-            windowSize = builder.framebuffer->size;
-        }
-        viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
-        viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
-
         projection = builder.camera.getProjectionTransform(windowSize);
-        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+
     }
 }

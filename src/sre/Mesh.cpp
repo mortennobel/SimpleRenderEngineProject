@@ -20,8 +20,11 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
+    uint16_t Mesh::meshIdCount = 0;
+
     Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {
+        meshId = meshIdCount++;
         if ( Renderer::instance == nullptr){
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
@@ -87,6 +90,7 @@ namespace sre {
     void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
         this->meshTopology = meshTopology;
         this->name = name;
+        meshId = meshIdCount++;
 
         vertexCount = 0;
         totalBytesPerVertex = 0;
@@ -226,37 +230,46 @@ namespace sre {
         int vertexAttribArray = 0;
         for (auto attribute : shader->attributes) {
             auto res = attributeByName.find(attribute.first);
+			
             if (res != attributeByName.end() && attribute.second.type == res->second.attributeType && attribute.second.arraySize == 1) {
-                glEnableVertexAttribArray(attribute.second.position);
+				glEnableVertexAttribArray(attribute.second.position);
                 glVertexAttribPointer(attribute.second.position, res->second.elementCount, res->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(res->second.offset));
                 vertexAttribArray++;
             } else {
-                glDisableVertexAttribArray(attribute.second.position);
-                switch (attribute.second.type){
-                    case GL_FLOAT:
-                        if (attribute.second.arraySize==1){
-                            glVertexAttrib1f(attribute.second.position,0);
-                        } else if (attribute.second.arraySize==2){
-                            glVertexAttrib2f(attribute.second.position,0,0);
-                        } else if (attribute.second.arraySize==3){
-                            glVertexAttrib3f(attribute.second.position,0,0,0);
-                        } else if (attribute.second.arraySize==4){
-                            glVertexAttrib4f(attribute.second.position,0,0,0,0);
-                        }
-                        break;
+				assert(attribute.second.arraySize == 1 && "Constant vertex attributes not supported as arrays");
+				glDisableVertexAttribArray(attribute.second.position);
+				static const float a[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                switch (attribute.second.type) {
 #ifndef EMSCRIPTEN
-                    case GL_INT:
-                        if (attribute.second.arraySize==1){
-                            glVertexAttribI1i(attribute.second.position,0);
-                        } else if (attribute.second.arraySize==2){
-                            glVertexAttribI2i(attribute.second.position,0,0);
-                        } else if (attribute.second.arraySize==3){
-                            glVertexAttribI3i(attribute.second.position,0,0,0);
-                        } else if (attribute.second.arraySize==4){
-                            glVertexAttribI4i(attribute.second.position,0,0,0,0);
-                        }
-                        break;
+				case GL_INT_VEC4:
+					glVertexAttribI4iv(attribute.second.position, (GLint*)a);
+					break;
+				case GL_INT_VEC3:
+					glVertexAttribI3iv(attribute.second.position, (GLint*)a);
+					break;
+				case GL_INT_VEC2:
+					glVertexAttribI2iv(attribute.second.position, (GLint*)a);
+					break;
+				case GL_INT:
+					glVertexAttribI1iv(attribute.second.position, (GLint*)a);
+					break;
 #endif
+				case GL_FLOAT_VEC4:
+					glVertexAttrib4fv(attribute.second.position, a);
+					break;
+				case GL_FLOAT_VEC3:
+					glVertexAttrib3fv(attribute.second.position, a);
+					break;
+				case GL_FLOAT_VEC2:
+					glVertexAttrib2fv(attribute.second.position, a);
+					break;
+				case GL_FLOAT:
+					glVertexAttrib1fv(attribute.second.position, a);
+					break;
+                default:
+					throw std::runtime_error("Unhandled attribute type");
+                	break;
+
                 }
             }
         }
