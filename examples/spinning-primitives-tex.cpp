@@ -69,7 +69,6 @@ private:
 
 int main() {
     new SpinningPrimitivesTexExample();
-
     return 0;
 }
 

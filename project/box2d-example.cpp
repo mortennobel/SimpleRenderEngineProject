@@ -89,9 +89,10 @@ public:
         m_groundBody->CreateFixture(&boxFixtureDef);
 
         r.frameUpdate = [&](float deltaTime){                                       // Update physics simulation before rendering
+            float fixedDeltaTime = 0.016f;
             int32 velocityIterations = 8;                                           //how strongly to correct velocity
             int32 positionIterations = 3;                                           //how strongly to correct position
-            m_world.Step(deltaTime,velocityIterations,positionIterations);
+            m_world.Step(fixedDeltaTime,velocityIterations,positionIterations);
         };
         r.frameRender = [&](){
             render();
@@ -165,8 +166,8 @@ public:
         sprites.push_back(sprite);
 
         b2BodyDef myBodyDef;
-        myBodyDef.type = b2_dynamicBody;            //this will be a dynamic body
-        myBodyDef.position.Set(posX,posY);      //set the starting position
+        myBodyDef.type = b2_dynamicBody;                //this will be a dynamic body
+        myBodyDef.position.Set(posX,posY);              //set the starting position
         myBodyDef.angle = angle;                        //set the starting angle
         auto dynBody = m_world.CreateBody(&myBodyDef);
 

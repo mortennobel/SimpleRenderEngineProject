@@ -1,11 +1,13 @@
 # Add executables (to different projects)
 add_executable("SRE-box2d-example" "box2d-example.cpp")
+add_executable("SRE-box2d-platform-example" "box2d-platform-example.cpp")
 add_executable("SRE-project" "project.cpp")
 add_executable("SRE-sdl2_mixer-example" "sdl2_mixer-example.cpp")
 add_executable("SRE-lua-example" "lua-example.cpp")
 
 # Link projects with project libraries
 target_link_libraries("SRE-box2d-example" ${all_libs})
+target_link_libraries("SRE-box2d-platform-example" ${all_libs})
 target_link_libraries("SRE-project" ${all_libs})
 target_link_libraries("SRE-sdl2_mixer-example" ${all_libs})
 if (UNIX)
@@ -29,3 +31,4 @@ IF (WIN32)
 	set_target_properties("SRE-lua-example"        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 ENDIF(WIN32)
 
+add_subdirectory(Box2DTestbed)
