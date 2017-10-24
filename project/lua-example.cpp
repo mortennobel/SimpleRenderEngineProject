@@ -129,6 +129,7 @@ private:
 };
 
 int main() {
+    std::cout << "https://github.com/mortennobel/SimpleRenderEngineProject" << std::endl;
     new LuaExample();
 
     return 0;

@@ -399,6 +399,7 @@ static void sInterface()
 //
 int main(int, char**)
 {
+	std::cout << "https://github.com/mortennobel/SimpleRenderEngineProject" << std::endl;
 
 	g_camera.m_width = 1024;
 	g_camera.m_height = 640;
