@@ -522,16 +522,6 @@ void main(void)
 	//glfwSetCursorPosCallback(mainWindow, sMouseMotion);
 	//glfwSetScrollCallback(mainWindow, sScrollCallback);
 
-#if defined(__APPLE__) == FALSE
-	//glewExperimental = GL_TRUE;
-	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
-		fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-		exit(EXIT_FAILURE);
-	}
-#endif
-
 	g_debugDraw.Create();
 
 	sCreateUI();

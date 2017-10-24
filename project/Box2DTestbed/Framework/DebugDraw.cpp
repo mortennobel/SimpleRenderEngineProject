@@ -18,11 +18,6 @@
 
 #include "DebugDraw.h"
 
-#if defined(__APPLE_CC__)
-#include <OpenGL/gl3.h>
-#else
-#include <glew/glew.h>
-#endif
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -112,28 +107,7 @@ void Camera::BuildProjectionMatrix(float32* m, float32 zBias)
 	m[15] = 1.0f;
 }
 
-//
-static void sCheckGLError()
-{
-}
 
-// Prints shader compilation errors
-static void sPrintLog(GLuint object)
-{
-}
-
-
-//
-static GLuint sCreateShaderFromString(const char* source, GLenum type)
-{
-	return 0;
-}
-
-// 
-static GLuint sCreateShaderProgram(const char* vs, const char* fs)
-{
-	return 0;
-}
 
 //
 DebugDraw::DebugDraw()
