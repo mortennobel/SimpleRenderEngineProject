@@ -69,7 +69,8 @@ source_group(Tests FILES ${Testbed_Tests_SRCS})
 add_executable(SRE-box2d-Testbed ${Testbed_Framework_SRCS}
 		${Testbed_Tests_SRCS})
 target_link_libraries(SRE-box2d-Testbed ${all_libs})
-file(COPY Data DESTINATION .)
+file(COPY Data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+file(COPY Data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
 IF (WIN32)
 	## Copy dll's to output path
