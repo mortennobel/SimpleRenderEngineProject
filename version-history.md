@@ -1,5 +1,9 @@
 ## Version history
 
+ * 0.9.15 Fix issue with mesh binding
+ * 0.9.14 Improve custom mesh layout
+ * 0.9.13 Improve sprite rendering. Fix scissor test.
+ * 0.9.12 Fix sprite pivot point
  * 0.9.11 Improved sprite-atlas support + documentation
  * 0.9.10 Improved Linux support
  * 0.9.9 Minor Bugfixes

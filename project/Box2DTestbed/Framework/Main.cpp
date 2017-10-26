@@ -386,14 +386,9 @@ static void sInterface()
 		if (ImGui::Button("Restart (R)", button_sz))
 			sRestart();
 
-		//if (ImGui::Button("Quit", button_sz))
-		//	glfwSetWindowShouldClose(mainWindow, GL_TRUE);
-
 		ImGui::PopAllowKeyboardFocus();
 		ImGui::End();
 	}
-
-	//ImGui::ShowTestWindow(NULL);
 }
 
 //
@@ -451,8 +446,6 @@ void main(void)
 			.withAttribute("posxyzw",pos)
 			.withAttribute("color",color)
 			.build();
-
-
 
 	mainWindow.mouseEvent = [](SDL_Event& e){
 		if (e.type == SDL_MOUSEWHEEL){
@@ -516,13 +509,6 @@ void main(void)
 		g_debugDraw.clear();
 	};
 
-	//glfwSetWindowSizeCallback(mainWindow, sResizeWindow);
-	//glfwSetKeyCallback(mainWindow, sKeyCallback);
-	//glfwSetCharCallback(mainWindow, sCharCallback);
-	//glfwSetMouseButtonCallback(mainWindow, sMouseButton);
-	//glfwSetCursorPosCallback(mainWindow, sMouseMotion);
-	//glfwSetScrollCallback(mainWindow, sScrollCallback);
-
 	g_debugDraw.Create();
 
 	sCreateUI();
@@ -539,46 +525,7 @@ void main(void)
 	entry = g_testEntries + testIndex;
 	test = entry->createFcn();
 
-	// Control the frame rate. One draw per monitor refresh.
-	// glfwSwapInterval(1);
-
-	//double time1 = glfwGetTime();
-	//double frameTime = 0.0;
-   
-	// glClearColor(0.3f, 0.3f, 0.3f, 1.f);
-
 	mainWindow.startEventLoop();
-	
-	/*while (!glfwWindowShouldClose(mainWindow))
-	{
-		glfwGetWindowSize(mainWindow, &g_camera.m_width, &g_camera.m_height);
-		glViewport(0, 0, g_camera.m_width, g_camera.m_height);
-
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		ImGui_ImplGlfwGL3_NewFrame();
-		ImGui::SetNextWindowPos(ImVec2(0,0));
-		ImGui::SetNextWindowSize(ImVec2((float)g_camera.m_width, (float)g_camera.m_height));
-		ImGui::Begin("Overlay", NULL, ImVec2(0,0), 0.0f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoScrollbar);
-		ImGui::SetCursorPos(ImVec2(5, (float)g_camera.m_height - 20));
-		ImGui::Text("%.1f ms", 1000.0 * frameTime);
-		ImGui::End();
-
-		sSimulate();
-		sInterface();
-
-		// Measure speed
-		double time2 = glfwGetTime();
-		double alpha = 0.9f;
-		frameTime = alpha * frameTime + (1.0 - alpha) * (time2 - time1);
-		time1 = time2;
-
-		ImGui::Render();
-
-		glfwSwapBuffers(mainWindow);
-
-		glfwPollEvents();
-	}*/
 
 	if (test)
 	{
