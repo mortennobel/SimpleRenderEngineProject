@@ -100,15 +100,15 @@ namespace sre{
 #endif
 
     SDLRenderer::SDLRenderer()
-    :frameUpdate ([](float){}),
-     frameRender ([](){}),
-     keyEvent ([](SDL_Event&){}),
-     mouseEvent ([](SDL_Event&){}),
-     controllerEvent ([](SDL_Event&){}),
-     joystickEvent ([](SDL_Event&){}),
-     touchEvent ([](SDL_Event&){}),
-     otherEvent([](SDL_Event&){}),
-     windowTitle( std::string("SimpleRenderEngine ")+std::to_string(Renderer::sre_version_major)+"."+std::to_string(Renderer::sre_version_minor )+"."+std::to_string(Renderer::sre_version_point))
+            :frameUpdate ([](float){}),
+             frameRender ([](){}),
+             keyEvent ([](SDL_Event&){}),
+             mouseEvent ([](SDL_Event&){}),
+             controllerEvent ([](SDL_Event&){}),
+             joystickEvent ([](SDL_Event&){}),
+             touchEvent ([](SDL_Event&){}),
+             otherEvent([](SDL_Event&){}),
+             windowTitle( std::string("SimpleRenderEngine ")+std::to_string(Renderer::sre_version_major)+"."+std::to_string(Renderer::sre_version_minor )+"."+std::to_string(Renderer::sre_version_point))
     {
 #ifdef EMSCRIPTEN
         sdlInstance = this;
@@ -194,16 +194,16 @@ namespace sre{
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #ifdef SRE_DEBUG_CONTEXT
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
-        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
+            window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
 #endif
 
             r = new Renderer(window);
 
 
 #ifdef SRE_DEBUG_CONTEXT
-			if (glDebugMessageCallback) {
+            if (glDebugMessageCallback) {
 				//GLenum err = glewInit();
 				//if (GLEW_OK != err)
 				{
@@ -248,10 +248,14 @@ namespace sre{
             frame(deltaTime);
             auto tick = Clock::now();
             deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
-            lastTick = tick;
-            if (deltaTime < timePerFrame){
+            // todo fix busy wait
+            // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
+            while (deltaTime < timePerFrame){
                 SDL_Delay((Uint32) ((timePerFrame - deltaTime) / 1000));
+                tick = Clock::now();
+                deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
             }
+            lastTick = tick;
         }
 #endif
     }
