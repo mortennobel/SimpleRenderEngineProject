@@ -236,11 +236,11 @@ namespace sre {
             // currently only supported from vec2 or vec3 (not float)
             // todo - add support float - vecX
             bool equalType = attributeFoundInMesh && (shaderAttribute.second.type == meshAttribute->second.attributeType ||
-                                                      (shaderAttribute.second.type >= GL_FLOAT_VEC2 && shaderAttribute.second.type <= GL_FLOAT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
+                    (shaderAttribute.second.type >= GL_FLOAT_VEC2 && shaderAttribute.second.type <= GL_FLOAT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
 #ifndef EMSCRIPTEN
-                                                      || (shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
+                    || (shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
 #endif
-            );
+                                                     );
             if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
 				glEnableVertexAttribArray(shaderAttribute.second.position);
                 glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));

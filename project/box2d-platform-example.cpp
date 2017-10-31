@@ -180,9 +180,6 @@ public:
         m_world.DrawDebugData();
         renderPass.drawLines(debugDraw.getLines(),{0,0,0,1});
         debugDraw.clear();
-        static Profiler profiler;
-        profiler.update();
-        profiler.gui();
     }
 
     b2Fixture* spawnBox(b2BodyType type, int posX, int posY, float sizeX, float sizeY, float elasticity = 0.8) {
