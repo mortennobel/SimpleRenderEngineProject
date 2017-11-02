@@ -7,12 +7,13 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/impl/GL.hpp>
 
 using namespace sre;
 
-class SpheresExample{
+class CustomMeshLayoutExample{
 public:
-    SpheresExample(){
+    CustomMeshLayoutExample(){
         r.init();
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
@@ -55,7 +56,11 @@ public:
                 .build();
 
         rp.draw(mesh, pos1, mat1);
+
+        checkGLError();
         rp.draw(mesh, pos2, mat2);
+
+        checkGLError();
 
     }
 private:
@@ -71,7 +76,7 @@ private:
 };
 
 int main() {
-    new SpheresExample();
+    new CustomMeshLayoutExample();
 
     return 0;
 }
