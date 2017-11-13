@@ -71,7 +71,7 @@ public:
 
         glm::ivec2 windowSize(800,600);
         r.setWindowSize(windowSize);
-        r.init(SDL_INIT_EVERYTHING, SDL_WINDOW_OPENGL);                             // Disable HighDPI
+        r.init(SDL_INIT_EVERYTHING, SDL_WINDOW_OPENGL,false);                             // Disable HighDPI
 
         r.setWindowTitle("Box2D example. Use arrow-key + space to control character");
 
@@ -217,7 +217,6 @@ public:
         auto res = dynBody->CreateFixture(&boxFixtureDef);
         return res;
     }
-
 private:
     b2World m_world;
     SDLRenderer r;

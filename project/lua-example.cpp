@@ -62,7 +62,7 @@ public:
             string s = va[0];
             r.setWindowTitle(s);
         });
-        lua.script("setTitle('callback to setTitle')");
+
 
         updateLuaScript();
 
@@ -118,7 +118,13 @@ public:
     }
 private:
     static const int luaScriptSize = 2048;
-    char luaScript[luaScriptSize] = "function updatepos (x, z, time) \n return math.sin(x + z*9 + time) \nend";
+    char luaScript[luaScriptSize] =
+            "-- Function evaluated for each pos\n"
+            "function updatepos (x, z, time) \n"
+            " return math.sin(x + z*9 + time) \n"
+            "end\n"
+            "-- Remove '--' to see callback\n"
+            "-- setTitle('callback to setTitle')";
 
     std::vector<ScriptableSphereObject> objects;
     SDLRenderer r;
