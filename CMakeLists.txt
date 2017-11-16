@@ -90,6 +90,16 @@ ELSE (APPLE)
     ENDIF(UNIX)
 ENDIF (APPLE)
 
+# add bullet
+#   BULLET_FOUND - Was bullet found
+#   BULLET_INCLUDE_DIRS - the Bullet include directories
+#   BULLET_LIBRARIES - Link to this, by default it includes
+#                      all bullet components (Dynamics,
+#                      Collision, LinearMath, & SoftBody)
+#find_package(Bullet REQUIRED)
+#include_directories(${BULLET_INCLUDE_DIRS})
+
+
 #### Sol #####
 INCLUDE_DIRECTORIES (thirdparty/Sol/include)
 
@@ -98,6 +108,7 @@ include_directories(include)
 add_subdirectory(src)
 
 # all_libs contains a list of all libraries that should be linked
+# for bullet support add ${BULLET_LIBRARIES}
 set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} ${LUA_LIBRARIES} SRE debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
 
 # Create DllFileList on Windows

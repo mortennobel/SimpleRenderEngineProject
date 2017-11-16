@@ -34,9 +34,9 @@ public:
             return glm::pi<double>();
         });
         lua.set_function("fmod", [&](sol::this_state state, sol::variadic_args va){
-            double s = va[0];
+            double numer = va[0];
             double denum = va[1];
-            return fmod(s,denum);
+            return fmod(numer,denum);
         });
         lua.set_function("remainder", [&](sol::this_state state, sol::variadic_args va){
             double s = va[0];
