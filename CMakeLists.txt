@@ -96,6 +96,13 @@ ENDIF (APPLE)
 #   BULLET_LIBRARIES - Link to this, by default it includes
 #                      all bullet components (Dynamics,
 #                      Collision, LinearMath, & SoftBody)
+#
+#  For MacOS copy Frameworks in ./thirdparty/macOS/Bullet/ to /Library/Frameworks/
+#  And set
+#    BULLET_INCLUDE_DIR:PATH=/Library/Frameworks/BulletCollision.framework/Headers;/Library/Frameworks/BulletDynamics.framework/Headers;/Library/Frameworks/LinearMath.framework/Headers
+#    BULLET_COLLISION_LIBRARY:FILEPATH=/Library/Frameworks/BulletCollision.framework
+#    etc
+#
 option(USE_BULLET "Include bullet example" OFF)
 IF (USE_BULLET)
 IF (WIN32)

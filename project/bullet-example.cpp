@@ -101,7 +101,6 @@ int main() {
 
 	delete groundShape;
 
-
 	delete dynamicsWorld;
 	delete solver;
 	delete collisionConfiguration;
