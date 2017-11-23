@@ -53,7 +53,7 @@ public:
     }
 
     void loadObjFile(std::string file){
-        auto pos = file.find_last_of("/")+1;
+        auto pos = file.find_last_of(kPathSeparator)+1;
         auto path = file.substr(0,pos);
         auto filename = file.substr(pos);
         std::cout<<path<<" "<< filename<<std::endl;
@@ -116,6 +116,12 @@ private:
     int i=0;
     glm::vec3 offset{0};
     float farPlane = 100;
+	const char kPathSeparator =
+#ifdef _WIN32
+		'\\';
+#else
+		'/';
+#endif
 };
 
 int main() {
