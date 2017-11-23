@@ -80,8 +80,7 @@ public:
         r.frameRender = [&](){
             render();
         };
-        updateColorInterpolation();
-        updateSizeInterpolation();
+        updateApperance();
         updateEmit();
 
         r.startEventLoop();
@@ -96,15 +95,13 @@ public:
             ImGui::Checkbox("visible",&particleSystem->visible);
             ImGui::Checkbox("emitting",&particleSystem->emitting);
             ImGui::Text("Active particles: %i",particleSystem->getActiveParticles());
-            bool changedColorFrom = ImGui::ColorEdit4("Color from", &colorFrom.x);
-            bool changedColorTo = ImGui::ColorEdit4("Color to", &colorTo.x);
-            if (changedColorFrom || changedColorTo){
-                updateColorInterpolation();
-            }
-            bool changedSize = ImGui::DragFloat("Size from", &sizeFrom,1,0.1,500);
-            changedSize |= ImGui::DragFloat("Size to", &sizeTo,1,0.1,500);
-            if (changedSize){
-                updateSizeInterpolation();
+            bool changedApperance = ImGui::ColorEdit4("Color from", &colorFrom.x);
+            changedApperance     |= ImGui::ColorEdit4("Color to", &colorTo.x);
+
+            changedApperance |= ImGui::DragFloat("Size from", &sizeFrom,1,0.1,500);
+            changedApperance |= ImGui::DragFloat("Size to", &sizeTo,1,0.1,500);
+            if (changedApperance){
+                updateApperance();
             }
             bool changedTex = ImGui::Combo("Texture",&selectedTexture, textureNames.data(),textureNames.size());
             if (changedTex){
@@ -120,15 +117,10 @@ public:
         }
     }
 
-    void updateColorInterpolation(){
-        particleSystem->colorInterpolation = [&](const Particle& p){
-            return glm::mix(colorFrom, colorTo, p.normalizedAge);
-        };
-    }
-
-    void updateSizeInterpolation(){
-        particleSystem->sizeInterpolation = [&](const Particle& p){
-            return glm::mix(sizeFrom, sizeTo, p.normalizedAge);
+    void updateApperance(){
+        particleSystem->updateAppearance = [&](const Particle& p){
+            p.color = glm::mix(colorFrom, colorTo, p.normalizedAge);
+            p.size = glm::mix(sizeFrom, sizeTo, p.normalizedAge);
         };
     }
 
@@ -138,6 +130,7 @@ public:
             p.velocity = glm::sphericalRand(emitVelocity);
             p.rotation = emitRotation;
             p.angularVelocity = emitAngularVelocity;
+            p.size = 50;
         };
     }
 
