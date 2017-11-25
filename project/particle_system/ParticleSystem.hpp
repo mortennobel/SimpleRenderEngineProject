@@ -31,11 +31,10 @@ public:
 
     std::shared_ptr<sre::Material> material;
 
-    std::function<void(Particle&)> emitter; // responsible for setting initial position, velocity, rotation and angular velocity
+    std::function<void(Particle&)> emitter; // responsible for setting initial size, position, velocity, rotation and angular velocity
 
-    std::function<glm::vec4(const Particle&)> colorInterpolation; // responsible for updating the color (based on particle.normalizedAge)
-
-    std::function<float(const Particle&)> sizeInterpolation;      // responsible for updating the size (based on particle.normalizedAge)
+    std::function<void(Particle&)> updateAppearance;              // responsible for updating the color,uv,size (based on particle.normalizedAge)
+    std::function<void(Particle&, float)> updatePhysics;          // responsible for updating the position and rotation based on deltaTime
 
     int getActiveParticles();
 private:
@@ -51,5 +50,7 @@ private:
     std::vector<float> sizes;
     std::vector<glm::vec4> uvs;
 };
+
+
 
 

@@ -1,4 +1,4 @@
-# Add hpp and cpp files to Snake variable
+
 file(GLOB ParticleSystemSrc
         "*.hpp"
         "*.h"
