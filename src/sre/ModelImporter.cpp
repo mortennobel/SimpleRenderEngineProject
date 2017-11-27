@@ -348,7 +348,8 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
         vector<string> tokens;
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
-            for (int i=0;i<bufferSize;i++){
+			int buffer2Length = strlen(buffer2);
+            for (int i=0;i<buffer2Length;i++){
                 if (isspace(buffer2[i])){
                     buffer2[i] = '\0';
                 }
@@ -395,7 +396,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     int faceCount = 0;
 
     std::vector<ObjInterleavedIndex> indices;
-    ObjInterleavedIndex * currentIndex = &indices.back();
+    ObjInterleavedIndex * currentIndex /*= &indices.back()*/;
     auto materialChange = materialChanges.cbegin();
     bool includeTextureCoordinates = !textureCoords.empty();
     bool includeNormals = !normals.empty();
