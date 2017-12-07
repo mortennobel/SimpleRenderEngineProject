@@ -215,6 +215,7 @@ public:
         boxFixtureDef.restitution = 0.8;   // elasticity [0;1]
         boxFixtureDef.density = 1;         // weight
         auto res = dynBody->CreateFixture(&boxFixtureDef);
+
         return res;
     }
 private:
