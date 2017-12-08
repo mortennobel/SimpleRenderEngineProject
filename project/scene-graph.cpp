@@ -15,6 +15,10 @@
 
 using namespace sre;
 
+class Node;
+
+Node* cameraNode;
+
 class Node {
 public:
     Node() {}
@@ -29,7 +33,7 @@ public:
         // compute trs
         auto rotationEulerRadian = glm::radians(rotationEuler);
         auto res = glm::translate(position)
-                   * glm::eulerAngleXYZ(rotationEulerRadian.x,rotationEulerRadian.y,rotationEulerRadian.z)
+                   * glm::eulerAngleYXZ(rotationEulerRadian.y,rotationEulerRadian.x,rotationEulerRadian.z)
                    * glm::scale(scale);
         if (parent){
             res = parent->localToWorld() * res;
@@ -43,20 +47,28 @@ public:
     void gui(int level = 0){
         ImGui::PushID(this);
         ImGui::Indent(level*20);
-        if (ImGui::CollapsingHeader("Node")){
+
+        if (ImGui::CollapsingHeader(this == cameraNode?"Camera": "Node")){
             ImGui::DragFloat3("Local Position",&position.x);
             ImGui::DragFloat3("Local Rotation",&rotationEuler.x);
             ImGui::DragFloat3("Local Scale",&scale.x);
             auto globalPos = localToWorld() * glm::vec4(0,0,0,1); // transform 0,0,0 (pivot point) from local coordinate frame to global coordinate frame
-            ImGui::LabelText("Position", "%.2f, %.2f, %.2f", globalPos.x, globalPos.y, globalPos.z);
-
+            bool changed = ImGui::DragFloat3("Global Position",&globalPos.x);
+            if (changed){
+                glm::vec3 deltaPositionInLocalSpace = glm::inverse(localToWorld()) * globalPos;
+                position = position + deltaPositionInLocalSpace;
+            }
             if (ImGui::Button("Add child")){
                 children.emplace_back(this);
+            }
+            if (ImGui::Button("Make camera")){
+                cameraNode = this;
             }
             for (auto & n : children){
                 n.gui(level+1);
             }
         }
+        ImGui::Unindent(level*20);
         ImGui::PopID();
     }
 };
@@ -66,7 +78,6 @@ public:
     SceneGraphExample(){
         r.init();
 
-        camera.lookAt({0,0,30},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
 
         material = Shader::getStandard()->createMaterial();
@@ -81,8 +92,13 @@ public:
         worldLights.addLight(Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
 
         root.children.emplace_back(nullptr);
+        root.children.emplace_back(nullptr);
+
+        cameraNode = &root.children[0];
+        cameraNode->position = {0,0,30};
 
         r.frameRender = [&](){
+            camera.setViewTransform(glm::inverse(cameraNode->localToWorld()));
             render();
         };
 
