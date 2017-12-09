@@ -55,8 +55,13 @@ public:
             auto globalPos = localToWorld() * glm::vec4(0,0,0,1); // transform 0,0,0 (pivot point) from local coordinate frame to global coordinate frame
             bool changed = ImGui::DragFloat3("Global Position",&globalPos.x);
             if (changed){
-                glm::vec3 deltaPositionInLocalSpace = glm::inverse(localToWorld()) * globalPos;
-                position = position + deltaPositionInLocalSpace;
+                if (parent){
+                    position = glm::inverse(parent->localToWorld()) * globalPos;
+                }
+                else {
+                    position = globalPos;
+                }
+
             }
             if (ImGui::Button("Add child")){
                 children.emplace_back(this);
