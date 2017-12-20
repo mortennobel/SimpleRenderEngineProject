@@ -17,6 +17,8 @@
 #include "RenderStats.hpp"
 #include "Mesh.hpp"
 
+
+
 namespace sre {
 
     // forward declaration
@@ -25,6 +27,7 @@ namespace sre {
 
     class Shader;
     class Shader;
+	class VR;
 
     /// Maintains shared states for rendering.
     /// An object of Renderer must be created once after the SDL_Window has been initialized.
@@ -51,13 +54,13 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
+        explicit Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 9;
-        static constexpr int sre_version_point = 20;
+        static constexpr int sre_version_point = 22;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -66,12 +69,14 @@ namespace sre {
         bool usesVSync();                                   // Return true if vsync is enabled
 
         void swapWindow();                                  // Update window with OpenGL rendering by swapping buffers
+                                                            // Make sure any current are RenderPass objects are finished (if any)
 
         const RenderStats& getRenderStats();                // Return stats of the last rendered frame
                                                             // RenderStats only includes data maintained by sre (imgui calls are not included)
 
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
+		VR* getVR();										// Get pointer to VR (if any)
     private:
         SDL_Window *window;
         SDL_GLContext glcontext;
@@ -87,6 +92,8 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
+		VR* vr = nullptr;
+
         friend class Mesh;
         friend class Mesh::MeshBuilder;
         friend class Shader;
@@ -96,6 +103,7 @@ namespace sre {
         friend class RenderPass;
         friend class Profiler;
         friend class SpriteAtlas;
+		friend class VR;
         friend class RenderPass::RenderPassBuilder;
     };
 }

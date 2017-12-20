@@ -122,13 +122,25 @@ ENDIF(USE_BULLET)
 #### Sol #####
 INCLUDE_DIRECTORIES (thirdparty/Sol/include)
 
+set(OPENVR_LIB)
+IF (USE_OPENVR)
+    find_package(OpenVR REQUIRED)
+    include_directories(${OPENVR_INCLUDE_DIRS})
+    IF(UNIX)
+        add_definitions(-DSRE_OPENVR)
+    ELSE(UNIX)
+        add_definitions(/DSRE_OPENVR)
+    ENDIF(UNIX)
+    set(OPENVR_LIB "${OPENVR_ROOT_DIR}/lib/${OPENVR_PLATFORM}/openvr_api.lib")
+ENDIF(USE_OPENVR)
+
 # build sre library
 include_directories(include)
 add_subdirectory(src)
 
 # all_libs contains a list of all libraries that should be linked
 # for bullet support add ${BULLET_LIBRARIES}
-set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} ${LUA_LIBRARIES} SRE debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL})
+set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_LIBRARY} ${LUA_LIBRARIES} SRE debug ${Box2D_LIBRARY_DEBUG} optimized ${Box2D_LIBRARY_REL} ${OPENVR_LIB})
 IF (USE_BULLET)
 	set(all_libs optimized  ${all_libs} optimized  ${BULLET_DYNAMICS_LIBRARY} optimized  ${BULLET_COLLISION_LIBRARY} optimized  ${BULLET_MATH_LIBRARY} debug ${BULLET_DYNAMICS_LIBRARY_DEBUG} debug ${BULLET_COLLISION_LIBRARY_DEBUG} debug ${BULLET_MATH_LIBRARY_DEBUG} )
 ENDIF(USE_BULLET)
