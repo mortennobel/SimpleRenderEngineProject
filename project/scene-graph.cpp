@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <memory>
 #include <fstream>
 
 #include "sre/Texture.hpp"
@@ -17,9 +18,9 @@ using namespace sre;
 
 class Node;
 
-Node* cameraNode;
+std::shared_ptr<Node> cameraNode;
 
-class Node {
+class Node : public std::enable_shared_from_this<Node> {
 public:
     Node() {}
 
@@ -41,14 +42,14 @@ public:
         return res;
     }
 
-    std::vector<Node> children;
+    std::vector<std::shared_ptr<Node>> children;
     Node* parent = nullptr;
 
     void gui(int level = 0){
         ImGui::PushID(this);
         ImGui::Indent(level*20);
 
-        if (ImGui::CollapsingHeader(this == cameraNode?"Camera": "Node")){
+        if (ImGui::CollapsingHeader(this == cameraNode.get()?"Camera": "Node")){
             ImGui::DragFloat3("Local Position",&position.x);
             ImGui::DragFloat3("Local Rotation",&rotationEuler.x);
             ImGui::DragFloat3("Local Scale",&scale.x);
@@ -63,13 +64,13 @@ public:
                 }
             }
             if (ImGui::Button("Add child")){
-                children.emplace_back(this);
+                children.push_back(std::make_shared<Node>(this));
             }
             if (ImGui::Button("Make camera")){
-                cameraNode = this;
+                cameraNode = this->shared_from_this();
             }
             for (auto & n : children){
-                n.gui(level+1);
+                n->gui(level+1);
             }
         }
         ImGui::Unindent(level*20);
@@ -95,24 +96,25 @@ public:
         worldLights.addLight(Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
         worldLights.addLight(Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
 
-        root.children.emplace_back(nullptr);
-        root.children.emplace_back(nullptr);
+        root.children.push_back(std::make_shared<Node>(nullptr));
+        root.children.push_back(std::make_shared<Node>(nullptr));
 
-        cameraNode = &root.children[0];
+        cameraNode = root.children[0];
         cameraNode->position = {0,0,30};
 
         r.frameRender = [&](){
-            camera.setViewTransform(glm::inverse(cameraNode->localToWorld()));
+            auto localToWorld = cameraNode->localToWorld();
+            camera.setViewTransform(glm::inverse(localToWorld));
             render();
         };
 
         r.startEventLoop();
     }
 
-    void render(Node& node, RenderPass& rp){
-        rp.draw(mesh, node.localToWorld(), material);
+    void render(std::shared_ptr<Node>& node, RenderPass& rp){
+        rp.draw(mesh, node->localToWorld(), material);
         // draw children
-        for (auto & n : node.children){
+        for (auto & n : node->children){
             render(n, rp);
         }
     }
@@ -131,10 +133,10 @@ public:
         // draw gui
         ImGui::Begin("SceneGraph");
         if (ImGui::Button("Add object")){
-            root.children.emplace_back(nullptr);
+            root.children.push_back(std::make_shared<Node>(nullptr));
         }
         for (auto & n : root.children){
-            n.gui();
+            n->gui();
         }
         ImGui::End();
 
