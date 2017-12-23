@@ -26,7 +26,11 @@ PlatformerGame::PlatformerGame()
 
     backgroundColor = glm::vec4(0.6,0.6,1,1);
 
-    spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json","platformer-art-deluxe.png");
+    //spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json","platformer-art-deluxe.png");
+    spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json",Texture::create()
+            .withFile( "platformer-art-deluxe.png")
+            .withFilterSampling(false)
+            .build());
 
     level = Level::createDefaultLevel(this, spriteAtlas);
 

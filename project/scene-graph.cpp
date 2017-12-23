@@ -61,7 +61,6 @@ public:
                 else {
                     position = globalPos;
                 }
-
             }
             if (ImGui::Button("Add child")){
                 children.emplace_back(this);
