@@ -1,4 +1,4 @@
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 #include "PlatformerGame.hpp"
 #include "GameObject.hpp"
 #include "sre/RenderPass.hpp"
@@ -22,9 +22,11 @@ PlatformerGame::PlatformerGame()
     instance = this;
     r.setWindowSize(windowSize);
     bool useVsync = true;
-    r.init(SDL_INIT_EVERYTHING, SDL_WINDOW_OPENGL , useVsync);
+    r.init().withSdlInitFlags(SDL_INIT_EVERYTHING)
+            .withSdlWindowFlags(SDL_WINDOW_OPENGL)
+            .withVSync(useVsync);
 
-    backgroundColor = glm::vec4(0.6,0.6,1,1);
+    backgroundColor = {0.6,0.6,1,1};
 
     //spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json","platformer-art-deluxe.png");
     spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json",Texture::create()

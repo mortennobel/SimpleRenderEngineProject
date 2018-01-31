@@ -14,12 +14,11 @@
 #include <sre/ModelImporter.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-
 using namespace sre;
 
-class SpinningCubeExample {
+class ObjViewerExample {
 public:
-    SpinningCubeExample(){
+    ObjViewerExample(){
         r.init();
 
         SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
@@ -34,9 +33,9 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,farPlane);
 
-        auto material = Shader::getStandard()->createMaterial();
+        auto material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(1,1,1,20.0f));
         materials.push_back(material);
 
         mesh = Mesh::create().withCube().build();
@@ -228,6 +227,6 @@ private:
 };
 
 int main() {
-    new SpinningCubeExample();
+    new ObjViewerExample();
     return 0;
 }

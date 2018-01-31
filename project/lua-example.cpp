@@ -3,7 +3,7 @@
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
 #include "sre/Material.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/ext.hpp"
 

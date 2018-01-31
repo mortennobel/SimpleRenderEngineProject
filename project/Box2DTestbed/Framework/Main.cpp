@@ -403,7 +403,10 @@ int main(int, char**)
 	sprintf(title, "Box2D Testbed Version %d.%d.%d", b2_version.major, b2_version.minor, b2_version.revision);
 	mainWindow.setWindowTitle(title);
 	mainWindow.setWindowSize({g_camera.m_width,g_camera.m_height});
-	mainWindow.init(SDL_INIT_EVERYTHING, SDL_WINDOW_OPENGL);
+	mainWindow.init()
+            .withSdlInitFlags(SDL_INIT_EVERYTHING)
+			.withSdlWindowFlags(SDL_WINDOW_OPENGL);
+
 
 	std::string vertexShaderSource =  R"(#version 140
 in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 0.0, w = 1.0)

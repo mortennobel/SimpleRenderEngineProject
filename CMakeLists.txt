@@ -90,6 +90,13 @@ ELSE (APPLE)
     ENDIF(UNIX)
 ENDIF (APPLE)
 
+option(USE_assimp "Include assimp" OFF)
+IF (USE_assimp)
+    find_package(assimp REQUIRED)
+    INCLUDE_DIRECTORIES (${assimp_INCLUDE_DIRS})
+
+ENDIF(USE_assimp)
+
 # add bullet
 #   BULLET_FOUND - Was bullet found
 #   BULLET_INCLUDE_DIRS - the Bullet include directories
@@ -120,7 +127,7 @@ ENDIF(WIN32)
 ENDIF(USE_BULLET)
 
 #### Sol #####
-INCLUDE_DIRECTORIES (thirdparty/Sol/include)
+INCLUDE_DIRECTORIES (thirdparty/All/include)
 
 set(OPENVR_LIB)
 IF (USE_OPENVR)
@@ -144,6 +151,10 @@ set(all_libs ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${SDL2MIXER_L
 IF (USE_BULLET)
 	set(all_libs optimized  ${all_libs} optimized  ${BULLET_DYNAMICS_LIBRARY} optimized  ${BULLET_COLLISION_LIBRARY} optimized  ${BULLET_MATH_LIBRARY} debug ${BULLET_DYNAMICS_LIBRARY_DEBUG} debug ${BULLET_COLLISION_LIBRARY_DEBUG} debug ${BULLET_MATH_LIBRARY_DEBUG} )
 ENDIF(USE_BULLET)
+IF (USE_assimp)
+	set(all_libs ${all_libs} ${assimp_LIBRARIES})
+ENDIF(USE_assimp)
+
 
 # Create DllFileList on Windows
 IF (WIN32)

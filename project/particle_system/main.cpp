@@ -63,15 +63,15 @@ public:
 
         mat1 = Shader::getStandard()->createMaterial();
         mat1->setColor({1,1,1,1});
-        mat1->setSpecularity(0);
+        mat1->setSpecularity({0,0,0,0});
 
-        mat2 = Shader::getStandard()->createMaterial();
+        mat2 = Shader::getStandardBlinnPhong()->createMaterial();
         mat2->setColor({1,0,0,1});
-        mat2->setSpecularity(0);
+        mat2->setSpecularity({0,0,0,0});
 
-        matPlane = Shader::getStandard()->createMaterial();
+        matPlane = Shader::getStandardBlinnPhong()->createMaterial();
         matPlane->setColor({1,1,1,1});
-        matPlane->setSpecularity(0);
+        matPlane->setSpecularity({0,0,0,0});
 
 
         r.frameUpdate = [&](float deltaTime){

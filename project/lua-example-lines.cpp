@@ -3,7 +3,7 @@
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
 #include "sre/Material.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/ext.hpp"
 
@@ -116,7 +116,7 @@ public:
 
         // draw grid
         for (int i=-5;i<=5;i++){
-            glm::vec4 color = (i==0?glm::vec4{1.0,1.0,1.0,1.0}:glm::vec4{0.2,0.2,0.2,1.0});
+            Color color = (i==0?Color{1.0,1.0,1.0,1.0}:Color{0.2,0.2,0.2,1.0});
             rp.drawLines({{i,-5,0},{i,5,0}},color, MeshTopology::LineStrip);
             rp.drawLines({{-5,i,0},{5,i,0}},color, MeshTopology::LineStrip);
         }

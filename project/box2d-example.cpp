@@ -2,7 +2,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/ext.hpp"
 #include "Box2D/Box2D.h"

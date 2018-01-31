@@ -53,7 +53,7 @@ private:
 
     std::shared_ptr<Level> level;
 
-    glm::vec4 backgroundColor;
+    sre::Color backgroundColor;
     b2World * world = nullptr;
     BirdMovementComponent* birdMovement;
     const float physicsScale = 100;

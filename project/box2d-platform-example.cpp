@@ -2,7 +2,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/ext.hpp"
 #include "Box2D/Box2D.h"
@@ -71,7 +71,10 @@ public:
 
         glm::ivec2 windowSize(800,600);
         r.setWindowSize(windowSize);
-        r.init(SDL_INIT_EVERYTHING, SDL_WINDOW_OPENGL,false);                             // Disable HighDPI
+        r.init().withSdlInitFlags(SDL_INIT_EVERYTHING)
+                .withSdlWindowFlags(SDL_WINDOW_OPENGL)
+                .withVSync(false);
+
 
         r.setWindowTitle("Box2D example. Use arrow-key + space to control character");
 

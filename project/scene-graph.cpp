@@ -85,9 +85,9 @@ public:
 
         camera.setPerspectiveProjection(60,0.1,100);
 
-        material = Shader::getStandard()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity({0.5,0.5,0.5,20.0f});
 
         mesh = Mesh::create().withCube().build();
         worldLights.setAmbientLight({0.5,0.5,0.5});
