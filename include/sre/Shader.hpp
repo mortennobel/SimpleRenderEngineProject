@@ -212,6 +212,10 @@ namespace sre {
                                                                //   "uv" vec4 (note: xy is lower left corner, z is size and w is rotation in radians)
                                                                // Expects a mesh with topology = Points
 
+        static std::shared_ptr<Shader> getBlit();             // Shader used for blitting
+                                                              // Uniforms
+                                                              //   "tex" shared_ptr<Texture> (default white texture)
+
         static ShaderBuilder create();
         ShaderBuilder update();                                // Update the shader using the builder pattern. (Must end with build()).
 
@@ -301,7 +305,6 @@ namespace sre {
         int uniformLocationCameraPosition;
 
     public:
-        static std::string translateToGLSLES(std::string source, bool vertexShader);
-
+        static std::string translateToGLSLES(std::string source, bool vertexShader, int version = 100);
     };
 }

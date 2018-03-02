@@ -10,7 +10,7 @@
 /// Include GL header
 
 #if defined(EMSCRIPTEN)
-#   include <GLES2/gl2.h>
+#   include <GLES3/gl3.h>
 #elif defined(_WIN32)
 #   define GLEW_STATIC
 #   include <GL/glew.h>
@@ -23,7 +23,7 @@
 #include <vector>
 
 // For internal debugging of gl errors
-inline void checkGLError();
+inline void checkGLError(const char* title = nullptr);
 
 inline bool hasExtension(std::string extensionName);
 inline std::vector<std::string> listExtension();

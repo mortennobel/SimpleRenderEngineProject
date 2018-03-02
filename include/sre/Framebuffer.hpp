@@ -11,6 +11,7 @@
 #include <string>
 #include "glm/glm.hpp"
 #include "Texture.hpp"
+#include "impl/CPPShim.hpp"
 
 
 namespace sre {
@@ -29,11 +30,16 @@ namespace sre {
     public:
         class FrameBufferBuilder {
         public:
+            DEPRECATED("Use withColorTexture() instead")
             FrameBufferBuilder& withTexture(std::shared_ptr<Texture> texture);
+
+            FrameBufferBuilder& withColorTexture(std::shared_ptr<Texture> texture);
+            FrameBufferBuilder& withDepthTexture(std::shared_ptr<Texture> texture);
             FrameBufferBuilder& withName(std::string name);
             std::shared_ptr<Framebuffer> build();
         private:
             std::vector<std::shared_ptr<Texture>> textures;
+            std::shared_ptr<Texture> depthTexture;
             glm::uvec2 size;
             std::string name;
             FrameBufferBuilder() = default;
@@ -45,25 +51,28 @@ namespace sre {
 
         static FrameBufferBuilder create();
 
+        static int getMaximumDepthAttachments();
         static int getMaximumColorAttachments();
 
+        DEPRECATED("Use setColorTexture() instead")
         void setTexture(std::shared_ptr<Texture> tex, int index = 0);
+        void setColorTexture(std::shared_ptr<Texture> tex, int index = 0);
+        void setDepthTexture(std::shared_ptr<Texture> tex);
 
         const std::string& getName();
-
     private:
         void bind();
         bool dirty = true;
         explicit Framebuffer(std::string name);
         std::vector<std::shared_ptr<Texture>> textures;
+        std::shared_ptr<Texture> depthTexture;
         unsigned int frameBufferObjectId;
         uint32_t renderBufferDepth = 0;
         std::string name;
         glm::uvec2 size;
         friend class RenderPass;
+        friend class Inspector;
     };
-
-
 }
 
 

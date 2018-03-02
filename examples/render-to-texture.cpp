@@ -24,7 +24,7 @@ public:
 
         texture = Texture::create().withRGBData(nullptr, 1024,1024).build();
 
-        framebuffer = Framebuffer::create().withTexture(texture).build();
+        framebuffer = Framebuffer::create().withColorTexture(texture).build();
 
         materialOffscreen = Shader::getStandardBlinnPhong()->createMaterial();
         materialOffscreen->setSpecularity({1,1,1,120});

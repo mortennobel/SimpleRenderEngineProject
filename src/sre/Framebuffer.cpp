@@ -10,11 +10,35 @@
 #include "sre/impl/GL.hpp"
 
 #include "sre/Log.hpp"
+#include <algorithm>
+#include <sre/Renderer.hpp>
 
 namespace sre{
-    Framebuffer::FrameBufferBuilder & Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
-        this->size = {texture->getWidth(), texture->getHeight()};
+    Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
+        return withColorTexture(texture);
+    }
+
+    Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withColorTexture(std::shared_ptr<Texture> texture) {
+        assert(!texture->isDepthTexture());
+        auto s = glm::uvec2{texture->getWidth(), texture->getHeight()};
+        if (!textures.empty() || depthTexture.get()){
+            assert(this->size == s);
+        } else {
+            this->size = s;
+        }
         textures.push_back(texture);
+        return *this;
+    }
+
+    Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withDepthTexture(std::shared_ptr<Texture> texture) {
+        assert(texture->isDepthTexture());
+        auto s = glm::uvec2{texture->getWidth(), texture->getHeight()};
+        if (!textures.empty() || depthTexture.get()){
+            assert(this->size == s);
+        } else {
+            this->size = s;
+        }
+        depthTexture = texture;
         return *this;
     }
 
@@ -26,9 +50,13 @@ namespace sre{
     Framebuffer::Framebuffer(std::string name)
     :name(name)
     {
+        auto r = Renderer::instance;
+        r->framebufferObjects.push_back(this);
     }
 
     Framebuffer::~Framebuffer() {
+        auto r = Renderer::instance;
+        r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
         if (renderBufferDepth != 0){
             glDeleteRenderbuffers(1, &renderBufferDepth);
         }
@@ -40,7 +68,28 @@ namespace sre{
     }
 
     int Framebuffer::getMaximumColorAttachments() {
-        return 1;
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor<= 2){
+            return 1;
+        }
+        static int maxColorBuffers;
+        static bool once = [&](){
+            static GLint maxAttach = 0;
+            static GLint maxDrawBuf = 0;
+            glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
+            glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
+            maxColorBuffers = std::min(maxAttach, maxDrawBuf);
+            return true;
+        } ();
+
+        return maxColorBuffers;
+    }
+
+    int Framebuffer::getMaximumDepthAttachments() {
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor <= 2){
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     const std::string& Framebuffer::getName() {
@@ -48,9 +97,22 @@ namespace sre{
     }
 
     void Framebuffer::setTexture(std::shared_ptr<Texture> tex, int index) {
+        setColorTexture(tex, index);
+    }
+
+    void Framebuffer::setColorTexture(std::shared_ptr<Texture> tex, int index) {
+        assert(textures.size() > index && index >= 0);
+        assert(!tex->isDepthTexture());
         textures[index] = tex;
         dirty = true;
     }
+
+    void Framebuffer::setDepthTexture(std::shared_ptr<Texture> tex) {
+        assert(tex->isDepthTexture());
+        depthTexture = tex;
+        dirty = true;
+    }
+
 
     void Framebuffer::bind() {
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObjectId);
@@ -59,6 +121,9 @@ namespace sre{
                 for (unsigned i=0;i<textures.size();i++){
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
                 }
+            }
+            if (depthTexture){
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
             }
             dirty = false;
         }
@@ -117,41 +182,42 @@ namespace sre{
         }
         auto framebuffer = new Framebuffer(name);
         framebuffer->size = size;
-        glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
-
-        glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
-        glRenderbufferStorage(GL_RENDERBUFFER,
-#ifdef GL_ES_VERSION_2_0
-                GL_DEPTH_COMPONENT16
-#else
-                              GL_DEPTH_COMPONENT32
-#endif
-                , size.x, size.y);
-
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
-                              size.x, size.y);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
         glGenFramebuffers(1, &(framebuffer->frameBufferObjectId));
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer->frameBufferObjectId);
 
+        std::vector<GLenum> drawBuffers;
         for (unsigned i=0;i<textures.size();i++){
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
+            drawBuffers.push_back(GL_COLOR_ATTACHMENT0+i);
         }
+        
+        if (depthTexture){
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
+        } else {
+            glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
+            glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
+            glRenderbufferStorage(GL_RENDERBUFFER,
+                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
+                    , size.x, size.y);
 
-        // attach the renderbuffer to depth attachment point
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER,
-                                  GL_DEPTH_ATTACHMENT,
-                                  GL_RENDERBUFFER,
-                                  framebuffer->renderBufferDepth);
-
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                                  size.x, size.y);
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+            // attach the renderbuffer to depth attachment point
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                      GL_DEPTH_ATTACHMENT,
+                                      GL_RENDERBUFFER,
+                                      framebuffer->renderBufferDepth);
+        }
+        if (!renderInfo().graphicsAPIVersionES || renderInfo().graphicsAPIVersionMajor>=3){
+            glDrawBuffers((GLsizei)drawBuffers.size(), drawBuffers.data());
+        }
         // Check if FBO is configured correctly
         checkStatus();
-
         framebuffer->textures = textures;
-
+        framebuffer->depthTexture = depthTexture;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 
         return std::shared_ptr<Framebuffer>(framebuffer);
     }

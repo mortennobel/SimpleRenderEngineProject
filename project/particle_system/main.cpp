@@ -60,8 +60,7 @@ public:
                                      .withRange(4)
                                      .build());
 
-
-        mat1 = Shader::getStandard()->createMaterial();
+        mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
         mat1->setSpecularity({0,0,0,0});
 

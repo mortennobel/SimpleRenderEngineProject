@@ -137,7 +137,7 @@ void PlatformerGame::render() {
             .build();
 
     if (doDebugDraw){
-        static Profiler profiler;
+        static Inspector profiler;
         profiler.update();
         profiler.gui(false);
 

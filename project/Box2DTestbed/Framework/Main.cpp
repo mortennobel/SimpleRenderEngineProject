@@ -433,7 +433,8 @@ void main(void)
 )";
 
 	meshMaterial = sre::Shader::create()
-			.withSource(vertexShaderSource,fragmentShaderSource)
+			.withSourceString(vertexShaderSource,sre::ShaderType::Vertex)
+			.withSourceString(fragmentShaderSource,sre::ShaderType::Fragment)
 			.withBlend(sre::BlendType::AlphaBlending)
 			.withDepthTest(false)
 			.withDepthWrite(false)

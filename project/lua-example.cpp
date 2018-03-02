@@ -51,7 +51,7 @@ public:
 
         l.addLight(Light::create().withDirectionalLight({1,1,1}).withColor({1,1,1}).build());
 
-        auto mat = Shader::getStandard()->createMaterial();
+        auto mat = Shader::getStandardPhong()->createMaterial();
         mat->setColor({1,0,0,1});
         auto sphere = Mesh::create().withSphere().build();
 

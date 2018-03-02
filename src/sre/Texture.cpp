@@ -281,6 +281,18 @@ namespace sre {
 
         return *this;
     }
+    Texture::TextureBuilder &Texture::TextureBuilder::withDepth(int width, int height, DepthPrecision precision) {
+        depthPrecision = precision;
+        textureTypeData[GL_TEXTURE_2D] = {
+                width,
+                height,
+                false,
+                0,
+                0,
+                "DepthTexture"
+        };
+        return *this;
+    }
 
     std::shared_ptr<Texture> Texture::TextureBuilder::build() {
         if (textureId == 0){
@@ -291,22 +303,59 @@ namespace sre {
         }
         std::map<uint32_t, TextureDefinition>::iterator val;
         TextureDefinition* textureDefPtr;
-        if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
+        if (depthPrecision != DepthPrecision::None){
+            if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor <= 2){
+                LOG_FATAL("Depth texture not supported");
+            } else {
+                this->target = GL_TEXTURE_2D;
+                GLint internalFormat;
+                GLint format = GL_DEPTH_COMPONENT;
+                if (depthPrecision == DepthPrecision::I16){
+                    internalFormat = GL_DEPTH_COMPONENT16;
+                } else if (depthPrecision == DepthPrecision::I24){
+                    internalFormat = GL_DEPTH_COMPONENT24;
+#ifndef GL_ES_VERSION_2_0
+                } else if (depthPrecision == DepthPrecision::I32){
+                    internalFormat = GL_DEPTH_COMPONENT32;
+#endif
+                } else if (depthPrecision == DepthPrecision::I24_STENCIL8){
+                    internalFormat =  GL_DEPTH24_STENCIL8;
+                    format = GL_DEPTH_STENCIL;
+                } else if (depthPrecision == DepthPrecision::F32_STENCIL8){
+                    internalFormat = GL_DEPTH32F_STENCIL8;
+                    format = GL_DEPTH_STENCIL;
+                } else if (depthPrecision == DepthPrecision::F32){
+                    internalFormat = GL_DEPTH_COMPONENT32F;
+#ifndef GL_ES_VERSION_2_0
+                } else if (depthPrecision == DepthPrecision::STENCIL8){
+                    internalFormat = GL_STENCIL_INDEX8;
+                    format = GL_STENCIL_INDEX;
+#endif
+                } else {
+                    assert(false && "Invalid depth/stencil format");
+                }
+                GLint border = 0;
+                GLenum type = GL_UNSIGNED_BYTE;
+                glBindTexture(target, textureId);
+                auto td = textureTypeData.find(GL_TEXTURE_2D);
+                textureDefPtr = &td->second;
+                glTexImage2D(target, 0, internalFormat, textureDefPtr->width,
+                             textureDefPtr->height, border, format, type, nullptr);
+            }
+        } else if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
             auto& textureDef = val->second;
             textureDefPtr = &textureDef;
             this->target = GL_TEXTURE_2D;
             // create texture
             GLint mipmapLevel = 0;
-#ifdef EMSCRIPTEN
-            GLint internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
-#else
+
             GLint internalFormat;
             if (samplerColorspace == SamplerColorspace::Linear){
                 internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
             } else {
                 internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
             }
-#endif
+
             GLint border = 0;
 
             bool isPOT = isPowerOfTwo(textureDef.width) && isPowerOfTwo(textureDef.height);
@@ -333,16 +382,14 @@ namespace sre {
                     textureDefPtr = &textureDef;
                     this->target = GL_TEXTURE_CUBE_MAP;
                     GLint mipmapLevel = 0;
-#ifdef EMSCRIPTEN
-                    GLint internalFormat = (textureDef.bytesPerPixel==4 ? GL_RGBA : GL_RGB);
-#else
+
                     GLint internalFormat;
                     if (samplerColorspace == SamplerColorspace::Linear){
                         internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
                     } else {
                         internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
                     }
-#endif
+
                     GLint border = 0;
                     GLenum type = GL_UNSIGNED_BYTE;
                     glBindTexture(target, textureId);
@@ -365,6 +412,7 @@ namespace sre {
         res->generateMipmap = this->generateMipmaps;
 		res->transparent = this->transparent;
 		res->samplerColorspace = this->samplerColorspace;
+		res->depthPrecision = this->depthPrecision;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }
@@ -409,6 +457,9 @@ namespace sre {
 
     Texture::TextureBuilder::TextureBuilder() {
         glGenTextures(1, &textureId);
+        if (renderInfo().supportTextureSamplerSRGB == false) {
+            samplerColorspace = SamplerColorspace::Gamma;
+        }
     }
 
     Texture::TextureBuilder::~TextureBuilder() {
@@ -633,4 +684,13 @@ namespace sre {
     sre::Texture::SamplerColorspace Texture::getSamplerColorSpace() {
         return samplerColorspace;
     }
+
+    bool Texture::isDepthTexture() {
+        return depthPrecision != DepthPrecision::None;
+    }
+
+    Texture::DepthPrecision Texture::getDepthPrecision() {
+        return depthPrecision;
+    }
+
 }

@@ -78,7 +78,6 @@ int main() {
 	btRigidBody* fallRigidBody = new btRigidBody(fallRigidBodyCI);
 	dynamicsWorld->addRigidBody(fallRigidBody);
 
-
 	for (int i = 0; i < 300; i++) {
 		dynamicsWorld->stepSimulation(1 / 60.f, 10);
 

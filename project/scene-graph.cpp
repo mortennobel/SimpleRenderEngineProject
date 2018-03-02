@@ -34,7 +34,7 @@ public:
         // compute trs
         auto rotationEulerRadian = glm::radians(rotationEuler);
         auto res = glm::translate(position)
-                   * glm::eulerAngleYXZ(rotationEulerRadian.y,rotationEulerRadian.x,rotationEulerRadian.z)
+                   * glm::eulerAngleXYZ(rotationEulerRadian.x,rotationEulerRadian.y,rotationEulerRadian.z)
                    * glm::scale(scale);
         if (parent){
             res = parent->localToWorld() * res;
