@@ -26,7 +26,7 @@ PlatformerGame::PlatformerGame()
             .withSdlWindowFlags(SDL_WINDOW_OPENGL)
             .withVSync(useVsync);
 
-    backgroundColor = {0.6,0.6,1,1};
+    backgroundColor = {0.6f,0.6f,1.0f,1.0f};
 
     //spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json","platformer-art-deluxe.png");
     spriteAtlas = SpriteAtlas::create("platformer-art-deluxe.json",Texture::create()
