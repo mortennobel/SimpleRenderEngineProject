@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -29,7 +29,15 @@ namespace sre {
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        update(std::move(attributesFloat), std::move(attributesVec2), std::move(attributesVec3),std::move(attributesVec4),std::move(attributesIVec4), std::move(indices), meshTopology,name,renderStats);
+        update(std::move(attributesFloat),
+               std::move(attributesVec2),
+               std::move(attributesVec3),
+               std::move(attributesVec4),
+               std::move(attributesIVec4),
+               std::move(indices),
+               meshTopology,
+               name,
+               renderStats);
         Renderer::instance->meshes.emplace_back(this);
     }
 
@@ -50,8 +58,9 @@ namespace sre {
             }
         }
         glDeleteBuffers(1, &vertexBufferId);
-        glDeleteBuffers((GLsizei)elementBufferId.size(), elementBufferId.data());
-
+        if (elementBufferId != 0){
+            glDeleteBuffers(1, &elementBufferId);
+        }
     }
 
     void Mesh::bind(Shader* shader) {
@@ -70,17 +79,15 @@ namespace sre {
                 glBindVertexArray(index);
                 setVertexAttributePointers(shader);
                 shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
+                bindIndexSet();
             }
         } else {
             setVertexAttributePointers(shader);
+            bindIndexSet();
         }
     }
-    void Mesh::bindIndexSet(int indexSet){
-        if (indices.empty()){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        } else {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId[indexSet]);
-        }
+    void Mesh::bindIndexSet(){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
     }
 
     MeshTopology Mesh::getMeshTopology(int indexSet) {
@@ -122,20 +129,33 @@ namespace sre {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        if (!this->indices.empty()){
-            for (int i=0;i<this->indices.size();i++){
-                unsigned int eBufferId;
-                if (i >= elementBufferId.size()){
-                    glGenBuffers(1, &eBufferId);
-                    elementBufferId.push_back(eBufferId);
-                } else {
-                    eBufferId = elementBufferId[i];
-                }
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
-                GLsizeiptr indicesSize = this->indices[i].size()*sizeof(uint16_t);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, this->indices[i].data(), GL_STATIC_DRAW);
-                dataSize += indicesSize;
+        elementBufferOffsetCount.clear();
+        if (this->indices.empty()){
+            if (elementBufferId != 0){
+                glDeleteBuffers(1, &elementBufferId);
+                elementBufferId = 0;
             }
+        } else {
+            if (elementBufferId == 0){
+                glGenBuffers(1, &elementBufferId);
+            }
+            size_t totalCount = 0;
+            for (int i=0;i<this->indices.size();i++) {
+                totalCount += this->indices[i].size();
+            }
+            std::vector<uint16_t> concatenatedIndices;
+            concatenatedIndices.reserve(totalCount);
+            int offset = 0;
+            for (int i=0;i<this->indices.size();i++) {
+                size_t dataSize = this->indices[i].size()*sizeof(uint16_t);
+                concatenatedIndices.insert(concatenatedIndices.end(), this->indices[i].begin(), this->indices[i].end());
+                elementBufferOffsetCount.emplace_back(offset, this->indices[i].size());
+                offset += dataSize;
+            }
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, offset, concatenatedIndices.data(), GL_STATIC_DRAW);
+
+            this->dataSize += offset;
         }
 
         boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
@@ -169,7 +189,11 @@ namespace sre {
                                                      );
             if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
 				glEnableVertexAttribArray(shaderAttribute.second.position);
-                glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                if ((shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)){
+                    glVertexAttribIPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                } else {
+                    glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                }
                 vertexAttribArray++;
             } else {
 				assert(shaderAttribute.second.arraySize == 1 && "Constant vertex attributes not supported as arrays");
@@ -398,6 +422,10 @@ namespace sre {
         boundsMinMax = minMax;
     }
 
+    bool Mesh::hasAttribute(std::string name) {
+        return attributeByName.find(name) != attributeByName.end();
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;
@@ -414,7 +442,7 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
-        withAttribute("color", colors);
+        withAttribute("vertex_color", colors);
         return *this;
     }
 
@@ -667,12 +695,20 @@ namespace sre {
                 vec3{length, -length, -length}
 
         };
-        vector<vec3> positions({p[0],p[1],p[2], p[0],p[2],p[3], // v0-v1-v2-v3
-                                p[4],p[0],p[3], p[4],p[3],p[7], // v4-v0-v3-v7
-                                p[5],p[4],p[7], p[5],p[7],p[6], // v5-v4-v7-v6
-                                p[1],p[5],p[6], p[1],p[6],p[2], // v1-v5-v6-v2
-                                p[4],p[5],p[1], p[4],p[1],p[0], // v1-v5-v6-v2
-                                p[3],p[2],p[6], p[3],p[6],p[7], // v1-v5-v6-v2
+        vector<uint16_t> indices({
+                                    0,1,2, 0,2,3,
+                                    4,5,6, 4,6,7,
+                                    8,9,10, 8,10,11,
+                                    12,13,14, 12, 14,15,
+                                    16,17,18, 16,18,19,
+                                    20,21,22, 20,22,23
+                                 });
+        vector<vec3> positions({p[0],p[1],p[2], p[3], // v0-v1-v2-v3
+                                p[4],p[0],p[3], p[7], // v4-v0-v3-v7
+                                p[5],p[4],p[7], p[6], // v5-v4-v7-v6
+                                p[1],p[5],p[6], p[2], // v1-v5-v6-v2
+                                p[4],p[5],p[1], p[0], // v1-v5-v6-v2
+                                p[3],p[2],p[6], p[7], // v1-v5-v6-v2
                                });
         vec4 u[] = {
                 vec4(1,1,0,0),
@@ -680,22 +716,18 @@ namespace sre {
                 vec4(0,0,0,0),
                 vec4(1,0,0,0)
         };
-        vector<vec4> uvs({ u[0],u[1],u[2], u[0],u[2],u[3],
-                           u[0],u[1],u[2], u[0],u[2],u[3],
-                           u[0],u[1],u[2], u[0],u[2],u[3],
-                           u[0],u[1],u[2], u[0],u[2],u[3],
-                           u[0],u[1],u[2], u[0],u[2],u[3],
-                           u[0],u[1],u[2], u[0],u[2],u[3],
+        vector<vec4> uvs({ u[0],u[1],u[2], u[3],
+                           u[0],u[1],u[2], u[3],
+                           u[0],u[1],u[2], u[3],
+                           u[0],u[1],u[2], u[3],
+                           u[0],u[1],u[2], u[3],
+                           u[0],u[1],u[2], u[3],
                          });
         vector<vec3> normals({
                                      vec3{0, 0, 1},
                                      vec3{0, 0, 1},
                                      vec3{0, 0, 1},
                                      vec3{0, 0, 1},
-                                     vec3{0, 0, 1},
-                                     vec3{0, 0, 1},
-                                     vec3{1, 0, 0},
-                                     vec3{1, 0, 0},
                                      vec3{1, 0, 0},
                                      vec3{1, 0, 0},
                                      vec3{1, 0, 0},
@@ -704,10 +736,6 @@ namespace sre {
                                      vec3{0, 0, -1},
                                      vec3{0, 0, -1},
                                      vec3{0, 0, -1},
-                                     vec3{0, 0, -1},
-                                     vec3{0, 0, -1},
-                                     vec3{-1, 0, 0},
-                                     vec3{-1, 0, 0},
                                      vec3{-1, 0, 0},
                                      vec3{-1, 0, 0},
                                      vec3{-1, 0, 0},
@@ -716,10 +744,6 @@ namespace sre {
                                      vec3{0, 1, 0},
                                      vec3{0, 1, 0},
                                      vec3{0, 1, 0},
-                                     vec3{0, 1, 0},
-                                     vec3{0, 1, 0},
-                                     vec3{0, -1, 0},
-                                     vec3{0, -1, 0},
                                      vec3{0, -1, 0},
                                      vec3{0, -1, 0},
                                      vec3{0, -1, 0},
@@ -731,16 +755,10 @@ namespace sre {
                                      vec4{1, 0,  0,1},
                                      vec4{1, 0,  0,1},
                                      vec4{1, 0,  0,1},
-                                     vec4{1, 0,  0,1},
-                                     vec4{1, 0,  0,1},
                                      vec4{0, 0, -1,1},
                                      vec4{0, 0, -1,1},
                                      vec4{0, 0, -1,1},
                                      vec4{0, 0, -1,1},
-                                     vec4{0, 0, -1,1},
-                                     vec4{0, 0, -1,1},
-                                     vec4{-1, 0, 0,1},
-                                     vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
@@ -749,16 +767,10 @@ namespace sre {
                                      vec4{0, 0,  1,1},
                                      vec4{0, 0,  1,1},
                                      vec4{0, 0,  1,1},
-                                     vec4{0, 0,  1,1},
-                                     vec4{0, 0,  1,1},
                                      vec4{1, 0,  0,1},
                                      vec4{1, 0,  0,1},
                                      vec4{1, 0,  0,1},
                                      vec4{1, 0,  0,1},
-                                     vec4{1, 0,  0,1},
-                                     vec4{1, 0,  0,1},
-                                     vec4{-1, 0, 0,1},
-                                     vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
                                      vec4{-1, 0, 0,1},
@@ -769,6 +781,7 @@ namespace sre {
         withNormals(normals);
         withUVs(uvs);
         withTangents(tangents);
+        withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -856,7 +869,16 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::ivec4> &values) {
-        if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
+        auto& info = renderInfo();
+        if (info.graphicsAPIVersionES && info.graphicsAPIVersionMajor <= 2){
+            LOG_INFO("Converting attribute %s to vec4. ES %i Version %i",name.c_str(),info.graphicsAPIVersionES,info.graphicsAPIVersionMajor);
+            std::vector<glm::vec4> convertedVec4(values.size(), glm::vec4(0));
+            for (int i=0;i<convertedVec4.size();i++){
+                convertedVec4[i] = values[i];
+            }
+            withAttribute(name, convertedVec4);
+        }
+        else if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
             LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a ivec4.",name.c_str());
         } else {
             attributesIVec4[name] = values;

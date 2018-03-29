@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -26,13 +26,12 @@ namespace sre {
         std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> skybox;
         std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
 
         long globalShaderCounter = 1;
-
-        const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
 
         // From https://stackoverflow.com/a/8473603/420250
         template <typename Map>
@@ -117,7 +116,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source, const std::string name) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, const std::string& source, const std::string name) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             if (logSize > 1){ // log size of 1 is empty, since it includes \0
@@ -277,14 +276,16 @@ namespace sre {
 
     std::string Shader::translateToGLSLES(std::string source, bool vertexShader, int version) {
         using namespace std;
-        string replace = "#version 140";
+        string replace = "#version 330";
         string replaceWith = string("#version ")+std::to_string(version);
         if (version >100){
             replaceWith += " es";
         }
 
         size_t f = source.find(replace);
-        source = source.replace(f, replace.length(), replaceWith);
+        if (f != std::string::npos){
+            source = source.replace(f, replace.length(), replaceWith);
+        }
         if (!vertexShader){
             auto extension = source.rfind("#extension");
             // insert precision after extensions
@@ -299,8 +300,12 @@ namespace sre {
                 insertPrecisionPos = 0;
             }
             source = source.substr(0, insertPrecisionPos)+
-                     "\n"+
-                     "precision mediump float;\n"+
+                     "\n"
+                     "#ifdef GL_FRAGMENT_PRECISION_HIGH \n"
+                     "   precision highp float;         \n"
+                     "#else                             \n"
+                     "   precision mediump float;       \n"
+                     "#endif                            \n"
                      "#line 2"+
                      source.substr(insertPrecisionPos);
         }
@@ -354,6 +359,12 @@ namespace sre {
         uniformLocationLightColorRange = -1;
         uniformLocationCameraPosition = -1;
         uniforms.clear();
+
+        bool hasGlobalUniformBuffer = false;
+        if (Renderer::instance->globalUniformBuffer) {
+            hasGlobalUniformBuffer = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms") != GL_INVALID_INDEX;
+        }
+
         GLint uniformCount;
         glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
         UniformType uniformType = UniformType::Invalid;
@@ -379,6 +390,9 @@ namespace sre {
                     break;
                 case GL_FLOAT_VEC4:
                     uniformType = UniformType::Vec4;
+                    break;
+                case GL_INT_VEC4:
+                    uniformType = UniformType::IVec4;
                     break;
                 case GL_INT:
                     uniformType = UniformType::Int;
@@ -413,25 +427,22 @@ namespace sre {
                 u.type = uniformType;
                 uniforms.push_back(u);
             } else {
+                if (Renderer::instance->globalUniformBuffer){
+                    if (strncmp(name, "g_model_it",64)!=0 &&
+                        strncmp(name, "g_model_view_it",64)!=0 &&
+                        strncmp(name, "g_model",64)!=0){
+                        if (!hasGlobalUniformBuffer){
+                            // Check using old style non uniform buffer
+                            LOG_ERROR("global uniform %s must be loaded using #pragma include \"global_uniforms_incl.glsl\"", name);
+                        }
+                        continue;
+                    }
+                }
                 if (strcmp(name, "g_model")==0){
                     if (uniformType == UniformType::Mat4){
                         uniformLocationModel = location;
                     } else {
                         LOG_ERROR("Invalid g_model uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_view")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationView = location;
-                    } else {
-                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_projection")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationProjection = location;
-                    } else {
-                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_model_it")==0){
@@ -448,6 +459,20 @@ namespace sre {
                         LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
+                if (strcmp(name, "g_view")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationView = location;
+                    } else {
+                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_projection")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationProjection = location;
+                    } else {
+                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
+                    }
+                }
                 if (strcmp(name, "g_viewport")==0){
                     if (uniformType == UniformType::Vec4){
                         uniformLocationViewport = location;
@@ -456,10 +481,10 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
-                    if (uniformType == UniformType::Vec3){
+                    if (uniformType == UniformType::Vec4){
                         uniformLocationAmbientLight = location;
                     } else {
-                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec3 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
@@ -483,7 +508,6 @@ namespace sre {
                         LOG_ERROR("Invalid g_cameraPos uniform type. Expected vec4 - was %s[%i].",c_str(uniformType),size);
                     }
                 }
-
             }
         }
 
@@ -541,7 +565,7 @@ namespace sre {
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
-            glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
+            glUniform4fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
 			std::vector<glm::vec4> lightPosType(maxSceneLights, glm::vec4(0));
@@ -557,7 +581,6 @@ namespace sre {
                     lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
                 // transform to eye space
-                lightPosType[i] = lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
 
             }
@@ -596,15 +619,18 @@ namespace sre {
                 LOG_ERROR("Invalid blend value - was %i",(int)blend);
                 break;
         }
+        auto& info = renderInfo();
         if (offset.x == 0 && offset.y==0){
             glDisable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glDisable(GL_POLYGON_OFFSET_LINE);
             glDisable(GL_POLYGON_OFFSET_POINT);
 #endif
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glEnable(GL_POLYGON_OFFSET_LINE);
             glEnable(GL_POLYGON_OFFSET_POINT);
 #endif
@@ -636,6 +662,24 @@ namespace sre {
                 .build();
         return unlit;
     }
+
+
+
+    std::shared_ptr<Shader> Shader::getSkybox() {
+        if (unlit != nullptr){
+            return skybox;
+        }
+
+        skybox = create()
+                .withSourceFile("skybox_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("skybox_frag.glsl", ShaderType::Fragment)
+                .withName("Skybox")
+                .withDepthWrite(false)
+                .build();
+        return skybox;
+    }
+
+
 
     std::shared_ptr<Shader> Shader::getBlit() {
         if (blit != nullptr){
@@ -681,7 +725,7 @@ namespace sre {
         return standardPBR;
     }
 
-    Uniform Shader::getUniformType(const std::string &name) {
+    Uniform Shader::getUniform(const std::string &name) {
 		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
 			if (i->name.compare(name) == 0)
 				return *i;
@@ -719,31 +763,54 @@ namespace sre {
         unsigned int oldShaderProgramId = shaderProgramId;
         shaderProgramId = glCreateProgram();
         assert(shaderProgramId != 0);
+        std::vector<GLuint> shaders;
+
+        auto cleanupShaders = [&](){
+            for (auto id : shaders){
+                glDeleteShader(id);
+            }
+        };
+
         for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
             auto shaderSourcesIter = shaderSources.find(i);
-            if (shaderSourcesIter!=shaderSources.end()){
+            if (shaderSourcesIter!=shaderSources.end()) {
                 GLuint s;
                 GLenum shader = to_id(i);
-
                 bool res = compileShader(shaderSourcesIter->second, shader, s, errors);
-                if (!res){
+                if (!res) {
+                    cleanupShaders();
                     glDeleteProgram( shaderProgramId );
                     shaderProgramId = oldShaderProgramId;
                     return false;
+                } else {
+                    shaders.push_back(s);
                 }
                 glAttachShader(shaderProgramId,  s);
             }
         }
 
         bool linked = linkProgram(shaderProgramId, errors);
-        if (!linked){
+        cleanupShaders();
+        if (!linked) {
             glDeleteProgram( shaderProgramId );
-            shaderProgramId = oldShaderProgramId;
+            shaderProgramId = oldShaderProgramId; // revert to old shader
             return false;
         }
         if (oldShaderProgramId != 0){
-            glDeleteProgram( oldShaderProgramId );
+            glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
+        // setup global uniform
+        if (Renderer::instance->globalUniformBuffer){
+            glUseProgram(shaderProgramId);
+            auto index = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms");
+            if (index != GL_INVALID_INDEX){
+                const int globalUniformBindingIndex = 1;
+                glUniformBlockBinding(shaderProgramId, index, globalUniformBindingIndex);
+                glBindBufferRange(GL_UNIFORM_BUFFER, globalUniformBindingIndex,
+                                  Renderer::instance->globalUniformBuffer, 0, Renderer::instance->globalUniformBufferSize);
+            }
+        }
+
         updateUniformsAndAttributes();
         return true;
     }
@@ -893,6 +960,7 @@ namespace sre {
         if (parent){
             return parent->getAllSpecializationConstants();
         }
+        static std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
         std::set<string> res;
         for (auto& source : shaderSources){
             string s = getSource(source.second);

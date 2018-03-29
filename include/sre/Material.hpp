@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -11,6 +11,7 @@
 #include "sre/Texture.hpp"
 #include "glm/glm.hpp"
 #include "sre/Color.hpp"
+#include "sre/impl/UniformSet.hpp"
 
 #include <string>
 #include <map>
@@ -78,7 +79,9 @@ namespace sre {
 
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
-        bool set(std::string uniformName, std::shared_ptr<sre::Texture>);
+        bool set(std::string uniformName, std::shared_ptr<Texture> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat4>> value);
         bool set(std::string uniformName, Color value);
 
         template<typename T>
@@ -90,29 +93,23 @@ namespace sre {
         std::string name;
         std::shared_ptr<sre::Shader> shader;
 
-        template<typename T>
-        struct DllExport Uniform {
-            int id;
-            T value;
-        };
-
-        std::vector<Uniform<std::shared_ptr<sre::Texture>>> textureValues;
-        std::vector<Uniform<glm::vec4>> vectorValues;
-        std::vector<Uniform<float>> floatValues;
+        UniformSet uniformMap;
 
         friend class Shader;
         friend class RenderPass;
+        friend class Inspector;
     };
 
     template<>
     inline std::shared_ptr<sre::Texture> Material::get(std::string uniformName) {
-        auto t = shader->getUniformType(uniformName.c_str());
+        auto t = shader->getUniform(uniformName);
         if (t.type != UniformType::Texture && t.type != UniformType::TextureCube){
             return nullptr;
         }
-        for (auto & tv : textureValues){
-            if (tv.id == t.id){
-                return tv.value;
+        for (auto & tv : uniformMap.textureValues){
+            auto res = uniformMap.textureValues.find(t.id);
+            if (res != uniformMap.textureValues.end()){
+                return res->second;
             }
         }
         return nullptr;
@@ -120,12 +117,11 @@ namespace sre {
 
     template<>
     inline glm::vec4 Material::get(std::string uniformName)  {
-        auto t = shader->getUniformType(uniformName.c_str());
+        auto t = shader->getUniform(uniformName);
         if (t.type == UniformType::Vec4){
-            for (auto & tv : vectorValues){
-                if (tv.id == t.id){
-                    return tv.value;
-                }
+            auto res = uniformMap.vectorValues.find(t.id);
+            if (res != uniformMap.vectorValues.end()){
+                return res->second;
             }
         }
         return glm::vec4(0,0,0,0);
@@ -133,14 +129,13 @@ namespace sre {
 
     template<>
     inline Color Material::get(std::string uniformName)  {
-        auto t = shader->getUniformType(uniformName.c_str());
+        auto t = shader->getUniform(uniformName);
         if (t.type == UniformType::Vec4){
-            for (auto & tv : vectorValues){
-                if (tv.id == t.id){
-                    Color value;
-                    value.setFromLinear(tv.value);
-                    return value;
-                }
+            auto res = uniformMap.vectorValues.find(t.id);
+            if (res != uniformMap.vectorValues.end()){
+                Color value;
+                value.setFromLinear(res->second);
+                return value;
             }
         }
         return {0,0,0,0};
@@ -148,14 +143,38 @@ namespace sre {
 
     template<>
     inline float Material::get(std::string uniformName) {
-        auto t = shader->getUniformType(uniformName.c_str());
+        auto t = shader->getUniform(uniformName);
         if (t.type == UniformType::Float) {
-            for (auto &tv : floatValues) {
-                if (tv.id == t.id) {
-                    return tv.value;
-                }
+            auto res = uniformMap.floatValues.find(t.id);
+            if (res != uniformMap.floatValues.end()){
+                return res->second;
             }
         }
         return 0.0f;
     }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat3>> Material::get(std::string uniformName) {
+        auto t = shader->getUniform(uniformName);
+        if (t.type == UniformType::Mat3) {
+            auto res = uniformMap.mat3Values.find(t.id);
+            if (res != uniformMap.mat3Values.end()){
+                return res->second;
+            }
+        }
+        return {};
+    }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat4>> Material::get(std::string uniformName) {
+        auto t = shader->getUniform(uniformName);
+        if (t.type == UniformType::Mat4) {
+            auto res = uniformMap.mat4Values.find(t.id);
+            if (res != uniformMap.mat4Values.end()){
+                return res->second;
+            }
+        }
+        return {};
+    }
+
 }

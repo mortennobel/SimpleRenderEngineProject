@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -118,9 +118,7 @@ namespace sre{
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObjectId);
         if (dirty){
             for (int i=0;i<textures.size();i++){
-                for (unsigned i=0;i<textures.size();i++){
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
-                }
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
             }
             if (depthTexture){
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
@@ -198,7 +196,7 @@ namespace sre{
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
             glRenderbufferStorage(GL_RENDERBUFFER,
-                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
+                                  renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
                     , size.x, size.y);
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,

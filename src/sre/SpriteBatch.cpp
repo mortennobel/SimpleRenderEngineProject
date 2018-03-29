@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -39,7 +39,7 @@ namespace sre{
                                            .withPositions(vertices)
                                            .withUVs(uvs)
                                            .withIndices(indices)
-                                           .withAttribute("color",colors)
+                                           .withAttribute("vertex_color",colors)
                                            .build());
             auto mat = shader->createMaterial();
             mat->setTexture(lastTexture->shared_from_this());

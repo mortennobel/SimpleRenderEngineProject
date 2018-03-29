@@ -1,4 +1,4 @@
-#version 140
+#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -9,16 +9,13 @@ out mat3 vTBN;
 out vec3 vNormal;
 #endif
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 out vec2 vUV;
 out vec3 vWsPos;
 
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform mat3 g_model_it;
+#pragma include "global_uniforms_incl.glsl"
 
 #pragma include "normalmap_incl.glsl"
 
@@ -33,6 +30,6 @@ void main(void) {
 #endif
     vUV = uv.xy;
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 }

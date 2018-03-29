@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -24,9 +24,10 @@ namespace sre {
         void setAmbientLight(const glm::vec3& light);       // Set ambient light
         glm::vec3 getAmbientLight();                        // Get ambient light
     private:
-        glm::vec3 ambientLight;
+        glm::vec4 ambientLight;
         std::vector<Light> lights;
 
         friend class Shader;
+        friend class Inspector;
     };
 }

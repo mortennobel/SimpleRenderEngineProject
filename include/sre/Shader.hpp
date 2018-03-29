@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -35,6 +35,7 @@ namespace sre {
         Mat4,
         Vec3,
         Vec4,
+        IVec4,
         Texture,
         TextureCube,
         Invalid
@@ -198,6 +199,8 @@ namespace sre {
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
+        static std::shared_ptr<Shader> getSkybox();
+
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
@@ -223,7 +226,7 @@ namespace sre {
 
         std::shared_ptr<Material> createMaterial(std::map<std::string,std::string> specializationConstants = {});
 
-        Uniform getUniformType(const std::string &name);
+        Uniform getUniform(const std::string &name);
 
         std::pair<int,int> getAttibuteType(const std::string & name); // Return type, size of the attribute
 

@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -79,6 +79,15 @@ namespace sre {
                                                   projectionValue.perspective.farPlane);
             default:
                 return glm::mat4(1);
+        }
+    }
+
+    glm::mat4 Camera::getInfiniteProjectionTransform(glm::uvec2 viewportSize) {
+        switch (projectionType){
+            case ProjectionType::Perspective:
+                return glm::tweakedInfinitePerspective(projectionValue.perspective.fieldOfViewY,float(viewportSize.x)/float(viewportSize.y),projectionValue.perspective.nearPlane);
+            default:
+                return getProjectionTransform(viewportSize);
         }
     }
 

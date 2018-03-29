@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -374,6 +374,11 @@ namespace {
         return mat;
     }
 
+}
+
+std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::string filename){
+    std::vector<std::shared_ptr<Material>> outModelMaterials;
+    return sre::ModelImporter::importObj(path, filename, outModelMaterials);
 }
 
 std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials) {
