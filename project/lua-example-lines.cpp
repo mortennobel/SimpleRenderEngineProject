@@ -116,7 +116,7 @@ public:
 
         // draw grid
         for (int i=-5;i<=5;i++){
-            Color color = (i==0?Color{1.0,1.0,1.0,1.0}:Color{0.2,0.2,0.2,1.0});
+            Color color = (i==0?Color{1.0f,1.0f,1.0f,1.0f}:Color{0.2f,0.2f,0.2f,1.0f});
             rp.drawLines({{i,-5,0},{i,5,0}},color, MeshTopology::LineStrip);
             rp.drawLines({{-5,i,0},{5,i,0}},color, MeshTopology::LineStrip);
         }

@@ -11,9 +11,9 @@ IF (UNIX)
     find_package(SDL2 REQUIRED)
     include_directories(${SDL2_INCLUDE_DIR})
 ELSE (UNIX)
-    SET(SDL2_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.6/include" CACHE STRING "Where the SDL2 headers can be found")
+    SET(SDL2_INCLUDE "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.8/include" CACHE STRING "Where the SDL2 headers can be found")
     include_directories( ${SDL2_INCLUDE})
-    SET(SDL2_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.6/lib/x86/SDL2.lib )
+    SET(SDL2_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.8/lib/x86/SDL2.lib )
 ENDIF (UNIX)
 
 #########################################################
@@ -46,13 +46,13 @@ IF (UNIX)
     find_package(SDL2_mixer REQUIRED)
     include_directories(${SDL2MIXER_INCLUDE_DIR})
 ELSE (UNIX)
-    SET(SDL2_image_include "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.1/include" CACHE STRING "Where the SDL_image.h can be found")
+    SET(SDL2_image_include "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.3/include" CACHE STRING "Where the SDL_image.h can be found")
     include_directories(${SDL2_image_include})
-	SET(SDL2_IMAGE_LIBRARIES "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.1/lib/x86/SDL2_image.lib" CACHE STRING "Location of SDL2_image.lib")
+	SET(SDL2_IMAGE_LIBRARIES "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.3/lib/x86/SDL2_image.lib" CACHE STRING "Location of SDL2_image.lib")
 	
-	SET(SDL2_mixer_include "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.1/include" CACHE STRING "Location of SDL_mixer.h")
+	SET(SDL2_mixer_include "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.2/include" CACHE STRING "Location of SDL_mixer.h")
     include_directories(${SDL2_mixer_include})
-	SET(SDL2MIXER_LIBRARY "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.1/lib/x86/SDL2_mixer.lib" CACHE STRING "Location of SDL2_mixer.lib")  
+	SET(SDL2MIXER_LIBRARY "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.2/lib/x86/SDL2_mixer.lib" CACHE STRING "Location of SDL2_mixer.lib")  
 ENDIF(UNIX)
 
 #### Box2D #####
@@ -158,10 +158,10 @@ ENDIF(USE_assimp)
 
 # Create DllFileList on Windows
 IF (WIN32)
-    SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.6/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
-    SET(SDL2_image_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.1/lib/x86" CACHE PATH "Where the SDL2_image.dll can be found")
-    SET(SDL2_mixer_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.1/lib/x86" CACHE PATH "Where the SDL2_mixer.dll can be found")
-    SET(DLLFileList "${SDL2_image_dll_path}/SDL2_image.dll" "${SDL2_image_dll_path}/libjpeg-9.dll" "${SDL2_image_dll_path}/libpng16-16.dll" "${SDL2_image_dll_path}/libtiff-5.dll" "${SDL2_image_dll_path}/libwebp-4.dll" "${SDL2_image_dll_path}/zlib1.dll" "${SDL2_mixer_dll_path}/SDL2_mixer.dll" "${SDL2_mixer_dll_path}/libvorbisfile-3.dll"  "${SDL2_mixer_dll_path}/libvorbis-0.dll"  "${SDL2_mixer_dll_path}/libogg-0.dll"  "${SDL2_mixer_dll_path}/libmodplug-1.dll"  "${SDL2_mixer_dll_path}/libFLAC-8.dll" ${SDL2_dll})
+    SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.8/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
+    SET(SDL2_image_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.3/lib/x86" CACHE PATH "Where the SDL2_image.dll can be found")
+    SET(SDL2_mixer_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.2/lib/x86" CACHE PATH "Where the SDL2_mixer.dll can be found")
+    SET(DLLFileList "${SDL2_image_dll_path}/SDL2_image.dll" "${SDL2_image_dll_path}/libjpeg-9.dll" "${SDL2_image_dll_path}/libpng16-16.dll" "${SDL2_image_dll_path}/libtiff-5.dll" "${SDL2_image_dll_path}/libwebp-7.dll" "${SDL2_image_dll_path}/zlib1.dll" "${SDL2_mixer_dll_path}/SDL2_mixer.dll" "${SDL2_mixer_dll_path}/libvorbisfile-3.dll"  "${SDL2_mixer_dll_path}/libvorbis-0.dll"  "${SDL2_mixer_dll_path}/libogg-0.dll"  "${SDL2_mixer_dll_path}/libmodplug-1.dll"  "${SDL2_mixer_dll_path}/libFLAC-8.dll"   "${SDL2_mixer_dll_path}/libmpg123-0.dll" ${SDL2_dll})
 ENDIF(WIN32)
 
 # build targets using sre

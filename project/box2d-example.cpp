@@ -111,7 +111,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true,{.92, .92, .92, 1})
+                .withClearColor(true,{.92f, .92f, .92f, 1.0f})
                 .build();
 
         auto sprite = atlas->get("sprite");
