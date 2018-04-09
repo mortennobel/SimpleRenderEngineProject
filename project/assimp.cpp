@@ -16,6 +16,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <glm/ext.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 using namespace std;
@@ -39,6 +40,7 @@ public:
 
     std::vector<std::shared_ptr<Node>> children;
     Node* parent = nullptr;
+    bool visualizeSkeleton = false;
 
     glm::mat4 localToWorld(){
         // compute trs
@@ -60,6 +62,7 @@ public:
             ImGui::DragFloat3("Local Position",&position.x);
             ImGui::DragFloat3("Local Rotation",&rotationEuler.x);
             ImGui::DragFloat3("Local Scale",&scale.x);
+            ImGui::Checkbox("Visualize skeleton",&visualizeSkeleton);
             auto globalPos = localToWorld() * glm::vec4(0,0,0,1); // transform 0,0,0 (pivot point) from local coordinate frame to global coordinate frame
             bool changed = ImGui::DragFloat3("Global Position",&globalPos.x);
             if (changed){
@@ -89,7 +92,7 @@ class AssImp {
 public:
     void ImportModel(const std::string& filename, Node* root){
         Assimp::Importer import;
-        const aiScene* scene = import.ReadFile(filename.c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
+        const aiScene* scene = import.ReadFile(filename.c_str(), aiProcess_Triangulate );
 
         if(!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
         {
@@ -120,6 +123,7 @@ private:
             }
         }
     }
+
     void processMeshes(const aiScene *scene){
         for (int i=0;i<scene->mNumMeshes;i++){
             auto importedMesh = this->processMesh(scene->mMeshes[i]);
@@ -223,17 +227,38 @@ private:
         if (mesh->HasBones()){
             for (int i=0;i<mesh->mNumBones;i++){
                 for (int j = 0;j<mesh->mBones[i]->mNumWeights;j++){
-                    int vertexId = mesh->mBones[i]->mWeights[i].mVertexId;
-                    float weight = mesh->mBones[i]->mWeights[i].mWeight;
+                    int vertexId = mesh->mBones[i]->mWeights[j].mVertexId;
+                    float weight = mesh->mBones[i]->mWeights[j].mWeight;
                     int boneId = boneCount[vertexId];
                     if (weight==0) continue;
                     if(boneId<4){
                         animationBoneWeights[vertexId][boneId] = weight;
                         animationBoneIndices[vertexId][boneId] = vertexId;
-
+                    } else {
+                        int idWithMinWeight = 0;
+                        float minWeight = animationBoneIndices[vertexId][0];
+                        for (int i=1;i<4;i++){
+                            if (animationBoneIndices[vertexId][i]<minWeight){
+                                minWeight = animationBoneIndices[vertexId][i];
+                                idWithMinWeight = i;
+                            }
+                        }
+                        animationBoneWeights[vertexId][idWithMinWeight] = weight;
+                        animationBoneIndices[vertexId][idWithMinWeight] = vertexId;
                     }
+
                     boneCount[vertexId]++;
                     maxBoneCount = std::max(maxBoneCount,boneCount[vertexId]);
+                }
+            }
+            // normalize bones
+            for (int i=0;i<animationBoneWeights.size();i++){
+                float sum = 0;
+                for (int j=0;j<4;j++){
+                    sum += animationBoneWeights[i][j];
+                }
+                for (int j=0;j<4;j++){
+                    animationBoneWeights[i][j] = animationBoneWeights[i][j] / sum;
                 }
             }
             cout << "maxBoneCount " <<maxBoneCount<<endl;
@@ -267,7 +292,16 @@ private:
 
 class AssImpExample {
 public:
-    AssImpExample(const char* file){
+
+    void setTexture(Node* node, std::shared_ptr<Texture> tex){
+        for (auto& mat:node->materials){
+            mat->setTexture(tex);
+        }
+        for (auto& n:node->children){
+            setTexture(n.get(), tex);
+        }
+    }
+    AssImpExample(std::string modelFile,std::string textureFile){
         r.init();
 
         camera.setPerspectiveProjection(60,0.1,1000);
@@ -277,7 +311,12 @@ public:
         material->setSpecularity({0.5,0.5,0.5,20.0f});
 
         AssImp imp;
-        imp.ImportModel(file, &root);
+        imp.ImportModel(modelFile, &root);
+
+        if (textureFile.length()>0) {
+            auto tex = Texture::create().withFile(textureFile).build();
+            setTexture(&root, tex);
+        }
 
         worldLights.setAmbientLight({0.2,0.2,0.2});
         worldLights.addLight(Light::create().withDirectionalLight(glm::normalize(glm::vec3{1, -1,1})).withColor({1,1,1}).build());
@@ -285,7 +324,7 @@ public:
         root.children.push_back(std::make_shared<Node>(nullptr));
 
         cameraNode = root.children[1];
-        cameraNode->position = {0,0,90};
+        cameraNode->position = {30,0,90};
 
         r.frameRender = [&](){
             auto localToWorld = cameraNode->localToWorld();
@@ -296,14 +335,37 @@ public:
         r.startEventLoop();
     }
 
-    void render(std::shared_ptr<Node>& node, RenderPass& rp){
-        for (int i=0;i<node->meshes.size();i++){
-            rp.draw(node->meshes[i], node->localToWorld(), node->materials[i]);
-        }
+    void visualizeSkeleton(std::shared_ptr<Node>& node, glm::vec4 position, RenderPass& rp)
+    {
+
+        glm::vec4 localSpacePoint(0,0,0,1);
+        glm::vec4 worldSpacePoint = node->localToWorld() * localSpacePoint;
+
+        rp.drawLines({glm::vec3(position),glm::vec3(worldSpacePoint) });
 
         // draw children
         for (auto & n : node->children){
-            render(n, rp);
+            visualizeSkeleton(n, worldSpacePoint, rp);
+        }
+    }
+
+    void render(std::shared_ptr<Node>& node, RenderPass& rp){
+        if (node->visualizeSkeleton){
+            glm::vec4 localSpacePoint(0,0,0,1);
+            glm::vec4 worldSpacePoint = node->localToWorld() * localSpacePoint;
+            // draw children
+            for (auto & n : node->children){
+                visualizeSkeleton(n, worldSpacePoint, rp);
+            }
+        } else {
+            for (int i=0;i<node->meshes.size();i++){
+                rp.draw(node->meshes[i], node->localToWorld(), node->materials[i]);
+            }
+
+            // draw children
+            for (auto & n : node->children){
+                render(n, rp);
+            }
         }
     }
 
@@ -328,6 +390,10 @@ public:
         }
         ImGui::End();
 
+        static Inspector inspector;
+        inspector.update();
+        inspector.gui();
+
         i++;
     }
 private:
@@ -341,11 +407,17 @@ private:
 
 
 int main(int argc, const char **argv){
+    std::string model;
+    std::string texture;
     if (argc<=1){
         cout << "No file specified"<<endl;
         return -1;
     }
-    cout << "Loading "<<argv[1]<<endl;
-    new AssImpExample(argv[1]);
+    model = argv[1];
+    if (argc>=3){
+        texture = argv[2];
+    }
+    cout << "Loading "<<model<<endl;
+    new AssImpExample(model, texture);
     return 0;
 }
