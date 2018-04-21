@@ -27,6 +27,7 @@ namespace sre {
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> skybox;
+        std::shared_ptr<Shader> skyboxProcedural;
         std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
@@ -210,8 +211,24 @@ namespace sre {
         return *this;
     }
 
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withColorWrite(glm::bvec4 enable) {
+        this->colorWrite = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withStencil(Stencil stencil) {
+        this->stencil = std::move(stencil);
+        return *this;
+    }
+
     Shader::ShaderBuilder &Shader::ShaderBuilder::withBlend(BlendType blendType) {
         this->blend = blendType;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withCullFace(CullFace face) {
+        this->cullFace = face;
         return *this;
     }
 
@@ -245,6 +262,9 @@ namespace sre {
         shader->offset = this->offset;
         shader->shaderSources = this->shaderSources;
         shader->shaderUniqueId = globalShaderCounter++;
+        shader->stencil = stencil;
+        shader->colorWrite = colorWrite;
+        shader->cullFace = cullFace;
         return std::shared_ptr<Shader>(shader);
     }
 
@@ -601,8 +621,29 @@ namespace sre {
         } else {
             glDisable(GL_DEPTH_TEST);
         }
+        if (stencil.func == StencilFunc::Disabled){
+            glDisable(GL_STENCIL_TEST);
+            glStencilMask(0);
+        } else {
+            glEnable(GL_STENCIL_TEST);
+            glStencilFunc(static_cast<GLenum>(stencil.func), (GLint)stencil.ref, (GLint)stencil.mask);
+            glStencilOp(static_cast<GLenum>(stencil.fail),static_cast<GLenum>(stencil.zfail),static_cast<GLenum>(stencil.zpass));
+            glStencilMask(0xFFFF);
+        }
+        if (cullFace == CullFace::None){
+            glDisable(GL_CULL_FACE);
+        } else {
+            glEnable(GL_CULL_FACE);
+            if (cullFace == CullFace::Back){
+                glCullFace(GL_BACK);
+            } else {
+                glCullFace(GL_FRONT);
+            }
+        }
+
         GLboolean dm = (GLboolean) (depthWrite ? GL_TRUE : GL_FALSE);
         glDepthMask(dm);
+        glColorMask(colorWrite.r, colorWrite.g, colorWrite.b, colorWrite.a);
         switch (blend) {
             case BlendType::Disabled:
                 glDisable(GL_BLEND);
@@ -666,7 +707,7 @@ namespace sre {
 
 
     std::shared_ptr<Shader> Shader::getSkybox() {
-        if (unlit != nullptr){
+        if (skybox != nullptr){
             return skybox;
         }
 
@@ -679,6 +720,21 @@ namespace sre {
         return skybox;
     }
 
+
+    std::shared_ptr<Shader> Shader::getSkyboxProcedural() {
+        if (skyboxProcedural != nullptr){
+            return skyboxProcedural;
+        }
+
+        skyboxProcedural = create()
+                .withSourceFile("skybox_proc_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("skybox_proc_frag.glsl", ShaderType::Fragment)
+                .withName("Skybox Procedural")
+                .withDepthWrite(false)
+                .build();
+
+        return skyboxProcedural;
+    }
 
 
     std::shared_ptr<Shader> Shader::getBlit() {
@@ -726,9 +782,9 @@ namespace sre {
     }
 
     Uniform Shader::getUniform(const std::string &name) {
-		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
-			if (i->name.compare(name) == 0)
-				return *i;
+		for (auto& uniform : uniforms) {
+			if (uniform.name == name)
+				return uniform;
 		}
 		Uniform u;
 		u.type = UniformType::Invalid;
@@ -876,6 +932,8 @@ namespace sre {
             res.blend = this->blend;
             res.name = this->name;
             res.offset = this->offset;
+            bool isTwoSided = specializationConstants.find("S_TWO_SIDED") != specializationConstants.end();
+            res.cullFace = isTwoSided ? CullFace::None :this->cullFace;
             res.shaderSources = this->shaderSources;
             res.specializationConstants = specializationConstants;
             auto specializedShader = res.build();
@@ -1069,6 +1127,18 @@ namespace sre {
         return source.substr(0, insertPos+1) +
                ss.str()+
                source.substr(insertPos+1);
+    }
+
+    Stencil Shader::getStencil() {
+        return stencil;
+    }
+
+    glm::bvec4 Shader::getColorWrite() {
+        return colorWrite;
+    }
+
+    CullFace Shader::getCullFace() {
+        return cullFace;
     }
 
     uint32_t to_id(ShaderType st) {

@@ -183,7 +183,6 @@ namespace sre {
                 } else if (light->lightType == LightType::Directional) {
                     globalUniforms.g_lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
-                // transform to eye space
                 globalUniforms.g_lightColorRange[i] = glm::vec4(light->color, light->range);
             }
         }
@@ -295,15 +294,18 @@ namespace sre {
         if (builder.clearColor) {
             glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
             clear |= GL_COLOR_BUFFER_BIT;
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
         if (builder.clearDepth) {
             glClearDepthf(builder.clearDepthValue);
             glDepthMask(GL_TRUE);
             clear |= GL_DEPTH_BUFFER_BIT;
+            glDepthMask(GL_TRUE);
         }
         if (builder.clearStencil) {
             glClearStencil(builder.clearStencilValue);
             clear |= GL_STENCIL_BUFFER_BIT;
+            glStencilMask(0xFFFF);
         }
         if (clear != 0u) {
             glClear(clear);
@@ -327,6 +329,7 @@ namespace sre {
 
         if (builder.gui) {
             ImGui::Render();
+            ImGui_SRE_RenderDrawData(ImGui::GetDrawData());
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (builder.framebuffer != nullptr){
@@ -340,12 +343,12 @@ namespace sre {
         }
         mIsFinished = true;
 #ifndef NDEBUG
-        checkGLError();
+        checkGLError("RenderPass");
 #endif
         if (frameInspector.frameid == Renderer::instance->getRenderStats().frame){
             // make a copy of this renderpass as a shared_ptr
             frameInspector.renderPasses.push_back(std::shared_ptr<RenderPass>(new RenderPass(*this)));
-        }
+        } 
     }
 
     std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {

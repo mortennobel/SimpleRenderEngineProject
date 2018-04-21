@@ -50,6 +50,12 @@ namespace sre {
         NumberOfShaderTypes
     };
 
+    enum class CullFace {
+        Front,
+        Back,
+        None
+    };
+
     uint32_t to_id(ShaderType st);
 
     const char* c_str(UniformType u);
@@ -59,6 +65,38 @@ namespace sre {
         int id;
         UniformType type;
         int arraySize;                  // 1 means not array
+    };
+
+    enum class StencilFunc {
+        Never = GL_NEVER,               // Never pass.
+        Less = GL_LESS,                 // Pass if (ref & mask) <  (stencil & mask).
+        Equal = GL_EQUAL,               // Pass if (ref & mask) =  (stencil & mask).
+        LEqual = GL_LEQUAL,             // Pass if (ref & mask) <= (stencil & mask).
+        Greater = GL_GREATER,           // Pass if (ref & mask) >  (stencil & mask).
+        NotEqual = GL_NOTEQUAL,         // Pass if (ref & mask) != (stencil & mask).
+        GEequal = GL_GEQUAL,            // Pass if (ref & mask) >= (stencil & mask).
+        Always = GL_ALWAYS,             // Always pass.
+        Disabled                        // Stencil test disabled
+    };
+
+    enum class StencilOp {
+        Keep = GL_KEEP,                 // Keeps the current value.
+        Zero = GL_ZERO,                 // Sets the stencil buffer value to 0.
+        Replace = GL_REPLACE,           // Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
+        Incr = GL_INCR,                 // Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
+        IncrWrap = GL_INCR_WRAP,        // Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
+        Decr = GL_DECR,                 // Decrements the current stencil buffer value. Clamps to 0.
+        DecrWrap = GL_DECR_WRAP,        // Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
+        Invert = GL_INVERT,             // Inverts the current stencil buffer value bitwise.
+    };
+
+    struct Stencil {
+        StencilFunc func = StencilFunc::Disabled; // Specifying the test function
+        uint16_t ref;                             // Specifying the reference value for the stencil test. This value is clamped to the range 0 to 2n -1 where n is the number of bitplanes in the stencil buffer.
+        uint16_t mask;                            // Specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done.
+        StencilOp fail = StencilOp::Keep;         // Specifying the function to use when the stencil test fails.
+        StencilOp zfail = StencilOp::Keep;        // Specifying the function to use when the stencil test passes, but the depth test fails
+        StencilOp zpass = StencilOp::Keep;        // Specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled
     };
 
     /**
@@ -130,22 +168,28 @@ namespace sre {
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
+            ShaderBuilder& withColorWrite(glm::bvec4 enable);
             ShaderBuilder& withBlend(BlendType blendType);
+            ShaderBuilder& withCullFace(CullFace face);
+            ShaderBuilder& withStencil(Stencil stencil);
             ShaderBuilder& withName(const std::string& name);
             std::shared_ptr<Shader> build(std::vector<std::string>& errors);
             std::shared_ptr<Shader> build();
             ShaderBuilder(const ShaderBuilder&) = default;
         private:
-            ShaderBuilder(Shader* shader);
+            explicit ShaderBuilder(Shader* shader);
             ShaderBuilder() = default;
             std::map<ShaderType, Resource> shaderSources;
             std::map<std::string,std::string> specializationConstants;
             bool depthTest = true;
             bool depthWrite = true;
+            glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
             glm::vec2 offset = {0,0};
+            CullFace cullFace = CullFace::Back;
             std::string name;
             Shader *updateShader = nullptr;
             BlendType blend = BlendType::Disabled;
+            Stencil stencil = {};
             friend class Shader;
         };
 
@@ -174,6 +218,8 @@ namespace sre {
                                                                //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
+                                                               // S_TWO_SIDED
+                                                               //   Disables face culling and flips normal on backface
 
 
         static std::shared_ptr<Shader> getStandardBlinnPhong(); // Blinn-Phong Light Model. Uses light objects and ambient light set in Renderer.
@@ -188,6 +234,13 @@ namespace sre {
                                                                 // Specializations
                                                                 // S_VERTEX_COLOR
                                                                 //   Adds VertexAttribute "color" vec4 defined in linear space.
+                                                                // S_TWO_SIDED
+                                                                //   Disables backface culling and flips normal on backface
+                                                                // S_TANGENTS
+                                                                //   Adds VertexAttribute "tangent" vec4. Used for normal maps. Otherwise compute using
+                                                                // S_NORMALMAP
+                                                                //   Adds Uniforms "normalTex" (Texture) and "normalScale" (float)
+
 
         static std::shared_ptr<Shader> getStandardPhong();      // Similar to Blinn-Phong, but with more accurate specular highlights
 
@@ -199,7 +252,20 @@ namespace sre {
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
-        static std::shared_ptr<Shader> getSkybox();
+        static std::shared_ptr<Shader> getSkybox();            // Textured skybox
+                                                               // Uniforms
+                                                               //   "color" Color (1,1,1,1)
+                                                               //   "tex" shared_ptr<Texture> (default white)
+
+
+        static std::shared_ptr<Shader> getSkyboxProcedural();  // Procedural skybox
+                                                               // Uniforms
+                                                               //   "skyColor" Color
+                                                               //   "horizonColor" Color
+                                                               //   "groundColor" Color
+                                                               //   "skyPow" float
+                                                               //   "sunIntensity" float
+                                                               //   "groundPow" float
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
@@ -234,9 +300,15 @@ namespace sre {
 
         bool isDepthWrite();
 
+        glm::bvec4 getColorWrite();
+
         BlendType getBlend();
 
         glm::vec2 getOffset();
+
+        Stencil getStencil();
+
+        CullFace getCullFace();
 
         const std::string& getName();
 
@@ -273,10 +345,13 @@ namespace sre {
         unsigned int shaderProgramId = 0;
         bool depthTest = true;
         bool depthWrite = true;
+        CullFace cullFace = CullFace::Back;
         long shaderUniqueId = 0;
+        glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
+        Stencil stencil;
 
         std::map<ShaderType, Resource> shaderSources;
 

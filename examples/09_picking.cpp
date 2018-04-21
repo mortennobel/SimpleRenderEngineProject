@@ -10,6 +10,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 using namespace std;
@@ -61,27 +62,46 @@ public:
                 mouseX = static_cast<int>(pos.x);
                 mouseY = static_cast<int>(pos.y);
             }
+            if (e.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
         };
         r.startEventLoop();
     }
 
     void render(){
-        auto renderPass = RenderPass::create()
+        // Render scene to framebuffer (without gui)
+        auto sceneRenderPass = RenderPass::create()
                 .withCamera(camera)
                 .withClearColor(true,{0, 0, 0, 1})
+                .withGUI(false)
                 .build();
-
         const float speed = .5f;
         int index = 0;
         for (int x=0;x<2;x++){
             for (int y=0;y<2;y++){
-                renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)), mat[index]);
+                sceneRenderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)), mat[index]);
                 index++;
             }
         }
+        sceneRenderPass.finish();
+
+        auto pixelValues = sceneRenderPass.readPixels(mouseX, mouseY);           // read pixel values from framebuffer
+
+        // render gui to framebuffer
+        auto guiRenderPass = RenderPass::create()
+                .withClearColor(false)
+                .withGUI(true)
+                .build();
+
         drawTopTextAndColor(pixelValue);
-        renderPass.finish();
-        auto pixelValues = renderPass.readPixels(mouseX, mouseY);           // read pixel values from defualt framebuffer (before gui is rendered)
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
+
+        guiRenderPass.finish();
 
         pixelValue = pixelValues[0];
     }
@@ -107,6 +127,7 @@ private:
     int i=0;
     int mouseX;
     int mouseY;
+    bool showInspector = false;
 };
 
 int main() {
