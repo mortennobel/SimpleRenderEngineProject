@@ -20,6 +20,8 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/Mesh.hpp"
 #include "Test.h"
+#include <sre/Inspector.hpp>
+#include <glm/ext.hpp>
 
 //
 struct UIState
@@ -32,6 +34,8 @@ namespace
 {
 	sre::SDLRenderer mainWindow;
 	UIState ui;
+
+	bool showInspector = false;
 
 	int32_t testIndex = 0;
 	int32_t testSelection = 0;
@@ -408,29 +412,32 @@ int main(int, char**)
 			.withSdlWindowFlags(SDL_WINDOW_OPENGL);
 
 
-	std::string vertexShaderSource =  R"(#version 140
-in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 0.0, w = 1.0)
+	std::string vertexShaderSource =  R"(#version 330
+in vec4 posxyzw;
 in vec4 color;
 out vec4 vColor;
 
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
+#pragma include "global_uniforms_incl.glsl"
+
+#pragma include "sre_utils_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * posxyzw;
     vColor = color;
 }
 )";
-	std::string fragmentShaderSource = R"(#version 140
+	std::string fragmentShaderSource = R"(#version 330
 out vec4 fragColor;
 in vec4 vColor;
+
+#pragma include "sre_utils_incl.glsl"
 
 void main(void)
 {
     fragColor = vColor;
 }
 )";
+
 
 	meshMaterial = sre::Shader::create()
 			.withSourceString(vertexShaderSource,sre::ShaderType::Vertex)
@@ -460,6 +467,9 @@ void main(void)
 			bool down = e.type == SDL_MOUSEBUTTONDOWN;
 			sMouseButton(e.button.button, down, 0);
 		}
+		if (e.button.button==SDL_BUTTON_RIGHT){
+			showInspector = true;
+		}
 	};
 	mainWindow.keyEvent = [](SDL_Event& e){
 		bool down = e.type == SDL_KEYDOWN;
@@ -483,12 +493,6 @@ void main(void)
 		auto rp = sre::RenderPass::create()
 				.withCamera(cam)
 				.build();
-		ImGui::SetNextWindowPos(ImVec2(0,0));
-		ImGui::SetNextWindowSize(ImVec2((float)g_camera.m_width, (float)g_camera.m_height));
-		ImGui::Begin("Overlay", NULL, ImVec2(0,0), 0.0f, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoScrollbar);
-		ImGui::SetCursorPos(ImVec2(5, (float)g_camera.m_height - 20));
-		ImGui::Text("%.1f ms", 1000.0 * frameTime);
-		ImGui::End();
 
 		sSimulate();
 		sInterface();
@@ -511,6 +515,11 @@ void main(void)
 
 		rp.draw(lineMesh,glm::mat4(1),meshMaterial);
 		g_debugDraw.clear();
+		static sre::Inspector inspector;
+		inspector.update();
+		if (showInspector){
+			inspector.gui();
+		}
 	};
 
 	g_debugDraw.Create();

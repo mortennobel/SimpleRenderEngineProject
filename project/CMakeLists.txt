@@ -1,4 +1,5 @@
 # Add executables (to different projects)
+add_executable(SRE-node-editor node-editor.cpp)
 add_executable(SRE-box2d-example box2d-example.cpp)
 add_executable(SRE-box2d-platform-example box2d-platform-example.cpp)
 add_executable(SRE-project project.cpp)
@@ -14,6 +15,7 @@ add_executable(SRE-assimp assimp.cpp)
 ENDIF(USE_assimp)
 
 # Link projects with project libraries
+target_link_libraries(SRE-node-editor ${all_libs})
 target_link_libraries(SRE-box2d-example ${all_libs})
 target_link_libraries(SRE-box2d-platform-example ${all_libs})
 target_link_libraries(SRE-project ${all_libs})
@@ -55,3 +57,4 @@ ENDIF(WIN32)
 add_subdirectory(Box2DTestbed)
 add_subdirectory(platformer)
 add_subdirectory(particle_system)
+# add_subdirectory(BussIK)
