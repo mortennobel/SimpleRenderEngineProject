@@ -3,7 +3,9 @@ project(SimpleRenderEngineProject CXX)
 
 set( CMAKE_VERBOSE_MAKEFILE on )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
@@ -142,8 +144,8 @@ IF (USE_OPENVR)
 ENDIF(USE_OPENVR)
 
 # build sre library
-include_directories(include)
-add_subdirectory(src)
+add_subdirectory(submodules/SimpleRenderEngine)
+include_directories(${SRE_INCLUDE})
 
 # all_libs contains a list of all libraries that should be linked
 # for bullet support add ${BULLET_LIBRARIES}
@@ -165,5 +167,4 @@ IF (WIN32)
 ENDIF(WIN32)
 
 # build targets using sre
-add_subdirectory(examples)
 add_subdirectory(project)

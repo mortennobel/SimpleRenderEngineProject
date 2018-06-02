@@ -3,6 +3,7 @@
 //
 
 #include <Box2D/Box2D.h>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
 #include "PhysicsComponent.hpp"
 #include "PlatformerGame.hpp"
