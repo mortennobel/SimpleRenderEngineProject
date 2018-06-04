@@ -7,7 +7,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Material.hpp"
 #include "sre/SDLRenderer.hpp"
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -191,7 +191,7 @@ private:
         std::vector<glm::vec3> normals;
         std::vector<glm::vec4> colors;
         std::vector<glm::vec4> uvs;
-        std::vector<uint16_t> indices;
+        std::vector<uint32_t> indices;
         std::vector<int> boneCount(mesh->mNumVertices, 0);
         std::vector<glm::vec4>  animationBoneWeights(mesh->mNumVertices, glm::vec4(0));
         std::vector<glm::i32vec4> animationBoneIndices(mesh->mNumVertices, glm::i32vec4(0));
@@ -219,7 +219,7 @@ private:
             {
                 aiFace face = mesh->mFaces[i];
                 for(int j = 0; j < face.mNumIndices; j++){
-                    indices.push_back((uint16_t)face.mIndices[j]);
+                    indices.push_back((uint32_t)face.mIndices[j]);
                 }
             }
         }

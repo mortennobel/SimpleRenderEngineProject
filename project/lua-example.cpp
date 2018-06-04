@@ -5,6 +5,8 @@
 #include "sre/Material.hpp"
 #include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/transform.hpp"
 #include "glm/ext.hpp"
 
 // lua headers
