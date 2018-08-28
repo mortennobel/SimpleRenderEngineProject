@@ -3,6 +3,8 @@
 This is a fork of SimpleRenderEngine including libraries and bindings to common game development libraries. (This includes SimpleRenderEngine dependencies)
 The goal of this project is be able to get started without spending time on setup.
 
+First clone the project (`git clone --recurse-submodules https://github.com/mortennobel/SimpleRenderEngineProject.git`). You can use of the examples as starting point.
+
 For more information about SimpleRenderEngine see:
 
 https://github.com/mortennobel/SimpleRenderEngine
