@@ -164,7 +164,6 @@ ENDIF(USE_assimp)
 
 # Create DllFileList on Windows
 IF (WIN32)
-
     SET(SDL2_dll "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2-2.0.8/lib/x86/SDL2.dll" CACHE STRING "Where the SDL2.dll can be found")
     SET(SDL2_image_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_image-2.0.3/lib/x86" CACHE PATH "Where the SDL2_image.dll can be found")
     SET(SDL2_mixer_dll_path "${CMAKE_SOURCE_DIR}/thirdparty/Win/SDL2_mixer-2.0.2/lib/x86" CACHE PATH "Where the SDL2_mixer.dll can be found")
@@ -176,4 +175,7 @@ add_subdirectory(submodules/SimpleRenderEngine)
 include_directories(${SRE_INCLUDE})
 
 # build targets using sre
+SET(USE_SRE_PROJECT_EXAMPLES ON CACHE BOOL "Enable project examples for SRE")
+if (USE_SRE_EXAMPLES)
 add_subdirectory(project)
+endif(USE_SRE_EXAMPLES)
