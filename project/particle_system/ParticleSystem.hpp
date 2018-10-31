@@ -5,7 +5,6 @@
 #include "glm/gtc/random.hpp"
 #include <vector>
 #include <functional>
-#include <glm/detail/type_mat.hpp>
 #include <sre/Sprite.hpp>
 #include <sre/Material.hpp>
 #include <sre/RenderPass.hpp>
