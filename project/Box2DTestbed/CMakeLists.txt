@@ -71,14 +71,10 @@ add_executable(SRE-box2d-Testbed ${Testbed_Framework_SRCS}
 target_link_libraries(SRE-box2d-Testbed ${all_libs})
 file(COPY Data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY Data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
+file(COPY Data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 IF (WIN32)
 	## Copy dll's to output path
 	file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 	file(COPY ${DLLFileList} DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
-	# Set working folder to project folder (to find project data runtime)
-	set_target_properties("SRE-box2d-example"      PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-	set_target_properties("SRE-project"            PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-	set_target_properties("SRE-sdl2_mixer-example" PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
-	set_target_properties("SRE-lua-example"        PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 ENDIF(WIN32)
