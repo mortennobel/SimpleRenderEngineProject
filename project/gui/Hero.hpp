@@ -15,14 +15,22 @@ public:
     bool onKey(SDL_Event &event) override;
     void update(float deltaTime) override;
 private:
-    void gameInfo();
-    void speechBubble();
+    void guiGameInfo();
+    void guiSpeechBubble();
+    void guiInventory();
+
     std::shared_ptr<sre::SpriteAtlas> heroSpriteAtlas;
+    static std::map<std::string, std::shared_ptr<sre::Texture>> inventoryTexture;
     glm::vec2 velocity;
     ImFont* ProggyTiny;
-    std::string message = "Hi!";
+
+    float speachBubbleTimeOut = 10;
+    std::string message = "Hi! AWSD to control.";
+
+    glm::ivec2 heroSize;
 
     // hero stats
-    int health;
-    int score;
+    int health = 10;
+    int score = 3;
+    std::set<std::string> inventorySet;
 };

@@ -8,6 +8,8 @@
 #include "MainMenuComponent.h"
 #include "SpriteComponent.hpp"
 #include "sre/SpriteAtlas.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/string_cast.hpp"
 
 using namespace sre;
 
@@ -15,7 +17,15 @@ RPG::RPG()
 :currentScene(&mainMenu)
 {
     r.setWindowSize({600,400});
-    r.init();
+    r.init()
+     .build();
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+
+    auto inst = Renderer::instance;
+    std::cout << "getWindowSize "<<glm::to_string(inst->getWindowSize()) << std::endl;
+    std::cout << "getDrawableSize "<<glm::to_string(inst->getDrawableSize()) << std::endl;
 
     auto world = sre::Texture::create()
             .withFile("assets/Arkanos_0.png")
@@ -75,6 +85,8 @@ void RPG::buildGame(){
 }
 
 void RPG::play(){
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags ^= ImGuiConfigFlags_NavEnableKeyboard;  // Disable Keyboard Controls
     currentScene = &game;
 }
 
@@ -92,7 +104,7 @@ void RPG::render(){
     rp.draw(sb.build());
 
     // render gui
-    for (auto & go : currentScene ->getSceneObjects()){
+    for (auto & go : currentScene->getSceneObjects()){
         for (auto & comp : go->getComponents()){
             comp->onGui();
         }

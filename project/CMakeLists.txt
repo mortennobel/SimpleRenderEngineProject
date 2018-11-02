@@ -38,6 +38,7 @@ endif(UNIX)
 # Copy project data to output path
 file(COPY ../project_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../project_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
+file(COPY ../project_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 IF (WIN32)
 	## Copy dll's to output path
@@ -57,4 +58,5 @@ ENDIF(WIN32)
 add_subdirectory(Box2DTestbed)
 add_subdirectory(platformer)
 add_subdirectory(particle_system)
+add_subdirectory(gui)
 # add_subdirectory(BussIK)

@@ -12,6 +12,8 @@
 
 using namespace sre;
 
+std::map<std::string, std::shared_ptr<sre::Texture>> Hero::inventoryTexture;
+
 Hero::Hero(GameObject *gameObject)
 : Component(gameObject), velocity(0) {
     auto heroTexture = sre::Texture::create()
@@ -19,10 +21,21 @@ Hero::Hero(GameObject *gameObject)
             .withFilterSampling(false)
             .build();
 
+    inventorySet = {"Antidote",
+            "Axe",
+            "BlueMagic",
+            "Carrot",
+            "Hat",
+            "Lemon",
+            "Necklace",
+            "Shield"};
+
     heroSpriteAtlas = SpriteAtlas::createSingleSprite(heroTexture, "hero");
 
     auto spriteComponent = gameObject->addComponent<SpriteComponent>();
-    spriteComponent->setSprite(heroSpriteAtlas->get("hero"));
+    auto sprite = heroSpriteAtlas->get("hero");
+    heroSize = sprite.getSpriteSize();
+    spriteComponent->setSprite(sprite);
 
     gameObject->setPosition({305,200});
 
@@ -50,10 +63,8 @@ bool Hero::onKey(SDL_Event &event) {
             velocity.x = event.type == SDL_KEYDOWN?1:0;
             break;
         case SDLK_h:
+            speachBubbleTimeOut = 5;
             message = "Hello world";
-            break;
-        case SDLK_SPACE:
-            message = "";
             break;
     }
 }
@@ -63,9 +74,14 @@ void Hero::update(float deltaTime) {
     auto newPos = gameObject->getPosition() + velocity*speed*deltaTime;
 
     gameObject->setPosition(newPos);
+    speachBubbleTimeOut -= deltaTime;
+    if (speachBubbleTimeOut < 0){
+        message = "";
+    }
+
 }
 
-void Hero::speechBubble(){
+void Hero::guiSpeechBubble(){
     auto r = Renderer::instance;
     auto winsize = r->getWindowSize();
 
@@ -73,13 +89,14 @@ void Hero::speechBubble(){
     auto flags =
             ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove;
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar;
     bool* open = nullptr;
 
     auto heroPos = gameObject->getPosition();
-    ImVec2 popupSize(200,50);
+    ImVec2 popupSize(300, 50);
 
-    ImVec2 pos (heroPos.x/2 - popupSize.x/2, (winsize.y -heroPos.y)/2 + popupSize.y*2);
+    ImVec2 pos (heroPos.x - popupSize.x / 2, (winsize.y - heroPos.y) - popupSize.y - heroSize.y );
     auto cond = ImGuiCond_Always;
     ImGui::SetNextWindowPos(pos, cond);
     ImGui::SetNextWindowSize(popupSize, cond);
@@ -91,31 +108,96 @@ void Hero::speechBubble(){
     ImGui::End();
 }
 
-void Hero::gameInfo() {
-    ImVec2 pos = {0,0};
+void Hero::guiGameInfo() {
+    auto r = Renderer::instance;
+    auto winsize = r->getWindowSize();
+    ImVec2 size = {220,60};
+    ImVec2 pos = {winsize.x - size.x,0};
     auto cond = ImGuiCond_Always;
     ImVec2 pivot = {0,0};
     ImGui::SetNextWindowPos(pos, cond, pivot);
-    ImVec2 size = {100,50};
+
     ImGui::SetNextWindowSize(size, cond);
     auto flags =
             ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove;
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar;
     bool* open = nullptr;
-    ImGui::Begin("", open, flags);
+    ImGui::Begin("#gameinfo", open, flags);
     ImGui::PushFont(ProggyTiny);
-    ImGui::Text("Score");
-    ImGui::SameLine();
+
+    // draw score
+    ImGui::Text("Score"); ImGui::SameLine();
+    auto scoreStr = std::to_string(score);
+    float windowWidth =    ImGui::GetWindowContentRegionWidth();
+    float width = ImGui::CalcTextSize(scoreStr.c_str()).x;
+    ImGui::SetCursorPosX(windowWidth - width); // align right
+    ImGui::Text(scoreStr.c_str());
+
+    // draw health
+    ImGui::PushID(1);
+    auto healthStr = std::to_string(health);
+    ImGui::Text("Health"); ImGui::SameLine();
+    width = ImGui::CalcTextSize(healthStr.c_str()).x;
+    ImGui::SetCursorPosX(windowWidth - width); // align right
+    ImGui::Text(healthStr.c_str());
+    ImGui::PopID();
+    ImGui::PopFont();
+    ImGui::End();
+}
+
+void Hero::guiInventory() {
+    ImVec2 pos = {0,0};
+    auto cond = ImGuiCond_Always;
+    ImVec2 pivot = {0,0};
+    ImGui::SetNextWindowPos(pos, cond, pivot);
+    ImVec2 size = {165, 107};
+    ImGui::SetNextWindowSize(size, cond);
+    auto flags =
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoScrollbar;
+    bool* open = nullptr;
+    ImGui::Begin("#inventory", open, flags);
+    ImGui::PushFont(ProggyTiny);
+    ImGui::Text("Inventory");
+
+    int count = 0;
+    for (auto& item : inventorySet){
+        auto hasItem = inventoryTexture.find(item) != inventoryTexture.end();
+        if (!hasItem){
+            auto filename = std::string("assets/")+item+".png";
+            inventoryTexture[item] = Texture::create().withFile(filename).withFilterSampling(false).build();
+        }
+        ImVec2 uv0(0,1); // flip y axis coordinates
+        ImVec2 uv1(1,0);
+        ImVec2 s(30,30);
+        ImGui::Image(inventoryTexture[item]->getNativeTexturePtr(), s, uv0, uv1 , ImVec4(1,1,1,1),ImVec4(0,0,0,1));
+
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::BeginTooltip();
+            ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+            ImGui::TextUnformatted(item.c_str());
+            ImGui::PopTextWrapPos();
+            ImGui::EndTooltip();
+        }
+
+        if (count == 0 || count %4 != 0)
+            ImGui::SameLine();
+        count ++;
+    }
+
     ImGui::PopFont();
     ImGui::End();
 }
 
 void Hero::onGui() {
-    if (message != ""){
-        speechBubble();
+    if (!message.empty()){
+        guiSpeechBubble();
     }
-    gameInfo();
-
-
+    guiGameInfo();
+    guiInventory();
 }
