@@ -38,7 +38,7 @@ void MainMenuComponent::onGui() {
     auto winsize = r->getWindowSize();
     ImVec2 iWinSize(224,150);
 
-    ImVec2 pos ((winsize.x - iWinSize.x)/2, winsize.y/2);
+    ImVec2 pos ((winsize.x - iWinSize.x)/2.0f, winsize.y/2.0f);
     auto cond = ImGuiCond_Always;
     ImGui::SetNextWindowPos(pos, cond);
     ImGui::SetNextWindowSize(iWinSize, cond);

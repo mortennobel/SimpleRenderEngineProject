@@ -14,6 +14,10 @@ using namespace sre;
 
 std::map<std::string, std::shared_ptr<sre::Texture>> Hero::inventoryTexture;
 
+const int heartEmpty = 0;
+const int heartHalf = 1;
+const int heartFull = 2;
+
 Hero::Hero(GameObject *gameObject)
 : Component(gameObject), velocity(0) {
     auto heroTexture = sre::Texture::create()
@@ -30,6 +34,13 @@ Hero::Hero(GameObject *gameObject)
             "Necklace",
             "Shield"};
 
+    heartIcons[heartEmpty] = Texture::create().withFile("assets/hud_heartEmpty.png").withFilterSampling(false).build();
+    heartIcons[heartHalf] = Texture::create().withFile("assets/hud_heartHalf.png").withFilterSampling(false).build();
+    heartIcons[heartFull] = Texture::create().withFile("assets/hud_heartFull.png").withFilterSampling(false).build();
+    heartSize = {heartIcons[heartFull]->getWidth()*0.5f, heartIcons[heartFull]->getHeight()*0.5f};
+    powerbar = Texture::create().withFile("assets/powerbar.png").withFilterSampling(false).build();
+    powerbarSize = {heartSize.x*3,heartSize.y};
+
     heroSpriteAtlas = SpriteAtlas::createSingleSprite(heroTexture, "hero");
 
     auto spriteComponent = gameObject->addComponent<SpriteComponent>();
@@ -37,7 +48,6 @@ Hero::Hero(GameObject *gameObject)
     heroSize = sprite.getSpriteSize();
     spriteComponent->setSprite(sprite);
 
-    gameObject->setPosition({305,200});
 
     // setup font
     auto fonts = ImGui::GetIO().Fonts;
@@ -94,9 +104,10 @@ void Hero::guiSpeechBubble(){
     bool* open = nullptr;
 
     auto heroPos = gameObject->getPosition();
+    auto heroPosWin = cam->getWindowCoordinates(glm::vec3(heroPos, 0.0));
     ImVec2 popupSize(300, 50);
 
-    ImVec2 pos (heroPos.x - popupSize.x / 2, (winsize.y - heroPos.y) - popupSize.y - heroSize.y );
+    ImVec2 pos (heroPosWin.x - popupSize.x / 2, heroPosWin.y - popupSize.y - heroSize.y );
     auto cond = ImGuiCond_Always;
     ImGui::SetNextWindowPos(pos, cond);
     ImGui::SetNextWindowSize(popupSize, cond);
@@ -111,7 +122,7 @@ void Hero::guiSpeechBubble(){
 void Hero::guiGameInfo() {
     auto r = Renderer::instance;
     auto winsize = r->getWindowSize();
-    ImVec2 size = {220,60};
+    ImVec2 size = {180, 107};
     ImVec2 pos = {winsize.x - size.x,0};
     auto cond = ImGuiCond_Always;
     ImVec2 pivot = {0,0};
@@ -127,24 +138,52 @@ void Hero::guiGameInfo() {
     ImGui::Begin("#gameinfo", open, flags);
     ImGui::PushFont(ProggyTiny);
 
-    // draw score
-    ImGui::Text("Score"); ImGui::SameLine();
+    // draw health
+    ImGui::Text("Health");
+    float width = heartSize.x*3;
+    float windowWidth =  ImGui::GetWindowContentRegionWidth();
+    ImVec2 uv0(0,1); // flip y axis coordinates
+    ImVec2 uv1(1,0);
+    for (int i=0;i<3;i++){
+
+        ImGui::SameLine(windowWidth - width + heartSize.x * i);
+        int texIndex = heartFull;
+        if (i*2+1 == health){
+            texIndex = heartHalf;
+        } else if (i*2 > health){
+            texIndex = heartEmpty;
+        }
+        Texture* tex = heartIcons[texIndex].get();
+        ImGui::Image(tex->getNativeTexturePtr(),{heartSize.x,heartSize.y}, uv0, uv1);
+    }
+
+    // draw Score
+    ImGui::PushID(1);
     auto scoreStr = std::to_string(score);
-    float windowWidth =    ImGui::GetWindowContentRegionWidth();
-    float width = ImGui::CalcTextSize(scoreStr.c_str()).x;
+    ImGui::Text("Score"); ImGui::SameLine();
+    width = ImGui::CalcTextSize(scoreStr.c_str()).x;
     ImGui::SetCursorPosX(windowWidth - width); // align right
     ImGui::Text(scoreStr.c_str());
-
-    // draw health
-    ImGui::PushID(1);
-    auto healthStr = std::to_string(health);
-    ImGui::Text("Health"); ImGui::SameLine();
-    width = ImGui::CalcTextSize(healthStr.c_str()).x;
-    ImGui::SetCursorPosX(windowWidth - width); // align right
-    ImGui::Text(healthStr.c_str());
     ImGui::PopID();
+
+    // Draw powerbar
+    ImGui::Text("Power"); ImGui::SameLine();
+    width = powerbarSize.x;
+    ImGui::SetCursorPosX(windowWidth - width); // align right
+    // Draw background
+    ImGui::Image(powerbar->getNativeTexturePtr(),{powerbarSize.x,powerbarSize.y}, uv0, uv1); ImGui::SameLine();
+    float border=3;
+    auto innerSize = powerbarSize - glm::vec2(border*2,border*2);
+    ImGui::SetCursorPosX(windowWidth - width + border); // align right
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + border); // move down
+    // scale/clip inner bar
+    innerSize.x *= power;
+    uv1.x *= power;
+    ImVec4 tintColor(0,1,0,1);
+    ImGui::Image(powerbar->getNativeTexturePtr(),{innerSize.x,innerSize.y}, uv0, uv1, tintColor);
     ImGui::PopFont();
     ImGui::End();
+
 }
 
 void Hero::guiInventory() {
@@ -152,7 +191,7 @@ void Hero::guiInventory() {
     auto cond = ImGuiCond_Always;
     ImVec2 pivot = {0,0};
     ImGui::SetNextWindowPos(pos, cond, pivot);
-    ImVec2 size = {165, 107};
+    ImVec2 size = {180, 107};
     ImGui::SetNextWindowSize(size, cond);
     auto flags =
             ImGuiWindowFlags_NoTitleBar |
@@ -185,7 +224,7 @@ void Hero::guiInventory() {
             ImGui::EndTooltip();
         }
 
-        if (count == 0 || count %4 != 0)
+        if (count == 0 || count %3 != 0)
             ImGui::SameLine();
         count ++;
     }
@@ -200,4 +239,8 @@ void Hero::onGui() {
     }
     guiGameInfo();
     guiInventory();
+}
+
+void Hero::setCamera(std::shared_ptr<CameraComponent> cam) {
+    this->cam = cam;
 }
