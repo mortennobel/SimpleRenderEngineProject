@@ -7,17 +7,21 @@
 #include "Hero.hpp"
 #include "MainMenuComponent.h"
 #include "SpriteComponent.hpp"
+#include "CameraComponent.hpp"
 #include "sre/SpriteAtlas.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include "glm/gtx/string_cast.hpp"
 
 using namespace sre;
 
+const glm::vec2 heroStartingPos(305,200);
+
 RPG::RPG()
 :currentScene(&mainMenu)
 {
-    r.setWindowSize({600,400});
+    r.setWindowSize({600,450});
     r.init()
+     .withSdlWindowFlags(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE)
      .build();
 
     ImGuiIO& io = ImGui::GetIO();
@@ -29,7 +33,6 @@ RPG::RPG()
 
     auto world = sre::Texture::create()
             .withFile("assets/Arkanos_0.png")
-            .withFilterSampling(false)
             .build();
     this->world = SpriteAtlas::createSingleSprite(world,"world", {0,0});
 
@@ -67,7 +70,8 @@ void RPG::buildMainMenu(){
     auto spriteComp = gameObject->addComponent<SpriteComponent>();
     spriteComp->setSprite(sprite);
 
-    mainMenu.getCamera().setWindowCoordinates();
+    mainMenu.getCamera().setOrthographicProjection(200, -1, 1);
+    mainMenu.getCamera().lookAt({heroStartingPos,0},{heroStartingPos,-1},{0,1,0});
 }
 
 void RPG::buildGame(){
@@ -78,10 +82,18 @@ void RPG::buildGame(){
     auto spriteComp = gameObject->addComponent<SpriteComponent>();
     spriteComp->setSprite(sprite);
 
-    game.getCamera().setWindowCoordinates();
-
     auto heroGameObject = game.createGameObject();
-    heroGameObject->addComponent<Hero>();
+
+    auto camereObj = game.createGameObject();
+    auto cameraComp = camereObj->addComponent<CameraComponent>();
+    cameraComp->setCamera(&game.getCamera());
+    game.getCamera().lookAt({heroStartingPos,0},{heroStartingPos,-1},{0,1,0});
+    cameraComp->setSize(200);
+    cameraComp->setTarget(heroGameObject);
+
+    auto h = heroGameObject->addComponent<Hero>();
+    heroGameObject->setPosition({heroStartingPos});
+    h->setCamera(cameraComp);
 }
 
 void RPG::play(){
