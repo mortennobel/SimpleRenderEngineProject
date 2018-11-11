@@ -2,10 +2,10 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/ext.hpp"
-#include <btBulletDynamicsCommon.h>
+#include "btBulletDynamicsCommon.h"
 
 using namespace sre;
 using namespace std;
