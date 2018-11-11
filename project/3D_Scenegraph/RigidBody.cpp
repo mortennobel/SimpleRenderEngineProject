@@ -18,6 +18,8 @@ RigidBody::RigidBody(GameObject *gameObject) : Component(gameObject) {
 
 RigidBody::~RigidBody() {
     if (rigidBody){
+        delete fallMotionState;
+        delete shape;
         gameObject->getScene()->bulletPhysics->world->removeRigidBody(rigidBody);
         delete rigidBody;
     }
