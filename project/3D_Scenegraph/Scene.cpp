@@ -4,9 +4,12 @@
 
 #include "Scene.hpp"
 #include <algorithm>
+#include <sre/Renderer.hpp>
 #include "Camera.hpp"
 #include "GameObject.hpp"
+#include "RigidBody.hpp"
 #include "Light.hpp"
+#include "BulletPhysics.hpp"
 #include "sre/RenderPass.hpp"
 
 #pragma clang diagnostic push
@@ -14,21 +17,37 @@
 
 
 Scene::Scene(std::string name)
-:name(name)
+:name(std::move(name))
 {
+    bulletPhysics = new BulletPhysics();
+}
+
+Scene::~Scene(){
+    delete bulletPhysics;
 }
 
 void Scene::update(float deltaTime){
+    bulletPhysics->step();
+    for (auto& p : this->rigidBodies){
+        p->updateTransformFromPhysicsWorld();
+    }
     for (auto& u : updatables){
         u->update(deltaTime);
     }
 }
 
 void Scene::render(){
-    sre::WorldLights wl;
-    wl.setAmbientLight(ambientColor);
+    if (debugPhysics){
+        bulletPhysics->debugDrawNewFrame();
+    }
+    worldLights.clear();
+    worldLights.setAmbientLight(ambientColor);
+    if (lights.size() > sre::Renderer::instance->getMaxSceneLights()){
+        // instead for each rendered object closest lights and update wl
+        std::cout << "Warn - too many scene lights" << std::endl;
+    }
     for (auto & l : lights){
-        wl.addLight(l->getLight());
+        worldLights.addLight(l->getLight());
     }
 
     for (auto c : cameras){
@@ -38,12 +57,15 @@ void Scene::render(){
                 .withCamera(c->getCamera())
                 .withClearColor(c->clearColorBuffer, c->clearColor)
                 .withClearDepth(c->clearDepthBuffer)
-                .withWorldLights(&wl)
+                .withWorldLights(&worldLights)
                 .withGUI(c->debugGui)
                 .build();
 
         for (auto& comp : renderables){
             comp->draw(&rp);
+        }
+        if (debugPhysics){
+            bulletPhysics->debugDraw(rp);
         }
         if (c->debugGui){
             for (auto& go : gameObjects){
@@ -82,6 +104,11 @@ void Scene::addComponent(Component *component) {
     if (light) {
         lights.push_back(light);
     }
+    auto rigidBody = dynamic_cast<RigidBody*>(component);
+    if (rigidBody) {
+        rigidBodies.push_back(rigidBody);
+    }
+
 }
 
 void Scene::removeComponent(Component *component) {
@@ -101,6 +128,26 @@ void Scene::removeComponent(Component *component) {
     if (light) {
         lights.erase(std::find(lights.begin(), lights.end(), light));
     }
+    auto rigidBody = dynamic_cast<RigidBody*>(component);
+    if (rigidBody) {
+        rigidBodies.erase(std::find(rigidBodies.begin(), rigidBodies.end(), rigidBody));
+    }
+}
+
+bool Scene::isDebugPhysics() const {
+    return debugPhysics;
+}
+
+void Scene::setDebugPhysics(bool debugPhysics) {
+    Scene::debugPhysics = debugPhysics;
+}
+
+const glm::vec3 &Scene::getAmbientColor() const {
+    return ambientColor;
+}
+
+void Scene::setAmbientColor(const glm::vec3 &ambientColor) {
+    Scene::ambientColor = ambientColor;
 }
 
 

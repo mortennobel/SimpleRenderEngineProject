@@ -5,26 +5,40 @@
 #include "Camera.hpp"
 #include "MeshRenderer.hpp"
 #include "Light.hpp"
+#include "RigidBody.hpp"
 
 
 std::shared_ptr<Scene> createScene(){
     auto res = std::make_shared<Scene>();
     auto cameraObj = res->createGameObject("Camera");
-    cameraObj->addComponent<Camera>();
+    cameraObj->addComponent<Camera>()->clearColor = {0.2,0.2,0.2};
     cameraObj->getComponent<Transform>()->position = {0,1.7f,10};
 
     auto sphereObj = res->createGameObject("Sphere");
     auto sphereMR = sphereObj->addComponent<MeshRenderer>();
     sphereMR->setMesh(sre::Mesh::create().withSphere().build());
     sphereObj->getComponent<Transform>()->position = {0,1.0,0};
+    sphereObj->getComponent<Transform>()->position = {0,1.0,0};
+    sphereObj->addComponent<RigidBody>()->initRigidBodyWithSphere(1, 0);
 
     auto planeObj = res->createGameObject("Plane");
     auto plameMR = planeObj->addComponent<MeshRenderer>();
     plameMR->setMesh(sre::Mesh::create().withQuad(10).build());
     planeObj->getComponent<Transform>()->rotation = {-90,0,0};
+    auto planePhysObj = res->createGameObject("PlanePhys");
+    planePhysObj->addComponent<RigidBody>()->initRigidBodyWithStaticPlane({0,1,0}, 0);
 
     auto lightObj = res->createGameObject("Light");
+    lightObj->getComponent<Transform>()->rotation = {30,30,0};
     lightObj->addComponent<Light>();
+
+    auto cube = res->createGameObject("Cube");
+    cube->getComponent<Transform>()->position = {0,4,0};
+    cube->getComponent<Transform>()->rotation = {30,30,0};
+    auto cubeRigidBody = cube->addComponent<RigidBody>();
+    cubeRigidBody->initRigidBodyWithBox({1,1,1}, 1);
+    auto cubeMR = cube->addComponent<MeshRenderer>();
+    cubeMR->setMesh(sre::Mesh::create().withCube(0.9).build());
 
     return res;
 }
