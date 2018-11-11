@@ -16,7 +16,7 @@ std::shared_ptr<Scene> createScene(){
 
     auto sphereObj = res->createGameObject("Sphere");
     auto sphereMR = sphereObj->addComponent<MeshRenderer>();
-    sphereMR->setMesh(sre::Mesh::create().withSphere().build());
+    sphereMR->setMesh(sre::Mesh::create().withSphere(16,32,0.99f).build());
     sphereObj->getComponent<Transform>()->position = {0,1.0,0};
     sphereObj->getComponent<Transform>()->position = {0,1.0,0};
     sphereObj->addComponent<RigidBody>()->initRigidBodyWithSphere(1, 0);
@@ -38,7 +38,7 @@ std::shared_ptr<Scene> createScene(){
     auto cubeRigidBody = cube->addComponent<RigidBody>();
     cubeRigidBody->initRigidBodyWithBox({1,1,1}, 1);
     auto cubeMR = cube->addComponent<MeshRenderer>();
-    cubeMR->setMesh(sre::Mesh::create().withCube(0.9).build());
+    cubeMR->setMesh(sre::Mesh::create().withCube(0.99).build());
 
     return res;
 }

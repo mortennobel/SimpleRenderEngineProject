@@ -68,15 +68,21 @@ void Scene::render(){
             bulletPhysics->debugDraw(rp);
         }
         if (c->debugGui){
-            for (auto& go : gameObjects){
-                ImGui::PushID(go.get());
-                if (ImGui::CollapsingHeader(go->getName().c_str())){
-                    for (auto& co : go->getComponents()) {
-                        co->debugGUI();
+            ImGui::Begin(name.c_str());
+            ImGui::Checkbox("Debug Physics", &debugPhysics);
+            ImGui::ColorEdit3("Ambient light", &(ambientColor.x));
+            if (ImGui::CollapsingHeader("GameObjects")){
+                for (auto& go : gameObjects){
+                    ImGui::PushID(go.get());
+                    if (ImGui::CollapsingHeader(go->getName().c_str())){
+                        for (auto& co : go->getComponents()) {
+                            co->debugGUI();
+                        }
                     }
+                    ImGui::PopID();
                 }
-                ImGui::PopID();
             }
+            ImGui::End();
         }
     }
 }

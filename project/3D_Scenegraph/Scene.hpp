@@ -18,12 +18,12 @@ class RigidBody;
 
 class Scene {
 public:
-    Scene(std::string name = "MainScene");
+    explicit Scene(std::string name = "MainScene");
     ~Scene();
     void render();
     void update(float deltaTime);
 
-    std::shared_ptr<GameObject> createGameObject(std::string name = "");
+    std::shared_ptr<GameObject> createGameObject(std::string name = "Scene");
 
     bool isDebugPhysics() const;
 
