@@ -77,6 +77,7 @@ bool Hero::onKey(SDL_Event &event) {
             message = "Hello world";
             break;
     }
+	return true;
 }
 
 void Hero::update(float deltaTime) {
@@ -141,7 +142,7 @@ void Hero::guiGameInfo() {
     // draw health
     ImGui::Text("Health");
     float width = heartSize.x*3;
-    float windowWidth =  ImGui::GetWindowContentRegionWidth();
+    float windowWidth = ImGui::GetWindowContentRegionWidth();
     ImVec2 uv0(0,1); // flip y axis coordinates
     ImVec2 uv1(1,0);
     for (int i=0;i<3;i++){

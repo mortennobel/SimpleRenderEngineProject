@@ -7,7 +7,6 @@
 #include "Transform.hpp"
 #include "BulletPhysics.hpp"
 #include "glm/glm.hpp"
-#include <glm/detail/type_quat.hpp>
 #include <glm/gtc/quaternion.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -20,7 +19,9 @@ RigidBody::~RigidBody() {
     if (rigidBody){
         delete fallMotionState;
         delete shape;
-        gameObject->getScene()->bulletPhysics->world->removeRigidBody(rigidBody);
+		if (gameObject->getScene()->bulletPhysics){
+			gameObject->getScene()->bulletPhysics->world->removeRigidBody(rigidBody);
+		}
         delete rigidBody;
     }
 }
