@@ -69,6 +69,7 @@ bool CameraComponent::onKey(SDL_Event &event) {
                 break;
         }
     }
+	return true;
 }
 
 glm::vec3 CameraComponent::clipToWorldspaceCoordinates(glm::vec3 clipCoordinates) {

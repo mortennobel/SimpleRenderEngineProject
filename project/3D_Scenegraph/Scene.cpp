@@ -24,6 +24,7 @@ Scene::Scene(std::string name)
 
 Scene::~Scene(){
     delete bulletPhysics;
+	bulletPhysics = nullptr;
 }
 
 void Scene::update(float deltaTime){
