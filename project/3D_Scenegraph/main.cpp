@@ -6,7 +6,19 @@
 #include "MeshRenderer.hpp"
 #include "Light.hpp"
 #include "RigidBody.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/string_cast.hpp"
 
+class CustomCollisionHandler : public Component, public CollisionHandler {
+public:
+    explicit CustomCollisionHandler(GameObject *gameObject) : Component(gameObject) {}
+
+    void onCollision(size_t collisionId, RigidBody *other, glm::vec3 position, bool begin) override {
+        if (begin){
+            std::cout << "Collision on "<<other->getGameObject()->getName()<< " at "<<glm::to_string(position)<<std::endl;
+        }
+    }
+};
 
 std::shared_ptr<Scene> createScene(){
     auto res = std::make_shared<Scene>();
@@ -39,6 +51,7 @@ std::shared_ptr<Scene> createScene(){
     cubeRigidBody->initRigidBodyWithBox({1,1,1}, 1);
     auto cubeMR = cube->addComponent<MeshRenderer>();
     cubeMR->setMesh(sre::Mesh::create().withCube(0.99).build());
+    cube->addComponent<CustomCollisionHandler>();
 
     return res;
 }

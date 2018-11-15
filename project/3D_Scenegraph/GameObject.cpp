@@ -24,9 +24,17 @@ std::string GameObject::getName() {
     return name;
 }
 
+const std::vector<CollisionHandler*>& GameObject::getCollisionHandlers(){
+    return collisionHandlers;
+}
+
 bool GameObject::removeComponent(std::shared_ptr<Component> ptr) {
     for (auto iter = components.begin();iter != components.end(); iter++){
         if (*iter == ptr){
+            auto ch = dynamic_cast<CollisionHandler*>(ptr.get());
+            if (ch) {
+                collisionHandlers.erase(std::find(collisionHandlers.begin(), collisionHandlers.end(), ch));
+            }
             components.erase(iter);
             return true;
         }

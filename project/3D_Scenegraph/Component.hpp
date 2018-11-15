@@ -20,6 +20,7 @@ public:
 
 
     virtual void debugGUI();
+
 protected:
     Component(GameObject* gameObject);
     GameObject *gameObject = nullptr;

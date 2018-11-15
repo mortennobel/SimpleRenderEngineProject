@@ -3,8 +3,41 @@
 //
 
 #include "BulletPhysics.hpp"
+#include "RigidBody.hpp"
+#include "GameObject.hpp"
+
+bool contactUpdatedCallback(btManifoldPoint& cp,void* body0,void* body1){
+    bool collisionBegin = cp.m_userPersistentData == nullptr;
+    auto btRigidBody0 = static_cast<btRigidBody *>(body0);
+    auto btRigidBody1 = static_cast<btRigidBody *>(body1);
+    auto rigidBody0 = static_cast<RigidBody *>(btRigidBody0->getUserPointer());
+    auto rigidBody1 = static_cast<RigidBody *>(btRigidBody1->getUserPointer());
+    if (collisionBegin){
+        static size_t collisionId = 0;
+
+        cp.m_userPersistentData = (void*)collisionId++;
+    }
+    auto id = (size_t)cp.m_userPersistentData;
+    glm::vec3 pointOnA (cp.getPositionWorldOnA().x(), cp.getPositionWorldOnA().y(), cp.getPositionWorldOnA().z());
+    glm::vec3 pointOnB (cp.getPositionWorldOnB().x(), cp.getPositionWorldOnB().y(), cp.getPositionWorldOnB().z());
+    for (auto ph : rigidBody0->getGameObject()->getCollisionHandlers()){
+        ph->onCollision(id, rigidBody1, pointOnA, collisionBegin);
+    }
+    for (auto ph : rigidBody1->getGameObject()->getCollisionHandlers()){
+        ph->onCollision(id, rigidBody0, pointOnB, collisionBegin);
+    }
+    return true;
+}
+
+bool contactDestroyedCallback(void * data) {
+    // todo
+    return true;
+}
 
 BulletPhysics::BulletPhysics() {
+    gContactProcessedCallback = contactUpdatedCallback;
+    gContactDestroyedCallback = contactDestroyedCallback;
+    // gContactDestroyedCallback = contactDestroyedCallback;
     broadphase = new btDbvtBroadphase();
     collisionConfiguration = new btDefaultCollisionConfiguration();
     dispatcher = new btCollisionDispatcher(collisionConfiguration);
@@ -44,67 +77,3 @@ void BulletPhysics::debugDrawNewFrame() {
 void BulletPhysics::debugDraw(sre::RenderPass &renderPass) {
     debugDrawObj.render(renderPass);
 }
-
-
-/*
-
-btBroadphaseInterface* broadphase = new btDbvtBroadphase();
-
-btDefaultCollisionConfiguration* collisionConfiguration = new btDefaultCollisionConfiguration();
-btCollisionDispatcher* dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
-btSequentialImpulseConstraintSolver* solver = new btSequentialImpulseConstraintSolver;
-
-btDiscreteDynamicsWorld* dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
-
-dynamicsWorld->setGravity(btVector3(0, -10, 0));
-
-
-btCollisionShape* groundShape = new btStaticPlaneShape(btVector3(0, 1, 0), 1);
-
-btCollisionShape* fallShape = new btSphereShape(1);
-
-
-btDefaultMotionState* groundMotionState = new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, -1, 0)));
-btRigidBody::btRigidBodyConstructionInfo
-        groundRigidBodyCI(0, groundMotionState, groundShape, btVector3(0, 0, 0));
-btRigidBody* groundRigidBody = new btRigidBody(groundRigidBodyCI);
-dynamicsWorld->addRigidBody(groundRigidBody);
-
-
-btDefaultMotionState* fallMotionState =
-        new btDefaultMotionState(btTransform(btQuaternion(0, 0, 0, 1), btVector3(0, 50, 0)));
-btScalar mass = 1;
-btVector3 fallInertia(0, 0, 0);
-fallShape->calculateLocalInertia(mass, fallInertia);
-btRigidBody::btRigidBodyConstructionInfo fallRigidBodyCI(mass, fallMotionState, fallShape, fallInertia);
-btRigidBody* fallRigidBody = new btRigidBody(fallRigidBodyCI);
-dynamicsWorld->addRigidBody(fallRigidBody);
-
-for (int i = 0; i < 300; i++) {
-dynamicsWorld->stepSimulation(1 / 60.f, 10);
-
-btTransform trans;
-fallRigidBody->getMotionState()->getWorldTransform(trans);
-
-std::cout << "sphere height: " << trans.getOrigin().getY() << std::endl;
-}
-
-dynamicsWorld->removeRigidBody(fallRigidBody);
-delete fallRigidBody->getMotionState();
-delete fallRigidBody;
-
-dynamicsWorld->removeRigidBody(groundRigidBody);
-delete groundRigidBody->getMotionState();
-delete groundRigidBody;
-
-
-delete fallShape;
-
-delete groundShape;
-
-delete dynamicsWorld;
-delete solver;
-delete collisionConfiguration;
-delete dispatcher;
-delete broadphase;*/
