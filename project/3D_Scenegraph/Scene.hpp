@@ -32,6 +32,8 @@ public:
     const glm::vec3 &getAmbientColor() const;
 
     void setAmbientColor(const glm::vec3 &ambientColor);
+
+    const std::vector<std::shared_ptr<GameObject>> getGameObjects();
 private:
     std::string name;
     bool debugPhysics = true;

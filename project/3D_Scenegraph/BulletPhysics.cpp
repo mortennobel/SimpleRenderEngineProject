@@ -5,7 +5,30 @@
 #include "BulletPhysics.hpp"
 #include "RigidBody.hpp"
 #include "GameObject.hpp"
+#include "Scene.hpp"
 
+struct CollisionId {
+    size_t collisionId;
+    GameObject* bodyA;
+    GameObject* bodyB;
+
+    CollisionId(size_t collisionId, GameObject *bodyA, GameObject *bodyB) : collisionId(collisionId), bodyA(bodyA),
+                                                                            bodyB(bodyB) {}
+};
+
+namespace {
+ Scene* scene;
+
+ bool sceneContains(GameObject* ptr){
+     for (auto go : scene->getGameObjects()){
+         if (go.get() == ptr){
+             return true;
+         }
+     }
+     return false;
+ }
+
+// based on https://github.com/kripken/ammo.js/issues/82#issuecomment-426429129
 bool contactUpdatedCallback(btManifoldPoint& cp,void* body0,void* body1){
     bool collisionBegin = cp.m_userPersistentData == nullptr;
     auto btRigidBody0 = static_cast<btRigidBody *>(body0);
@@ -14,24 +37,36 @@ bool contactUpdatedCallback(btManifoldPoint& cp,void* body0,void* body1){
     auto rigidBody1 = static_cast<RigidBody *>(btRigidBody1->getUserPointer());
     if (collisionBegin){
         static size_t collisionId = 0;
-
-        cp.m_userPersistentData = (void*)collisionId++;
+        collisionId++;
+        cp.m_userPersistentData = new CollisionId(collisionId, rigidBody0->getGameObject(), rigidBody1->getGameObject());
     }
-    auto id = (size_t)cp.m_userPersistentData;
+    CollisionId* id = (CollisionId*)cp.m_userPersistentData;
     glm::vec3 pointOnA (cp.getPositionWorldOnA().x(), cp.getPositionWorldOnA().y(), cp.getPositionWorldOnA().z());
     glm::vec3 pointOnB (cp.getPositionWorldOnB().x(), cp.getPositionWorldOnB().y(), cp.getPositionWorldOnB().z());
     for (auto ph : rigidBody0->getGameObject()->getCollisionHandlers()){
-        ph->onCollision(id, rigidBody1, pointOnA, collisionBegin);
+        ph->onCollision(id->collisionId, rigidBody1, pointOnA, collisionBegin);
     }
     for (auto ph : rigidBody1->getGameObject()->getCollisionHandlers()){
-        ph->onCollision(id, rigidBody0, pointOnB, collisionBegin);
+        ph->onCollision(id->collisionId, rigidBody0, pointOnB, collisionBegin);
     }
     return true;
 }
 
 bool contactDestroyedCallback(void * data) {
-    // todo
+    CollisionId* id = (CollisionId*)data;
+    if (sceneContains(id->bodyA)){
+        for (auto ph : id->bodyA->getCollisionHandlers()){
+            ph->onCollisionEnd(id->collisionId);
+        }
+    }
+    if (sceneContains(id->bodyB)){
+        for (auto ph : id->bodyB->getCollisionHandlers()){
+            ph->onCollisionEnd(id->collisionId);
+        }
+    }
+    delete id;
     return true;
+}
 }
 
 BulletPhysics::BulletPhysics() {
@@ -64,7 +99,8 @@ void BulletPhysics::setGravity(const glm::vec3 &gravity) {
     world->setGravity(btVector3(gravity.x, gravity.y, gravity.z));
 }
 
-void BulletPhysics::step() {
+void BulletPhysics::step(Scene* scene_) {
+    scene = scene_;
     world->stepSimulation(timeStep, maxSubSteps);
 
 }

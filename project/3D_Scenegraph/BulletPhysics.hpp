@@ -8,6 +8,8 @@
 #include "BulletDebugDrawSRE.hpp"
 #include "sre/RenderPass.hpp"
 
+class Scene;
+
 class BulletPhysics {
 public:
     BulletPhysics();
@@ -16,7 +18,7 @@ public:
     const glm::vec3 &getGravity() const;
     void setGravity(const glm::vec3 &gravity);
 
-    void step();
+    void step(Scene* scene);
 
     void debugDrawNewFrame();
     void debugDraw(sre::RenderPass& renderPass);
