@@ -48,8 +48,6 @@ void RigidBody::initRigidBody(btRigidBody::btRigidBodyConstructionInfo info){
     }
     rigidBody = new btRigidBody(info);
     rigidBody->setUserPointer(this);
-    const int CF_CUSTOM_MATERIAL_CALLBACK = 8;
-    rigidBody->setCollisionFlags(rigidBody->getCollisionFlags() | CF_CUSTOM_MATERIAL_CALLBACK);
 
     physicsWorld->addRigidBody(rigidBody);
 }
