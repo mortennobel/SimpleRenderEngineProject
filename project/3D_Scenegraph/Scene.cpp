@@ -28,7 +28,7 @@ Scene::~Scene(){
 }
 
 void Scene::update(float deltaTime){
-    bulletPhysics->step();
+    bulletPhysics->step(this);
     for (auto& p : this->rigidBodies){
         p->updateTransformFromPhysicsWorld();
     }
@@ -155,6 +155,10 @@ const glm::vec3 &Scene::getAmbientColor() const {
 
 void Scene::setAmbientColor(const glm::vec3 &ambientColor) {
     Scene::ambientColor = ambientColor;
+}
+
+const std::vector<std::shared_ptr<GameObject>> Scene::getGameObjects() {
+    return gameObjects;
 }
 
 
