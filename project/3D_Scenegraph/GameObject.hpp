@@ -8,8 +8,10 @@
 #include <vector>
 #include <memory>
 #include "Scene.hpp"
+#include "CollisionHandler.hpp"
 
 class Component;
+
 
 class GameObject {
 public:
@@ -28,9 +30,12 @@ public:
 
     const std::vector<std::shared_ptr<Component>>& getComponents();
     Scene* getScene();
+
+    const std::vector<CollisionHandler*>& getCollisionHandlers();
 private:
     Scene* scene;
     std::vector<std::shared_ptr<Component>> components;
+    std::vector<CollisionHandler*> collisionHandlers;
     GameObject(std::string name, Scene* scene);
     std::string name;
     friend class Scene;
@@ -40,6 +45,10 @@ private:
 template<typename T>
 std::shared_ptr<T> GameObject::addComponent() {
     auto obj = new T(this);
+    auto ch = dynamic_cast<CollisionHandler*>(obj);
+    if (ch){
+        collisionHandlers.push_back(ch);
+    }
     scene->addComponent(obj);
     std::shared_ptr<T> ptr(obj);
     components.push_back(ptr);

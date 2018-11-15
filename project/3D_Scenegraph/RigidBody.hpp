@@ -19,6 +19,9 @@ public:
     void initRigidBody(btRigidBody::btRigidBodyConstructionInfo info);
     btRigidBody* getRigidBody();
 private:
+    int collisionStartFrameId;
+    int collisionStartUpdateFrameId;
+    int collisionStartEndFrameId;
     void updateTransformFromPhysicsWorld();
     btRigidBody* rigidBody = nullptr;
     Transform* transform;
