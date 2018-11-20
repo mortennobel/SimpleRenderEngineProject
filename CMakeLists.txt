@@ -119,6 +119,16 @@ ENDIF(USE_assimp)
 #    BULLET_COLLISION_LIBRARY:FILEPATH=/Library/Frameworks/BulletCollision.framework
 #    etc
 #
+#  If you're using Homebrew on MacOS
+#    Use the following instead:
+#    BULLET_INCLUDE_DIR:PATH=/usr/local/Cellar/bullet/2.87_1/include
+#    BULLET_DYNAMICS_LIBRARY:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/BulletDynamics.framework
+#    BULLET_COLLISION_LIBRARY:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/BulletCollision.framework
+#    BULLET_MATH_LIBRARY:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/LinearMath.framework
+#    BULLET_DYNAMICS_LIBRARY_DEBUG:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/BulletDynamics.framework
+#    BULLET_COLLISION_LIBRARY_DEBUG:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/BulletCollision.framework
+#    BULLET_MATH_LIBRARY_DEBUG:PATH=/usr/local/Cellar/bullet/2.87_1/Frameworks/LinearMath.framework
+#
 option(USE_BULLET "Include bullet example" OFF)
 IF (USE_BULLET)
 IF (WIN32)
