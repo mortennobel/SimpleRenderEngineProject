@@ -21,6 +21,7 @@
 #include "sre/Mesh.hpp"
 #include "Test.h"
 #include <sre/Inspector.hpp>
+#include "sre/Resource.hpp"
 #include <glm/ext.hpp>
 
 //
@@ -438,10 +439,15 @@ void main(void)
 }
 )";
 
+    auto filenameVertex = "vertexShaderSource";
+    sre::Resource::set(filenameVertex, vertexShaderSource);
+    auto filenameFragment = "fragmentShaderSource";
+    sre::Resource::set(filenameFragment, fragmentShaderSource);
+
 
 	meshMaterial = sre::Shader::create()
-			.withSourceString(vertexShaderSource,sre::ShaderType::Vertex)
-			.withSourceString(fragmentShaderSource,sre::ShaderType::Fragment)
+            .withSourceResource(filenameVertex, sre::ShaderType::Vertex)
+			.withSourceResource(filenameFragment,sre::ShaderType::Fragment)
 			.withBlend(sre::BlendType::AlphaBlending)
 			.withDepthTest(false)
 			.withDepthWrite(false)
