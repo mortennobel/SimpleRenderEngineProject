@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>as_args &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="as_returns" href="as_returns.html" />
+    <link rel="prev" title="variadic_results" href="variadic_results.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>as_args</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="variadic_results.html">variadic_results</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_returns.html">as_returns</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="as-args">
+<h1>as_args<a class="headerlink" href="#as-args" title="Permalink to this headline">¶</a></h1>
+<p><em>turn an iterable argument into multiple arguments</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">as_args_t</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">as_args_t</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">as_args</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sol::as_args</span></code> is a function that that takes an iterable and turns it into multiple arguments to a function call. It forwards its arguments, and is meant to be used as shown below:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">as_args.c++</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;set&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">();</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function f (a, b, c, d) print(a, b, c, d) end&quot;</span><span class="p">);</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">f</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+
+        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v2</span><span class="p">{</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
+        <span class="n">f</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_args</span><span class="p">(</span><span class="n">v2</span><span class="p">));</span>
+
+        <span class="n">std</span><span class="o">::</span><span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v4</span><span class="p">{</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
+        <span class="n">f</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">as_args</span><span class="p">(</span><span class="n">v4</span><span class="p">));</span>
+
+        <span class="kt">int</span> <span class="n">v3</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span> <span class="p">};</span>
+        <span class="n">f</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_args</span><span class="p">(</span><span class="n">v3</span><span class="p">));</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>It is basically implemented as a <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/sol/as_args.hpp">one-way customization point</a>. For more information about customization points, see the <a class="reference internal" href="../tutorial/customization.html"><span class="doc">tutorial on how to customize Sol to work with your types</span></a>.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="variadic_results.html">variadic_results</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_returns.html">as_returns</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

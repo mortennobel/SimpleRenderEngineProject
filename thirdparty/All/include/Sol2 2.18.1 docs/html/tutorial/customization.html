@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>adding your own types &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="errors" href="../errors.html" />
+    <link rel="prev" title="ownership" href="ownership.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>adding your own types</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="ownership.html">ownership</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="../errors.html">errors</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="adding-your-own-types">
+<h1>adding your own types<a class="headerlink" href="#adding-your-own-types" title="Permalink to this headline">¶</a></h1>
+<p>Sometimes, overriding Sol to make it handle certain <code class="docutils literal notranslate"><span class="pre">struct</span></code>’s and <code class="docutils literal notranslate"><span class="pre">class</span></code>’es as something other than just userdata is desirable. The way to do this is to take advantage of the 4 customization points for Sol. These are <code class="docutils literal notranslate"><span class="pre">sol::lua_size&lt;T&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">sol::stack::pusher&lt;T,</span> <span class="pre">C&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">sol::stack::getter&lt;T,</span> <span class="pre">C&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">sol::stack::checker&lt;T,</span> <span class="pre">sol::type</span> <span class="pre">t,</span>&#160; <span class="pre">C&gt;</span></code>.</p>
+<p>These are template class/structs, so you’ll override them using a technique C++ calls <em>class/struct specialization</em>. Below is an example of a struct that gets broken apart into 2 pieces when going in the C++ –&gt; Lua direction, and then pulled back into a struct when going in the Lua –&gt; C++:</p>
+<div class="literal-block-wrapper docutils container" id="customization-overriding">
+<div class="code-block-caption"><span class="caption-text">two_things.hpp</span><a class="headerlink" href="#customization-overriding" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">two_things</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+        <span class="kt">bool</span> <span class="n">b</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">namespace</span> <span class="n">sol</span> <span class="p">{</span>
+
+        <span class="c1">// First, the expected size</span>
+        <span class="c1">// Specialization of a struct</span>
+        <span class="c1">// We expect 2, so use 2</span>
+        <span class="k">template</span> <span class="o">&lt;&gt;</span>
+        <span class="k">struct</span> <span class="n">lua_size</span><span class="o">&lt;</span><span class="n">two_things</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">integral_constant</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="mi">2</span><span class="o">&gt;</span> <span class="p">{};</span>
+
+        <span class="c1">// Then, specialize the type to match:</span>
+        <span class="c1">// this has multiple types, so we consider it a &quot;poly&quot; type.</span>
+        <span class="k">template</span> <span class="o">&lt;&gt;</span>
+        <span class="k">struct</span> <span class="n">lua_type_of</span><span class="o">&lt;</span><span class="n">two_things</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">integral_constant</span><span class="o">&lt;</span><span class="n">sol</span><span class="o">::</span><span class="n">type</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">type</span><span class="o">::</span><span class="n">poly</span><span class="o">&gt;</span> <span class="p">{};</span>
+
+        <span class="c1">// Now, specialize various stack structures</span>
+        <span class="k">namespace</span> <span class="n">stack</span> <span class="p">{</span>
+
+                <span class="k">template</span> <span class="o">&lt;&gt;</span>
+                <span class="k">struct</span> <span class="n">checker</span><span class="o">&lt;</span><span class="n">two_things</span><span class="o">&gt;</span> <span class="p">{</span>
+                        <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Handler</span><span class="o">&gt;</span>
+                        <span class="k">static</span> <span class="kt">bool</span> <span class="n">check</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">Handler</span><span class="o">&amp;&amp;</span> <span class="n">handler</span><span class="p">,</span> <span class="n">record</span><span class="o">&amp;</span> <span class="n">tracking</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="c1">// indices can be negative to count backwards from the top of the stack,</span>
+                                <span class="c1">// rather than the bottom up</span>
+                                <span class="c1">// to deal with this, we adjust the index to</span>
+                                <span class="c1">// its absolute position using the lua_absindex function</span>
+                                <span class="kt">int</span> <span class="n">absolute_index</span> <span class="o">=</span> <span class="n">lua_absindex</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">index</span><span class="p">);</span>
+                                <span class="c1">// Check first and second second index for being the proper types</span>
+                                <span class="kt">bool</span> <span class="n">success</span> <span class="o">=</span> <span class="n">stack</span><span class="o">::</span><span class="n">check</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">absolute_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span>
+                                        <span class="o">&amp;&amp;</span> <span class="n">stack</span><span class="o">::</span><span class="n">check</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">absolute_index</span><span class="p">,</span> <span class="n">handler</span><span class="p">);</span>
+                                <span class="n">tracking</span><span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+                                <span class="k">return</span> <span class="n">success</span><span class="p">;</span>
+                        <span class="p">}</span>
+                <span class="p">};</span>
+
+                <span class="k">template</span> <span class="o">&lt;&gt;</span>
+                <span class="k">struct</span> <span class="n">getter</span><span class="o">&lt;</span><span class="n">two_things</span><span class="o">&gt;</span> <span class="p">{</span>
+                        <span class="k">static</span> <span class="n">two_things</span> <span class="n">get</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">record</span><span class="o">&amp;</span> <span class="n">tracking</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="kt">int</span> <span class="n">absolute_index</span> <span class="o">=</span> <span class="n">lua_absindex</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">index</span><span class="p">);</span>
+                                <span class="c1">// Get the first element</span>
+                                <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="n">stack</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">absolute_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+                                <span class="c1">// Get the second element,</span>
+                                <span class="c1">// in the +1 position from the first</span>
+                                <span class="kt">bool</span> <span class="n">b</span> <span class="o">=</span> <span class="n">stack</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">absolute_index</span><span class="p">);</span>
+                                <span class="c1">// we use 2 slots, each of the previous takes 1</span>
+                                <span class="n">tracking</span><span class="p">.</span><span class="n">use</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+                                <span class="k">return</span> <span class="n">two_things</span><span class="p">{</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="p">};</span>
+                        <span class="p">}</span>
+                <span class="p">};</span>
+
+                <span class="k">template</span> <span class="o">&lt;&gt;</span>
+                <span class="k">struct</span> <span class="n">pusher</span><span class="o">&lt;</span><span class="n">two_things</span><span class="o">&gt;</span> <span class="p">{</span>
+                        <span class="k">static</span> <span class="kt">int</span> <span class="n">push</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="k">const</span> <span class="n">two_things</span><span class="o">&amp;</span> <span class="n">things</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="kt">int</span> <span class="n">amount</span> <span class="o">=</span> <span class="n">stack</span><span class="o">::</span><span class="n">push</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">things</span><span class="p">.</span><span class="n">a</span><span class="p">);</span>
+                                <span class="c1">// amount will be 1: int pushes 1 item</span>
+                                <span class="n">amount</span> <span class="o">+=</span> <span class="n">stack</span><span class="o">::</span><span class="n">push</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">things</span><span class="p">.</span><span class="n">b</span><span class="p">);</span>
+                                <span class="c1">// amount 2 now, since bool pushes a single item</span>
+                                <span class="c1">// Return 2 things</span>
+                                <span class="k">return</span> <span class="n">amount</span><span class="p">;</span>
+                        <span class="p">}</span>
+                <span class="p">};</span>
+
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This is the base formula that you can follow to extend to your own classes. Using it in the rest of the library should then be seamless:</p>
+<div class="literal-block-wrapper docutils container" id="customization-using">
+<div class="code-block-caption"><span class="caption-text">customization: using it</span><a class="headerlink" href="#customization-using" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;two_things.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+        <span class="c1">// Create a pass-through style of function</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function f ( a, b ) return a, b end&quot;</span><span class="p">);</span>
+
+        <span class="c1">// get the function out of Lua</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">f</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+
+        <span class="n">two_things</span> <span class="n">things</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">two_things</span><span class="p">{</span><span class="mi">24</span><span class="p">,</span> <span class="nb">true</span><span class="p">});</span>
+        <span class="c1">// things.a == 24</span>
+        <span class="c1">// things.b == true</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>And that’s it!</p>
+<p>A few things of note about the implementation: First, there’s an auxiliary parameter of type <a class="reference internal" href="../api/stack.html"><span class="doc">sol::stack::record</span></a> for the getters and checkers. This keeps track of what the last complete operation performed. Since we retrieved 2 members, we use <code class="docutils literal notranslate"><span class="pre">tracking.use(2);</span></code> to indicate that we used 2 stack positions (one for <code class="docutils literal notranslate"><span class="pre">bool</span></code>, one for <code class="docutils literal notranslate"><span class="pre">int</span></code>). The second thing to note here is that we made sure to use the <code class="docutils literal notranslate"><span class="pre">index</span></code> parameter, and then proceeded to add 1 to it for the next one.</p>
+<p>You can make something pushable into Lua, but not get-able in the same way if you only specialize one part of the system. If you need to retrieve it (as a return using one or multiple values from Lua), you should specialize the <code class="docutils literal notranslate"><span class="pre">sol::stack::getter</span></code> template class and the <code class="docutils literal notranslate"><span class="pre">sol::stack::checker</span></code> template class. If you need to push it into Lua at some point, then you’ll want to specialize the <code class="docutils literal notranslate"><span class="pre">sol::stack::pusher</span></code> template class. The <code class="docutils literal notranslate"><span class="pre">sol::lua_size</span></code> template class trait needs to be specialized for both cases, unless it only pushes 1 item, in which case the default implementation will assume 1.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>It is important to note here that the <code class="docutils literal notranslate"><span class="pre">getter</span></code>, <code class="docutils literal notranslate"><span class="pre">pusher</span></code> and <code class="docutils literal notranslate"><span class="pre">checker</span></code> differentiate between a type <code class="docutils literal notranslate"><span class="pre">T</span></code> and a pointer to a type <code class="docutils literal notranslate"><span class="pre">T*</span></code>. This means that if you want to work purely with, say, a <code class="docutils literal notranslate"><span class="pre">T*</span></code> handle that does not have the same semantics as just <code class="docutils literal notranslate"><span class="pre">T</span></code>, you may need to specify checkers/getters/pushers for both <code class="docutils literal notranslate"><span class="pre">T*</span></code> and <code class="docutils literal notranslate"><span class="pre">T</span></code>. The checkers for <code class="docutils literal notranslate"><span class="pre">T*</span></code> forward to the checkers for <code class="docutils literal notranslate"><span class="pre">T</span></code>, but the getter for <code class="docutils literal notranslate"><span class="pre">T*</span></code> does not forward to the getter for <code class="docutils literal notranslate"><span class="pre">T</span></code> (e.g., because of <code class="docutils literal notranslate"><span class="pre">int*</span></code> not being quite the same as <code class="docutils literal notranslate"><span class="pre">int</span></code>).</p>
+</div>
+<p>In general, this is fine since most getters/checkers only use 1 stack point. But, if you’re doing more complex nested classes, it would be useful to use <code class="docutils literal notranslate"><span class="pre">tracking.last</span></code> to understand how many stack indices the last getter/checker operation did and increment it by <code class="docutils literal notranslate"><span class="pre">index</span> <span class="pre">+</span> <span class="pre">tracking.last</span></code> after using a <code class="docutils literal notranslate"><span class="pre">stack::check&lt;..&gt;(</span> <span class="pre">L,</span> <span class="pre">index,</span> <span class="pre">tracking)</span></code> call.</p>
+<p>You can read more about the structs themselves <a class="reference internal" href="../api/stack.html#extension-points"><span class="std std-ref">over on the API page for stack</span></a>, and if there’s something that goes wrong or you have anymore questions, please feel free to drop a line on the Github Issues page or send an e-mail!</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="ownership.html">ownership</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="../errors.html">errors</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

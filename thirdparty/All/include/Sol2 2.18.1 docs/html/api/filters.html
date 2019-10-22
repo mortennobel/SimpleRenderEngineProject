@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>filters &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="readonly" href="readonly.html" />
+    <link rel="prev" title="protect" href="protect.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>filters</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="protect.html">protect</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="readonly.html">readonly</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="filters">
+<h1>filters<a class="headerlink" href="#filters" title="Permalink to this headline">¶</a></h1>
+<p><em>stack modification right before lua call returns</em></p>
+<p><code class="docutils literal notranslate"><span class="pre">sol::filters</span></code> is an advanced, low-level modification feature allowing you to take advantage of sol2’s abstractions before applying your own stack-based modifications at the last moment. They cover the same functionality as <a class="reference external" href="http://www.rasterbar.com/products/luabind/docs.html#dependency">luabind’s “return reference to” and “dependency”</a> types. A few pre-rolled filters are defined for your use:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 32%" />
+<col style="width: 56%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>filter</p></td>
+<td><p>usage</p></td>
+<td><p>modification</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sol::returns_self</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sol::filters(</span> <span class="pre">some_function,</span> <span class="pre">sol::returns_self()</span> <span class="pre">)</span></code></p></td>
+<td><ul class="simple">
+<li><p>takes the argument at stack index 1 (<code class="docutils literal notranslate"><span class="pre">self</span></code> in member function calls and lambdas that take a specific userdata first) and makes that to be the return value</p></li>
+<li><p>rather than creating a new userdata that references the same C++ memory, it copies the userdata, similar to writing <code class="docutils literal notranslate"><span class="pre">obj2</span> <span class="pre">=</span> <span class="pre">obj1</span></code> just increases the reference count</p></li>
+<li><p>saves memory space on top of keeping original memory alive</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sol::returns_self_with&lt;int...&gt;</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sol::filters(</span> <span class="pre">some_function,</span> <span class="pre">sol::returns_self_with&lt;2,</span> <span class="pre">3&gt;()</span> <span class="pre">)</span></code></p></td>
+<td><ul class="simple">
+<li><p>same as above, with the caveat that the <code class="docutils literal notranslate"><span class="pre">self</span></code> is returned while also putting dependencies into the <code class="docutils literal notranslate"><span class="pre">self</span></code></p></li>
+<li><p>can keep external dependencies alive</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sol::self_dependency</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sol::filters(</span> <span class="pre">some_function,</span> <span class="pre">sol::self_dependency()</span> <span class="pre">);</span></code></p></td>
+<td><ul class="simple">
+<li><p>this makes the value returned by the bindable take a dependency on the <code class="docutils literal notranslate"><span class="pre">self</span></code> argument</p></li>
+<li><p>useful for returning a reference to a member variable and keeping the parent class of that member variable alive</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sol::stack_dependencies</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sol::filters(</span> <span class="pre">some_function,</span> <span class="pre">sol::stack_dependencies(</span> <span class="pre">target_index,</span> <span class="pre">2,</span> <span class="pre">1,</span> <span class="pre">...</span> <span class="pre">)</span> <span class="pre">);</span></code></p></td>
+<td><ul class="simple">
+<li><p>whatever is at <code class="docutils literal notranslate"><span class="pre">target_index</span></code> on the stack is given a special “keep alive” table with the elements on the stack specified by the integer indices after <code class="docutils literal notranslate"><span class="pre">target_index</span></code></p></li>
+<li><p>allows you to keep arguments and other things alive for the duration of the existence of the class</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>custom</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">sol::filters(</span> <span class="pre">some_function,</span> <span class="pre">[](lua_State*</span> <span class="pre">L,</span> <span class="pre">int</span> <span class="pre">current_stack_return_count)</span> <span class="pre">-&gt;</span> <span class="pre">int</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span> <span class="pre">)</span></code></p></td>
+<td><ul class="simple">
+<li><p>whatever you want, so long as it has the form <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">(lua_State*,</span> <span class="pre">int</span> <span class="pre">)</span></code></p></li>
+<li><p>works with callables (such as lambdas), so long as it has the correct form</p></li>
+<li><p>expected to return the number of things on the stack to return to Lua</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td colspan="3"><ul class="simple">
+<li><p>“some_function” can be any callable function, member variable, or similar</p></li>
+<li><p>dependency additions only work on userdata</p></li>
+<li><p>works with <code class="docutils literal notranslate"><span class="pre">table::set(</span> <span class="pre">...</span> <span class="pre">)</span></code>, <code class="docutils literal notranslate"><span class="pre">table::set_function(</span> <span class="pre">...</span> <span class="pre">);</span></code>, and on all usertype bindings</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>You can specify multiple filters on the same <code class="docutils literal notranslate"><span class="pre">sol::filters</span></code> call, and can also specify custom filters as long as the signature is correct.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="protect.html">protect</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="readonly.html">readonly</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>safety &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="exceptions" href="exceptions.html" />
+    <link rel="prev" title="getting performance" href="performance.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>safety</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="performance.html">getting performance</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="exceptions.html">exceptions</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="safety">
+<h1>safety<a class="headerlink" href="#safety" title="Permalink to this headline">¶</a></h1>
+<p>Sol was designed to be correct and fast, and in the pursuit of both uses the regular <code class="docutils literal notranslate"><span class="pre">lua_to{x}</span></code> functions of Lua rather than the checking versions (<code class="docutils literal notranslate"><span class="pre">lua_check{X}</span></code>) functions. The API defaults to paranoidly-safe alternatives if you have a <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_CHECK_ARGUMENTS</span></code> before you include Sol, or if you pass the <code class="docutils literal notranslate"><span class="pre">SOL_CHECK_ARGUMENTS</span></code> define on the build command for your build system. By default, it is off and remains off unless you define this, even in debug mode. The same goes for <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_SAFE_USERTYPE</span></code>.</p>
+<div class="section" id="config">
+<span id="id1"></span><h2>config<a class="headerlink" href="#config" title="Permalink to this headline">¶</a></h2>
+<p>Note that you can obtain safety with regards to functions you bind by using the <a class="reference internal" href="api/protect.html"><span class="doc">protect</span></a> wrapper around function/variable bindings you set into Lua. Additionally, you can have basic boolean checks when using the API by just converting to a <a class="reference internal" href="api/optional.html"><span class="doc">sol::optional&lt;T&gt;</span></a> when necessary for getting things out of Lua and for function arguments.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">SOL_SAFE_USERTYPE</span></code> triggers the following change:</dt><dd><ul class="simple">
+<li><p>If the userdata to a usertype function is nil, will trigger an error instead of letting things go through and letting the system segfault/crash</p></li>
+<li><p>Turned on by default with clang++, g++ and VC++ if a basic check for building in debug mode is detected</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SOL_SAFE_FUNCTION</span></code> triggers the following change:</dt><dd><ul class="simple">
+<li><p>All uses of <code class="docutils literal notranslate"><span class="pre">sol::function</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::stack_function</span></code> will default to <code class="docutils literal notranslate"><span class="pre">sol::protected_function</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::stack_protected_function</span></code>, respectively, rather than <code class="docutils literal notranslate"><span class="pre">sol::unsafe_function</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::stack_unsafe_function</span></code>.</p></li>
+<li><p><strong>Not</strong> turned on by default under any detectible compiler settings: <em>you MUST turn this one on manually</em></p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SOL_STRINGS_ARE_NUMBERS</span></code> triggers the following changes:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sol::stack::get</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::stack::check_get</span></code> will allow anything that Lua thinks is number-worthy to be number-worthy</p></li>
+<li><p>This includes: integers, numbers, and strings</p></li>
+<li><p>Does <strong>not</strong> include: booleans, types with <code class="docutils literal notranslate"><span class="pre">__tostring</span></code> enabled, and everything else</p></li>
+<li><p>Overrides <code class="docutils literal notranslate"><span class="pre">SOL_CHECK_ARGUMENTS</span></code> and always applies if it is turned on</p></li>
+<li><p><strong>Not</strong> turned on by default under any settings: <em>you MUST be turned on manually</em></p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SOL_CHECK_ARGUMENTS</span></code> triggers the following changes:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sol::stack::get</span></code> (used everywhere) defaults to using <code class="docutils literal notranslate"><span class="pre">sol::stack::check_get</span></code> and dereferencing the argument. It uses <code class="docutils literal notranslate"><span class="pre">sol::type_panic</span></code> as the handler if something goes wrong</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lua_tolstring</span></code> conversions are not permitted on numbers: through the API: only actual strings are allowed. This is necessary to allow <a class="reference internal" href="api/overload.html"><span class="doc">sol::overload</span></a> to work properly</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sol::stack::call</span></code> and its variants will, if no templated boolean is specified, check all of the arguments for a function call</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">SOL_SAFE_USERTYPE</span></code> is not defined, it gets defined to turn being on and the effects described above kick in</p></li>
+<li><p>Numbers will also be checked to see if they fit within a <code class="docutils literal notranslate"><span class="pre">lua_Number</span></code> if there is no <code class="docutils literal notranslate"><span class="pre">lua_Integer</span></code> type available that can fit your signed or unsigned number. You can opt-out of this behavior with <code class="docutils literal notranslate"><span class="pre">SOL_NO_CHECK_NUMBER_PRECISION</span></code></p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">SOL_NO_CHECK_NUMBER_PRECISION</span></code> triggers the following changes:</dt><dd><ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">SOL_CHECK_ARGUMENTS</span></code> is defined, turns off number precision and integer precision fitting when pushing numbers into sol2</p></li>
+</ul>
+</dd>
+</dl>
+<p>Tests are compiled with this on to ensure everything is going as expected. Remember that if you want these features, you must explicitly turn them on all of them to be sure you are getting them.</p>
+</div>
+<div class="section" id="memory">
+<h2>memory<a class="headerlink" href="#memory" title="Permalink to this headline">¶</a></h2>
+<p>Memory safety can be tricky. Lua is handled by a garbage-collected runtime, meaning object deletion is not cleary defined or deterministic. If you need to keep an object from the Lua Runtime alive, use <a class="reference internal" href="api/reference.html"><span class="doc">sol::reference</span></a> or one of its derived types, such as <a class="reference internal" href="api/table.html"><span class="doc">sol::table</span></a>, <a class="reference internal" href="api/object.html"><span class="doc">sol::object</span></a>, or similar. These will pin a reference down to an object controlled in C++, and Lua will not delete an object that you still have a reference to through one of these types. You can then retrieve whatever you need from that Lua slot using object’s <code class="docutils literal notranslate"><span class="pre">obj.as&lt;T&gt;()</span></code> member function or other things, and work on the memory from there.</p>
+<p>The usertype memory layout for all Lua-instantiated userdata and for all objects pushed/set into the Lua Runtime is also described <a class="reference internal" href="api/usertype_memory.html"><span class="doc">here</span></a>. Things before or after that specified memory slot is implementation-defined and no assumptions are to be made about it.</p>
+</div>
+<div class="section" id="functions">
+<h2>functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>The <em>vast majority</em> of all users are going to want to work with <a class="reference internal" href="api/protected_function.html"><span class="doc">sol::safe_function/sol::protected_function</span></a>. This version allows for error checking, prunes results, and responds to the defines listed above by throwing errors if you try to use the result of a function without checking. <a class="reference internal" href="api/function.html"><span class="doc">sol::function/sol::unsafe_function</span></a> is unsafe. It assumes that its contents run correctly and throw no errors, which can result in crashes that are hard to debug while offering a very tiny performance boost for not checking error codes or catching exceptions.</p>
+<p>If you find yourself crashing inside of <code class="docutils literal notranslate"><span class="pre">sol::function</span></code>, try changing it to a <code class="docutils literal notranslate"><span class="pre">sol::protected_function</span></code> and seeing if the error codes and such help you find out what’s going on. You can read more about the API on <a class="reference internal" href="api/protected_function.html"><span class="doc">the page itself</span></a>. You can also define <code class="docutils literal notranslate"><span class="pre">SOL_SAFE_FUNCTION</span></code> as described above, but be warned that the <code class="docutils literal notranslate"><span class="pre">protected_function</span></code> API is a superset of the regular default <code class="docutils literal notranslate"><span class="pre">function</span></code> API: trying to revert back after defining <code class="docutils literal notranslate"><span class="pre">SOL_SAFE_FUNCTION</span></code> may result in some compiler errors if you use things beyond the basic, shared interface of the two types.</p>
+<p>As a side note, binding functions with default parameters does not magically bind multiple versions of the function to be called with the default parameters. You must instead use <a class="reference internal" href="api/overload.html"><span class="doc">sol::overload</span></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do <strong>NOT</strong> save the return type of a <a class="reference internal" href="api/proxy.html#function-result"><span class="std std-ref">function_result</span></a> with <code class="docutils literal notranslate"><span class="pre">auto</span></code>, as in <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">numwoof</span> <span class="pre">=</span> <span class="pre">woof(20);</span></code>, and do NOT store it anywhere unless you are exactly aware of the consequences of messing with the stack. See <a class="reference internal" href="api/function.html#function-result-warning"><span class="std std-ref">here</span></a> for more information.</p>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="performance.html">getting performance</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="exceptions.html">exceptions</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

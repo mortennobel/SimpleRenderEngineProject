@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>as_returns &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="overload" href="overload.html" />
+    <link rel="prev" title="as_args" href="as_args.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>as_returns</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_args.html">as_args</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="overload.html">overload</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="as-returns">
+<h1>as_returns<a class="headerlink" href="#as-returns" title="Permalink to this headline">¶</a></h1>
+<p><em>turn an iterable argument into a multiple-return type</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">as_returns_t</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">as_returns_t</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">as_returns</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>This allows you to wrap up a source that has <code class="docutils literal notranslate"><span class="pre">begin</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> iterator-returning functions on it and return it as multiple results into Lua. To have more control over the returns, use <a class="reference internal" href="variadic_results.html"><span class="doc">sol::variadic_results</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">as_returns.c++</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;set&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="p">[]()</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">set</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">results</span><span class="p">{</span> <span class="s">&quot;arf&quot;</span><span class="p">,</span> <span class="s">&quot;bark&quot;</span><span class="p">,</span> <span class="s">&quot;woof&quot;</span> <span class="p">};</span>
+                <span class="k">return</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_returns</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">results</span><span class="p">));</span>
+        <span class="p">});</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">        v1, v2, v3 = f()</span>
+<span class="s">        </span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="p">}());</span>
+
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;v1&quot;</span><span class="p">];</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;v2&quot;</span><span class="p">];</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">v3</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;v3&quot;</span><span class="p">];</span>
+
+        <span class="n">assert</span><span class="p">(</span><span class="n">v1</span> <span class="o">==</span> <span class="s">&quot;arf&quot;</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">v2</span> <span class="o">==</span> <span class="s">&quot;bark&quot;</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">v3</span> <span class="o">==</span> <span class="s">&quot;woof&quot;</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_args.html">as_args</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="overload.html">overload</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

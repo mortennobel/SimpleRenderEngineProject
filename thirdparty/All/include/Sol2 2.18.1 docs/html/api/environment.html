@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>environment &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="this_environment" href="this_environment.html" />
+    <link rel="prev" title="userdata" href="userdata.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>environment</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="userdata.html">userdata</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="this_environment.html">this_environment</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="environment">
+<h1>environment<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h1>
+<p><em>encapsulation table for script sandboxing</em></p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">environment</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">environment</span> <span class="o">:</span> <span class="k">public</span> <span class="n">table</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">set_environment</span><span class="p">(</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">target</span> <span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">E</span> <span class="o">=</span> <span class="n">reference</span><span class="p">,</span> <span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">basic_environment</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">get_environment</span><span class="p">(</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">target</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This type is passed to <a class="reference internal" href="state.html#state-script-function"><span class="std std-ref">sol::state(_view)::script/do_x</span></a> to provide an environment where local variables that are set and get retrieve. It is just a plain table, and all the same operations <a class="reference internal" href="table.html"><span class="doc">from table still apply</span></a>. This is important because it allows you to do things like set the table’s metatable (using <a class="reference internal" href="metatable_key.html"><span class="doc">sol::metatable_key</span></a> for instance) and having its <code class="docutils literal notranslate"><span class="pre">__index</span></code> entry point to the global table, meaning you can get – but not set – variables from a Global environment.</p>
+<p>Also note that <code class="docutils literal notranslate"><span class="pre">sol::environment</span></code> derives from <code class="docutils literal notranslate"><span class="pre">sol::table</span></code>, which also derives from <code class="docutils literal notranslate"><span class="pre">sol::reference</span></code>: in other words, copying one <code class="docutils literal notranslate"><span class="pre">sol::environment</span></code> value to another <code class="docutils literal notranslate"><span class="pre">sol::environment</span></code> value <strong>does not</strong> deep-copy the table, just creates a new reference pointing to the same lua object.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sol::environment</span></code> objects can be used with <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/environments.cpp">script calls</a>, and it can also be <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/environments_on_functions.cpp">set on functions</a>. It can even be applied to <a class="reference internal" href="thread.html"><span class="doc">threads</span></a>.</p>
+<p>You can set the environment using <code class="docutils literal notranslate"><span class="pre">sol::set_environment(</span> <span class="pre">my_env,</span> <span class="pre">some_reference</span> <span class="pre">);</span></code> or <code class="docutils literal notranslate"><span class="pre">my_env.set_on(</span> <span class="pre">some_reference</span> <span class="pre">);</span></code>.</p>
+<div class="section" id="free-functions">
+<h2>free functions<a class="headerlink" href="#free-functions" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">function: set_environment</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">set_environment</span><span class="p">(</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">target</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>See <a class="reference internal" href="#environment-set-on"><span class="std std-ref">environment::set_on</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: get_environment</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">E</span> <span class="o">=</span> <span class="n">reference</span><span class="p">,</span> <span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">basic_environment</span><span class="o">&lt;</span><span class="n">E</span><span class="o">&gt;</span> <span class="n">get_environment</span><span class="p">(</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">target</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This function retrieves the environment from the target object. If it does not have a valid environment, then the environment’s valid function will return false after creation. Every function (regular Lua function, executable script, and similar) has an environment, as well as userdata in certain versions of the Lua runtime.</p>
+</div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">constructor: environment</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">environment</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">new_table</span> <span class="n">nt</span><span class="p">,</span> <span class="k">const</span> <span class="n">sol</span><span class="o">::</span><span class="n">reference</span><span class="o">&amp;</span> <span class="n">fallback</span><span class="p">);</span>
+<span class="n">environment</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">env_t</span><span class="p">,</span> <span class="k">const</span> <span class="n">sol</span><span class="o">::</span><span class="n">reference</span><span class="o">&amp;</span> <span class="n">object_that_has_environment</span><span class="p">);</span>
+<span class="n">environment</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">env_t</span><span class="p">,</span> <span class="k">const</span> <span class="n">sol</span><span class="o">::</span><span class="n">stack_reference</span><span class="o">&amp;</span> <span class="n">object_that_has_environment</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The ones from table are used here (of particular note is the ability to use <code class="docutils literal notranslate"><span class="pre">sol::environment(my_lua_state,</span> <span class="pre">sol::create);</span></code> to make a fresh, unnamed environment), plus the three unique constructors shown above.</p>
+<p>The first constructor is generally used as <code class="docutils literal notranslate"><span class="pre">sol::environment</span> <span class="pre">my_env(my_lua_state,</span> <span class="pre">sol::create,</span> <span class="pre">my_fallback_table);</span></code>. The fallback table serves as the backup to lookup attempts on the environment table being created. It is achieved by simply creating a metatable for the <code class="docutils literal notranslate"><span class="pre">sol::environment</span></code> being created, and then doing <code class="docutils literal notranslate"><span class="pre">env_metatable[&quot;__index&quot;]</span> <span class="pre">=</span> <span class="pre">fallback;</span></code>. You can achieve fancier effects by changing the metatable of the environment to your liking, by creating it in some fashion and then setting the metatable explicitly and populating it with data, particularly with <a class="reference internal" href="metatable_key.html"><span class="doc">sol::metatable_key</span></a>.</p>
+<p>The second and third unique constructors take a special empty type that serves as a key to trigger this constructor and serves no other purpose, <code class="docutils literal notranslate"><span class="pre">sol::env_t</span></code>. The shortcut value so you don’t have to create one is called <code class="docutils literal notranslate"><span class="pre">sol::env_key</span></code>. It is used like <code class="docutils literal notranslate"><span class="pre">sol::environment</span> <span class="pre">my_env(sol::env_key,</span> <span class="pre">some_object);</span></code>. It will extract the environment out of whatever the second argument is that may or may not have an environment. If it does not have an environment, the constructor will complete but the object will have <code class="docutils literal notranslate"><span class="pre">env.valid()</span> <span class="pre">==</span> <span class="pre">false</span></code>, since it will reference Lua’s <code class="docutils literal notranslate"><span class="pre">nil</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="environment-set-on">
+<div class="code-block-caption"><span class="caption-text">function: set_on</span><a class="headerlink" href="#environment-set-on" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">set_on</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">target</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This function applies the environment to the desired target. Not that lua 5.1 only tolerates the application of environments to userdata, threads and functions, while 5.2+ has different (more relaxed) rules. It is called by the free function <code class="docutils literal notranslate"><span class="pre">sol::set_environment(</span> <span class="pre">env,</span> <span class="pre">target</span> <span class="pre">);</span></code>.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="userdata.html">userdata</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="this_environment.html">this_environment</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

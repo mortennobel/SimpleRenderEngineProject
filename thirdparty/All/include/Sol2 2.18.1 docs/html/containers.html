@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>containers &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="threading" href="threading.html" />
+    <link rel="prev" title="usertypes" href="usertypes.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>containers</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usertypes.html">usertypes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="threading.html">threading</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="containers">
+<h1>containers<a class="headerlink" href="#containers" title="Permalink to this headline">¶</a></h1>
+<p><em>working with containers in sol2</em></p>
+<p>Containers are objects that are meant to be inspected and iterated and whose job is to typically provide storage to a collection of items. The standard library has several containers of varying types, and all of them have <code class="docutils literal notranslate"><span class="pre">begin()</span></code> and <code class="docutils literal notranslate"><span class="pre">end()</span></code> methods which return iterators. C-style arrays are also containers, and sol2 will detect all of them for use and bestow upon them special properties and functions.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Containers from C++ are stored as <code class="docutils literal notranslate"><span class="pre">userdata</span></code> with special <code class="docutils literal notranslate"><span class="pre">usertype</span></code> metatables with <a class="reference internal" href="#container-operations"><span class="std std-ref">special operations</span></a></dt><dd><ul>
+<li><dl class="simple">
+<dt>In Lua 5.1, this means containers pushed without wrappers like <a class="reference internal" href="api/as_table.html"><span class="doc">as_table</span></a> and <a class="reference internal" href="api/nested.html"><span class="doc">nested</span></a> will not work with <code class="docutils literal notranslate"><span class="pre">pairs</span></code> or other built-in iteration functions from Lua</dt><dd><ul>
+<li><p>Lua 5.2+ will behave just fine (does not include LuaJIT 2.0.x)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>You must push containers into C++ by returning them directly and getting/setting them directly, and they will have a type of <code class="docutils literal notranslate"><span class="pre">sol::type::userdata</span></code> and treated like a usertype</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Containers can be manipulated from both C++ and Lua, and, like userdata, will <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/containers.cpp">reflect changes if you use a reference</a> to the data.</p></li>
+<li><dl class="simple">
+<dt>This means containers <strong>do not automatically serialize as Lua tables</strong></dt><dd><ul>
+<li><p>If you need tables, consider using <code class="docutils literal notranslate"><span class="pre">sol::as_table</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::nested</span></code></p></li>
+<li><p>See <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/containers_as_table.cpp">this table serialization example</a> for more details</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Lua 5.1 has different semantics for <code class="docutils literal notranslate"><span class="pre">pairs</span></code> and <code class="docutils literal notranslate"><span class="pre">ipairs</span></code>: see the example for plain containers in the <a class="reference internal" href="api/containers.html"><span class="doc">api documentation page for containers</span></a></p></li>
+<li><p>You can override container behavior by overriding <a class="reference internal" href="#container-detection"><span class="std std-ref">the detection trait</span></a> and <a class="reference internal" href="#container-traits"><span class="std std-ref">specializing the container_traits template</span></a></p></li>
+<li><p>You can bind typical C-style arrays, but must follow <a class="reference internal" href="#container-c-array"><span class="std std-ref">the rules</span></a></p></li>
+</ul>
+<div class="admonition note" id="container-c-array">
+<p class="admonition-title">Note</p>
+<p>Please note that c-style arrays must be added to Lua using <code class="docutils literal notranslate"><span class="pre">lua[&quot;my_arr&quot;]</span> <span class="pre">=</span> <span class="pre">&amp;my_c_array;</span></code> or <code class="docutils literal notranslate"><span class="pre">lua[&quot;my_arr&quot;]</span> <span class="pre">=</span> <span class="pre">std::ref(my_c_array);</span></code> to be bestowed these properties. No, a plain <code class="docutils literal notranslate"><span class="pre">T*</span></code> pointer is <strong>not</strong> considered an array. This is important because <code class="docutils literal notranslate"><span class="pre">lua[&quot;my_string&quot;]</span> <span class="pre">=</span> <span class="pre">&quot;some</span> <span class="pre">string&quot;;</span></code> is also typed as an array (<code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char[n]</span></code>) and thusly we can only use <code class="docutils literal notranslate"><span class="pre">std::reference_wrapper</span></code>s or pointers to arrays to work for us.</p>
+</div>
+<div class="section" id="container-detection">
+<span id="id1"></span><h2>container detection<a class="headerlink" href="#container-detection" title="Permalink to this headline">¶</a></h2>
+<p>containers are detected by the type trait <code class="docutils literal notranslate"><span class="pre">sol::is_container&lt;T&gt;</span></code>. If that turns out to be true, sol2 will attempt to push a userdata into Lua for the specified type <code class="docutils literal notranslate"><span class="pre">T</span></code>, and bestow it with some of the functions and properties listed below. These functions and properties are provided by a template struct <code class="docutils literal notranslate"><span class="pre">sol::container_traits&lt;T&gt;</span></code>, which has a number of static Lua C functions bound to a safety metatable. If you want to override the behavior for a specific container, you must first specialize <code class="docutils literal notranslate"><span class="pre">sol::is_container&lt;T&gt;</span></code> to drive from <code class="docutils literal notranslate"><span class="pre">std::true_type</span></code>, then override the functions you want to change. Any function you do not override will call the default implementation or equivalent. The default implementation for unrecognized containers is simply errors.</p>
+<p>You can also specialize <code class="docutils literal notranslate"><span class="pre">sol::is_container&lt;T&gt;</span></code> to turn off container detection, if you find it too eager for a type that just happens to have <code class="docutils literal notranslate"><span class="pre">begin</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> functions, like so:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">not_container.hpp</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">not_container</span> <span class="p">{</span>
+        <span class="kt">void</span> <span class="n">begin</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="p">}</span>
+
+        <span class="kt">void</span> <span class="n">end</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">namespace</span> <span class="n">sol</span> <span class="p">{</span>
+        <span class="k">template</span> <span class="o">&lt;&gt;</span>
+        <span class="k">struct</span> <span class="n">is_container</span><span class="o">&lt;</span><span class="n">not_container</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">false_type</span> <span class="p">{};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This will let the type be pushed as a regular userdata.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Pushing a new <a class="reference internal" href="api/usertype.html"><span class="doc">usertype</span></a> will prevent a qualifying C++ container type from being treated like a container. To force a type that you’ve registered/bound as a usertype using <code class="docutils literal notranslate"><span class="pre">new_usertype</span></code> or <code class="docutils literal notranslate"><span class="pre">new_simple_usertype</span></code> to be treated like a container, use <a class="reference internal" href="api/as_container.html"><span class="doc">sol::as_container</span></a>.</p>
+</div>
+</div>
+<div class="section" id="container-overriding">
+<span id="container-traits"></span><h2>container overriding<a class="headerlink" href="#container-overriding" title="Permalink to this headline">¶</a></h2>
+<p>If you <strong>want</strong> it to participate as a table, use <code class="docutils literal notranslate"><span class="pre">std::true_type</span></code> instead of <code class="docutils literal notranslate"><span class="pre">std::false_type</span></code> from the <a class="reference internal" href="#container-detection"><span class="std std-ref">containter detection</span></a> example. and provide the appropriate <code class="docutils literal notranslate"><span class="pre">iterator</span></code> and <code class="docutils literal notranslate"><span class="pre">value_type</span></code> definitions on the type. Failure to do so will result in a container whose operations fail by default (or compilation will fail).</p>
+<p>If you need a type whose declaration and definition you do not have control over to be a container, then you must override the default behavior by specializing container traits, like so:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">specializing.hpp</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">not_my_type</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+
+<span class="k">namespace</span> <span class="n">sol</span> <span class="p">{</span>
+        <span class="k">template</span> <span class="o">&lt;&gt;</span>
+        <span class="k">struct</span> <span class="n">is_container</span><span class="o">&lt;</span><span class="n">not_my_type</span><span class="o">&gt;</span> <span class="o">:</span> <span class="n">std</span><span class="o">::</span><span class="n">true_type</span> <span class="p">{};</span>
+
+        <span class="k">template</span> <span class="o">&lt;&gt;</span>
+        <span class="k">struct</span> <span class="n">container_traits</span><span class="o">&lt;</span><span class="n">not_my_type</span><span class="o">&gt;</span> <span class="p">{</span>
+
+                <span class="p">...</span>
+                <span class="c1">// see below for implemetation details</span>
+        <span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The various operations provided by <code class="docutils literal notranslate"><span class="pre">container_traits&lt;T&gt;</span></code> are expected to be like so, below. Ability to override them requires familiarity with the Lua stack and how it operates, as well as knowledge of Lua’s <a class="reference internal" href="functions.html#raw-function-note"><span class="std std-ref">raw C functions</span></a>. You can read up on raw C functions by looking at the “Programming in Lua” book. The <a class="reference external" href="https://www.lua.org/pil/26.html">online version’s information</a> about the stack and how to return information is still relevant, and you can combine that by also using sol’s low-level <a class="reference internal" href="api/stack.html"><span class="doc">stack API</span></a> to achieve whatever behavior you need.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Exception handling <strong>WILL</strong> be provided around these particular raw C functions, so you do not need to worry about exceptions or errors bubbling through and handling that part. It is specifically handled for you in this specific instance, and <strong>ONLY</strong> in this specific instance. The raw note still applies to every other raw C function you make manually.</p>
+</div>
+</div>
+<div class="section" id="container-operations">
+<span id="id2"></span><h2>container operations<a class="headerlink" href="#container-operations" title="Permalink to this headline">¶</a></h2>
+<p>Below are the many container operations and their override points for <code class="docutils literal notranslate"><span class="pre">container_traits&lt;T&gt;</span></code>. Please use these to understand how to use any part of the implementation.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 4%" />
+<col style="width: 14%" />
+<col style="width: 13%" />
+<col style="width: 7%" />
+<col style="width: 62%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>operation</p></td>
+<td><p>lua syntax</p></td>
+<td><p>container_traits&lt;T&gt;
+extension point</p></td>
+<td><p>stack argument order</p></td>
+<td><p>notes/caveats</p></td>
+</tr>
+<tr class="row-even"><td><p>set</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:set(key,</span> <span class="pre">value)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">set(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 key
+3 value</p></td>
+<td><ul class="simple">
+<li><p>if <code class="docutils literal notranslate"><span class="pre">value</span></code> is nil, it performs an erase in default implementation</p></li>
+<li><p>if this is a sequence container and it support insertion and <code class="docutils literal notranslate"><span class="pre">key</span></code>,is an index equal to the size of the container,+ 1, it will insert at,the end of the container (this is a Lua idiom)</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>index_set</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c[key]</span> <span class="pre">=</span> <span class="pre">value</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">index_set(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 key
+3 value</p></td>
+<td><ul class="simple">
+<li><p>default implementation calls “set”</p></li>
+<li><p>if this is a sequence container and it support insertion and <code class="docutils literal notranslate"><span class="pre">key</span></code> is an index equal to the size of the container  + 1, it will insert at the end of the container (this is a Lua idiom)</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>get</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">c:get(key)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">get(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 key</p></td>
+<td><ul class="simple">
+<li><p>can return multiple values</p></li>
+<li><p>default implementation increments iterators linearly for non-random-access</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>index_get</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">v</span> <span class="pre">=</span> <span class="pre">c[key]</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">index_get(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 key</p></td>
+<td><ul class="simple">
+<li><p>can only return 1 value</p></li>
+<li><p>default implementation just calls “get”</p></li>
+<li><p>if <code class="docutils literal notranslate"><span class="pre">key</span></code> is a string and <code class="docutils literal notranslate"><span class="pre">key</span></code> is one of the other member functions, it will return that member function rather than perform a lookup / index get</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>find</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:find(target)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">find(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 target</p></td>
+<td><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">target</span></code> is a value for non-lookup containers (fixed containers, sequence containers, non-associative and non-ordered containers)</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>erase</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:erase(target)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">erase(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 target</p></td>
+<td><ul class="simple">
+<li><p>for sequence containers, <code class="docutils literal notranslate"><span class="pre">target</span></code> is an index to erase</p></li>
+<li><p>for lookup containers, <code class="docutils literal notranslate"><span class="pre">target</span></code> is the key type</p></li>
+<li><p>uses linear incrementation to spot for sequence containers that do not have random access iterators (<code class="docutils literal notranslate"><span class="pre">std::list</span></code>, <code class="docutils literal notranslate"><span class="pre">std::forward_list</span></code>, and similar)</p></li>
+<li><p>invalidates iteration</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>insert</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:insert(target,</span> <span class="pre">value)</span></code></p></td>
+<td></td>
+<td><p>1 self
+2 target
+3 key</p></td>
+<td><ul class="simple">
+<li><p>for sequence containers, <code class="docutils literal notranslate"><span class="pre">target</span></code> is an index, otherwise it is the key type</p></li>
+<li><p>inserts into a container if possible at the specified location</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>add</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:add(key,</span> <span class="pre">value)</span></code> or <code class="docutils literal notranslate"><span class="pre">c:add(value)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">add(lua_State*);</span></code></p></td>
+<td><p>1 self
+2 key/value
+3 value</p></td>
+<td><ul class="simple">
+<li><p>2nd argument (3rd on stack) is provided for associative containers to add</p></li>
+<li><p>ordered containers will insert into the appropriate spot, not necessarily at the end</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>size</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">#c</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">size(lua_State*);</span></code></p></td>
+<td><p>1 self</p></td>
+<td><ul class="simple">
+<li><p>default implementation calls <code class="docutils literal notranslate"><span class="pre">.size()</span></code> if present</p></li>
+<li><p>otherwise, default implementation uses <code class="docutils literal notranslate"><span class="pre">std::distance(begin(L,</span> <span class="pre">self),</span> <span class="pre">end(L,</span> <span class="pre">self))</span></code></p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>clear</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">c:clear()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">clear(lua_State*);</span></code></p></td>
+<td><p>1 self</p></td>
+<td><ul class="simple">
+<li><p>default implementation provides no fallback if there’s no <code class="docutils literal notranslate"><span class="pre">clear</span></code> operation</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>begin</p></td>
+<td><p>n/a</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">begin(lua_State*,</span> <span class="pre">T&amp;);</span></code></p></td>
+<td><p>n/a</p></td>
+<td><ul class="simple">
+<li><p>called by default implementation</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>end</p></td>
+<td><p>n/a</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">end(lua_State*,</span> <span class="pre">T&amp;);</span></code></p></td>
+<td><p>n/a</p></td>
+<td><ul class="simple">
+<li><p>called by default implementation</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>pairs</p></td>
+<td></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">int</span> <span class="pre">pairs(lua_State*);</span></code></p></td>
+<td><p>1 self</p></td>
+<td><ul class="simple">
+<li><p>implement if advanced user only that understands caveats</p></li>
+<li><p>override begin and end instead and leave this to default implementation if you do not know what <code class="docutils literal notranslate"><span class="pre">__pairs</span></code> is for or how to implement it and the <code class="docutils literal notranslate"><span class="pre">next</span></code> function</p></li>
+<li><p>works only in Lua 5.2+</p></li>
+<li><p>calling <code class="docutils literal notranslate"><span class="pre">pairs(</span> <span class="pre">c</span> <span class="pre">)</span></code> in Lua 5.1 / LuaJIT will crash with assertion failure (Lua expects <code class="docutils literal notranslate"><span class="pre">c</span></code> to be a table)</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If your type does not adequately support <code class="docutils literal notranslate"><span class="pre">begin()</span></code> and <code class="docutils literal notranslate"><span class="pre">end()</span></code> and you cannot override it, use the <code class="docutils literal notranslate"><span class="pre">sol::is_container</span></code> trait override plus a custom implementation of <code class="docutils literal notranslate"><span class="pre">pairs</span></code> on your usertype to get it to work as you please. Note that a type not having proper <code class="docutils literal notranslate"><span class="pre">begin()</span></code> and <code class="docutils literal notranslate"><span class="pre">end()</span></code> will not work if you try to forcefully serialize it as a table (this means avoid using <a class="reference internal" href="api/as_table.html"><span class="doc">sol::as_table</span></a> and <a class="reference internal" href="api/nested.html"><span class="doc">sol::nested</span></a>, otherwise you will have compiler errors). Just set it or get it directly, as shown in the examples, to work with the C++ containers.</p>
+</div>
+</div>
+<div class="section" id="container-classifications">
+<span id="id3"></span><h2>container classifications<a class="headerlink" href="#container-classifications" title="Permalink to this headline">¶</a></h2>
+<p>When you serialize a container into sol2, the default container handler deals with the containers by inspecting various properties, functions, and typedefs on them. Here are the broad implications of containers sol2’s defaults will recognize, and which already-known containers fall into their categories:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 22%" />
+<col style="width: 14%" />
+<col style="width: 52%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>container type</p></td>
+<td><p>requirements</p></td>
+<td><p>known containers</p></td>
+<td><p>notes/caveats</p></td>
+</tr>
+<tr class="row-even"><td><p>sequence</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">erase(iterator)</span></code>
+<code class="docutils literal notranslate"><span class="pre">push_back</span></code>/<code class="docutils literal notranslate"><span class="pre">insert(value_type)</span></code></p></td>
+<td><p>std::vector
+std::deque
+std::list
+std::forward_list</p></td>
+<td><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">find</span></code> operation is linear in size of list (searches all elements)</p></li>
+<li><p>std::forward_list has forward-only iterators: set/find is a linear operation</p></li>
+<li><p>std::forward_list uses “insert_after” idiom, requires special handling internally</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>fixed</p></td>
+<td><p>lacking <code class="docutils literal notranslate"><span class="pre">push_back</span></code>/<code class="docutils literal notranslate"><span class="pre">insert</span></code>
+lacking <code class="docutils literal notranslate"><span class="pre">erase</span></code></p></td>
+<td><p>std::array&lt;T, n&gt;
+T[n] (fixed arrays)</p></td>
+<td><ul class="simple">
+<li><p>regular c-style arrays must be set with <code class="docutils literal notranslate"><span class="pre">std::ref(</span> <span class="pre">arr</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">&amp;arr</span></code> to be usable</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><p>ordered</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">key_type</span></code> typedef
+<code class="docutils literal notranslate"><span class="pre">erase(key)</span></code>
+<code class="docutils literal notranslate"><span class="pre">find(key)</span></code>
+<code class="docutils literal notranslate"><span class="pre">insert(key)</span></code></p></td>
+<td><p>std::set
+std::multi_set</p></td>
+<td><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">container[key]</span> <span class="pre">=</span> <span class="pre">stuff</span></code> operation erases when <code class="docutils literal notranslate"><span class="pre">stuff</span></code> is nil, inserts/sets when not</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">container.get(key)</span></code> returns the key itself</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>associative, ordered</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">key_type</span></code>, <code class="docutils literal notranslate"><span class="pre">mapped_type</span></code> typedefs
+<code class="docutils literal notranslate"><span class="pre">erase(key)</span></code>
+<code class="docutils literal notranslate"><span class="pre">find(key)</span></code>
+<code class="docutils literal notranslate"><span class="pre">insert({</span> <span class="pre">key,</span> <span class="pre">value</span> <span class="pre">})</span></code></p></td>
+<td><p>std::map
+std::multi_map</p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p>unordered</p></td>
+<td><p>same as ordered</p></td>
+<td><p>std::unordered_set
+std::unordered_multiset</p></td>
+<td><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">container[key]</span> <span class="pre">=</span> <span class="pre">stuff</span></code> operation erases when <code class="docutils literal notranslate"><span class="pre">stuff</span></code> is nil, inserts/sets when not</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">container.get(key)</span></code> returns the key itself</p></li>
+<li><p>iteration not guaranteed to be in order of insertion, just like in C++ container</p></li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><p>unordered, associative</p></td>
+<td><p>same as ordered, associative</p></td>
+<td><p>std::unordered_map
+std::unordered_multimap</p></td>
+<td><ul class="simple">
+<li><p>iteration not guaranteed to be in order of insertion, just like in C++ container</p></li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usertypes.html">usertypes</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="threading.html">threading</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

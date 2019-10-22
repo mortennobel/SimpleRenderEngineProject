@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>integrating into existing code &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="variables" href="variables.html" />
+    <link rel="prev" title="getting started" href="getting-started.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>integrating into existing code</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="getting-started.html">getting started</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="variables.html">variables</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="integrating-into-existing-code">
+<h1>integrating into existing code<a class="headerlink" href="#integrating-into-existing-code" title="Permalink to this headline">¶</a></h1>
+<p>If you’re already using lua and you just want to use <code class="docutils literal notranslate"><span class="pre">sol</span></code> in some places, you can use <code class="docutils literal notranslate"><span class="pre">state_view</span></code>:</p>
+<div class="literal-block-wrapper docutils container" id="state-view-snippet">
+<div class="code-block-caption"><span class="caption-text">using state_view</span><a class="headerlink" href="#state-view-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">something_in_my_system</span> <span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// start using Sol with a pre-existing system</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state_view</span> <span class="n">lua</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> <span class="c1">// non-owning</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;print(&#39;bark bark bark!&#39;)&quot;</span><span class="p">);</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">expected_table</span><span class="p">(</span><span class="n">L</span><span class="p">);</span> <span class="c1">// get the table off the top of the stack</span>
+        <span class="c1">// start using it...</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p><a class="reference internal" href="../api/state.html"><span class="doc">sol::state_view</span></a> is exactly like <code class="docutils literal notranslate"><span class="pre">sol::state</span></code>, but it doesn’t manage the lifetime of a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>. Therefore, you get all the goodies that come with a <code class="docutils literal notranslate"><span class="pre">sol::state</span></code> without any of  the ownership implications. Sol has no initialization components that need to deliberately remain alive for the duration of the program. It’s entirely self-containing and uses lua’s garbage collectors and various implementation techniques to require no state C++-side. After you do that, all of the power of <cite>Sol</cite> is available to you, and then some!</p>
+<p><code class="docutils literal notranslate"><span class="pre">sol::state_view</span></code> is also helpful when you want to <a class="reference external" href="https://github.com/ThePhD/sol2/tree/develop/examples/require_dll_example">create a DLL that loads some Lua module</a> via requires.</p>
+<p>You may also want to call <code class="docutils literal notranslate"><span class="pre">require</span></code> and supply a string of a script file or something that returns an object that you set equal to something in C++. For that, you can use the <a class="reference internal" href="../api/state.html#state-require-function"><span class="std std-ref">require functionality</span></a>.</p>
+<p>Remember that Sol can be as lightweight as you want it: almost all of Sol’s Lua types take the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> argument and then a second <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">index</span></code> stack index argument, meaning you can use <a class="reference internal" href="../api/table.html"><span class="doc">tables</span></a>, <a class="reference internal" href="../api/function.html"><span class="doc">lua functions</span></a>, <a class="reference internal" href="../api/coroutine.html"><span class="doc">coroutines</span></a>, and other reference-derived objects that expose the proper constructor for your use. You can also set <a class="reference internal" href="../api/usertype.html"><span class="doc">usertypes</span></a> and other things you need without changing your entire architecture.</p>
+<p>Note that you can also make non-standard pointer and reference types with custom reference counting and such also play nice with the system. See <a class="reference internal" href="../api/unique_usertype_traits.html"><span class="doc">unique_usertype_traits&lt;T&gt;</span></a> to see how! Custom types is also mentioned in the <a class="reference internal" href="customization.html"><span class="doc">customization tutorial</span></a>.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="getting-started.html">getting started</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="variables.html">variables</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

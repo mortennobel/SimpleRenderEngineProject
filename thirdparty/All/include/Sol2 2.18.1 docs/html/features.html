@@ -1,0 +1,742 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>features &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="functions" href="functions.html" />
+    <link rel="prev" title="supported compilers, binary size, compile time" href="compilation.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>features</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="compilation.html">supported compilers, binary size, compile time</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="functions.html">functions</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="features">
+<h1>features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<p><em>what does Sol (and other libraries) support?</em></p>
+<p>The goal of Sol is to provide an incredibly clean API that provides high performance (comparable or better than the C it was written on) and extreme ease of use. That is, users should be able to say: “this works pretty much how I expected it to.”</p>
+<p>For the hard technical components of Lua and its ecosystem we support, here is the full rundown:</p>
+<div class="section" id="what-sol-supports">
+<h2>what Sol supports<a class="headerlink" href="#what-sol-supports" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Support for Lua 5.1, 5.2, and 5.3+ and LuaJIT 2.0.4 + 2.1.x-beta3+. We achieve this through our <a class="reference internal" href="api/compatibility.html"><span class="doc">compatibility</span></a> header.</p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/table.html"><span class="doc">Table</span></a> support: setting values, getting values of multiple (different) types</dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/proxy.html"><span class="doc">Lazy evaluation</span></a> for nested/chained queries</dt><dd><p><code class="docutils literal notranslate"><span class="pre">table[&quot;a&quot;][&quot;b&quot;][&quot;c&quot;]</span> <span class="pre">=</span> <span class="pre">24;</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Implicit conversion to the types you want</dt><dd><p><code class="docutils literal notranslate"><span class="pre">double</span> <span class="pre">b</span> <span class="pre">=</span> <span class="pre">table[&quot;computed_value&quot;];</span></code></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/optional.html"><span class="doc">Optional</span></a> support: setting values, getting values of multiple (different) types</dt><dd><ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/proxy.html"><span class="doc">Lazy evaluation</span></a> for nested/chained queries</dt><dd><p><code class="docutils literal notranslate"><span class="pre">optional&lt;int&gt;</span> <span class="pre">maybe_number</span> <span class="pre">=</span> <span class="pre">table[&quot;a&quot;][&quot;b&quot;][&quot;invalid_key&quot;];</span></code></p>
+</dd>
+</dl>
+</li>
+<li><p>Turns on safety when you want it: speed when you don’t</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Support for callables (functions, lambdas, member functions)</dt><dd><ul>
+<li><p>Pull out any Lua function with <a class="reference internal" href="api/function.html"><span class="doc">sol::function</span></a>: <code class="docutils literal notranslate"><span class="pre">sol::function</span> <span class="pre">fx</span> <span class="pre">=</span> <span class="pre">table[&quot;socket_send&quot;];</span></code></p></li>
+<li><p>Can also set callables into <a class="reference internal" href="api/proxy.html"><span class="doc">operator[] proxies</span></a>: <code class="docutils literal notranslate"><span class="pre">table[&quot;move_dude&quot;]</span> <span class="pre">=</span> <span class="pre">&amp;engine::move_dude;</span></code></p></li>
+<li><dl class="simple">
+<dt>Safety: use <a class="reference internal" href="api/protected_function.html"><span class="doc">sol::protected_function</span></a> to catch any kind of error</dt><dd><ul>
+<li><p>ANY kind: C++ exception or Lua erors are trapped and run through the optional <code class="docutils literal notranslate"><span class="pre">error_handler</span></code> variable</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><em>Advanced:</em> <a class="reference internal" href="api/overload.html"><span class="doc">overloading of a single function name</span></a> so you don’t need to do boring typechecks</p></li>
+<li><p><em>Advanced:</em> <a class="reference internal" href="functions.html"><span class="doc">efficient handling and well-documented</span></a> way of dealing with arguments</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>User-Defined Type (<a class="reference internal" href="api/usertype.html"><span class="doc">sol::usertype</span></a> in the API) support:</dt><dd><ul>
+<li><p>Set member functions to be called</p></li>
+<li><p>Set member variables</p></li>
+<li><p>Set variables on a class that are based on setter/getter functions</p></li>
+<li><p>Use free-functions that take the Type as a first argument (pointer or reference)</p></li>
+<li><p>Support for “Factory” classes that do not expose constructor or destructor</p></li>
+<li><p>Modifying memory of userdata in C++ directly affects Lua without copying, and</p></li>
+<li><dl class="simple">
+<dt>Modifying userdata in Lua directly affects C++ references/pointers</dt><dd><p><code class="docutils literal notranslate"><span class="pre">my_class&amp;</span> <span class="pre">a</span> <span class="pre">=</span> <span class="pre">table[&quot;a&quot;];</span></code>
+<code class="docutils literal notranslate"><span class="pre">my_class*</span> <span class="pre">a_ptr</span> <span class="pre">=</span> <span class="pre">table[&quot;a&quot;];</span></code></p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>If you want a copy, just use value semantics and get copies:</dt><dd><p><code class="docutils literal notranslate"><span class="pre">my_class</span> <span class="pre">a</span> <span class="pre">=</span> <span class="pre">table[&quot;a&quot;];</span></code></p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Thread/Coroutine support</dt><dd><ul>
+<li><p>Use, resume, and play with <a class="reference internal" href="api/coroutine.html"><span class="doc">coroutines</span></a> like regular functions</p></li>
+<li><p>Get and use them even on a separate Lua <a class="reference internal" href="api/thread.html"><span class="doc">thread</span></a></p></li>
+<li><p>Monitor status and get check errors</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p><em>Advanced:</em> Customizable and extensible to your own types if you override <a class="reference internal" href="api/stack.html"><span class="doc">getter/pusher/checker</span></a> template struct definitions.</p></li>
+</ul>
+</div>
+<div class="section" id="the-feature-matrix">
+<h2>The Feature Matrix™<a class="headerlink" href="#the-feature-matrix" title="Permalink to this headline">¶</a></h2>
+<p>The below feature table checks for the presence of something. It, however, does not actually account for any kind of laborious syntax.</p>
+<p>✔ full support: works as you’d expect (operator[] on tables, etc…)</p>
+<p>~ partial support / wonky support: this means its either supported through some other fashion (not with the desired syntax, serious caveats, etc.). Sometimes means dropping down to use the plain C API (at which point, what was the point of the abstraction?).</p>
+<p>✗ no support: feature doesn’t work or, if it’s there, it REALLY sucks to use</p>
+<p>Implementation notes from using the libraries are below the tables.</p>
+</div>
+<div class="section" id="category-explanations">
+<h2>category explanations<a class="headerlink" href="#category-explanations" title="Permalink to this headline">¶</a></h2>
+<p>Explanations for a few categories are below (rest are self-explanatory).</p>
+<ul class="simple">
+<li><p>optional: Support for getting an element, or potentially not (and not forcing the default construction of what amounts to a bogus/dead object). Usually comes with <code class="docutils literal notranslate"><span class="pre">std(::experimental)::optional</span></code>. It’s a fairly new class, so a hand-rolled class internal to the library with similar semantics is also acceptable</p></li>
+<li><p>tables: Some sort of abstraction for dealing with tables. Ideal support is <code class="docutils literal notranslate"><span class="pre">mytable[&quot;some_key&quot;]</span> <span class="pre">=</span> <span class="pre">value</span></code>, and everything that the syntax implies.</p></li>
+<li><p>table chaining: In conjunction with tables, having the ability to query deeply into tables <code class="docutils literal notranslate"><span class="pre">mytable[&quot;key1&quot;][&quot;key2&quot;][&quot;key3&quot;]</span></code>. Note that this becomes a tripping point for some libraries: crashing if <code class="docutils literal notranslate"><span class="pre">&quot;key1&quot;</span></code> doesn’t exist while trying to access <code class="docutils literal notranslate"><span class="pre">&quot;key2&quot;</span></code> (Sol avoids this specifically when you use <code class="docutils literal notranslate"><span class="pre">sol::optional</span></code>), and sometimes it’s also a heavy performance bottleneck as expressions are not lazy-evaluated by a library.</p></li>
+<li><p>arbitrary keys: Letting C++ code use userdata, other tables, integers, etc. as keys for into a table.</p></li>
+<li><p>user-defined types (udts): C++ types given form and function in Lua code.</p></li>
+<li><p>udts - member functions: C++ member functions on a type, usually callable with <code class="docutils literal notranslate"><span class="pre">my_object:foo(1)</span></code> or similar in Lua.</p></li>
+<li><p>udts - table variables: C++ member variables/properties, manipulated by <code class="docutils literal notranslate"><span class="pre">my_object.var</span> <span class="pre">=</span> <span class="pre">24</span></code> and in Lua</p></li>
+<li><p>function binding: Support for binding all types of functions. Lambdas, member functions, free functions, in different contexts, etc…</p></li>
+<li><p>protected function: Use of <code class="docutils literal notranslate"><span class="pre">lua_pcall</span></code> to call a function, which offers error-handling and trampolining (as well as the ability to opt-in / opt-out of this behavior)</p></li>
+<li><p>multi-return: returning multiple values from and to Lua (generally through <code class="docutils literal notranslate"><span class="pre">std::tuple&lt;...&gt;</span></code> or in some other way)</p></li>
+<li><p>variadic/variant argument: being able to accept “anything” from Lua, and even return “anything” to Lua (<code class="docutils literal notranslate"><span class="pre">object</span></code> abstraction, variadic arguments, etc…)</p></li>
+<li><p>inheritance: allowing some degree of subtyping or inheritance on classes / userdata from Lua - this generally means that you can retrieve a base pointer from Lua even if you hand the library a derived pointer</p></li>
+<li><p>overloading: the ability to call overloaded functions, matched based on arity or type (<code class="docutils literal notranslate"><span class="pre">foo(</span> <span class="pre">1</span> <span class="pre">)</span></code> from lua calls a different function then <code class="docutils literal notranslate"><span class="pre">foo(</span> <span class="pre">&quot;bark&quot;</span> <span class="pre">)</span></code>).</p></li>
+<li><p>Lua thread: basic wrapping of the lua thread API; ties in with coroutine.</p></li>
+<li><p>coroutines: allowing a function to be called multiple times, resuming the execution of a Lua coroutine each time</p></li>
+<li><p>environments: an abstraction for getting, setting and manipulating an environment, using table techniques, functions or otherwise. Typically for the purposes of sandboxing</p></li>
+</ul>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15%" />
+<col style="width: 7%" />
+<col style="width: 7%" />
+<col style="width: 6%" />
+<col style="width: 5%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 9%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 6%" />
+<col style="width: 10%" />
+<col style="width: 5%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>plain C</p></th>
+<th class="head"><p>luawrapper</p></th>
+<th class="head"><p>lua-intf</p></th>
+<th class="head"><p>luabind</p></th>
+<th class="head"><p>Selene</p></th>
+<th class="head"><p>Sol2</p></th>
+<th class="head"><p>oolua</p></th>
+<th class="head"><p>lua-api-pp</p></th>
+<th class="head"><p>kaguya</p></th>
+<th class="head"><p>SLB3</p></th>
+<th class="head"><p>SWIG</p></th>
+<th class="head"><p>luacppinterface</p></th>
+<th class="head"><p>luwra</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>optional</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-odd"><td><p>tables</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>table chaining</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-odd"><td><p>arbitrary keys</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-even"><td><p>user-defined types (udts)</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-odd"><td><p>udts: member functions</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>udts: table variables</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+</tr>
+<tr class="row-odd"><td><p>stack abstractions</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>lua callables from C(++)</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+</tr>
+<tr class="row-odd"><td><p>function binding</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>protected call</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+</tr>
+<tr class="row-odd"><td><p>multi-return</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-even"><td><p>variadic/variant argument</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-odd"><td><p>inheritance</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-even"><td><p>overloading</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lua thread</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-even"><td><p>environments</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-odd"><td><p>coroutines</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+</tr>
+<tr class="row-even"><td><p>no-rtti support</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-odd"><td><p>no-exception support</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>Lua 5.1</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-odd"><td><p>Lua 5.2</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>Lua 5.3</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-odd"><td><p>luajit</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>~</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✔</p></td>
+<td><p>✗</p></td>
+<td><p>✔</p></td>
+</tr>
+<tr class="row-even"><td><p>distribution</p></td>
+<td><p>compile</p></td>
+<td><p>header</p></td>
+<td><p>both</p></td>
+<td><p>compile</p></td>
+<td><p>header</p></td>
+<td><p>header</p></td>
+<td><p>compile</p></td>
+<td><p>compile</p></td>
+<td><p>header</p></td>
+<td><p>compile</p></td>
+<td><p>generated</p></td>
+<td><p>compile</p></td>
+<td><p>header</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="notes-on-implementations">
+<h2>notes on implementations<a class="headerlink" href="#notes-on-implementations" title="Permalink to this headline">¶</a></h2>
+<p>Plain C -</p>
+<ul class="simple">
+<li><p>Obviously you can do anything you want with Plain C, but the effort involved is astronomical in comparison to what other wrappers, libraries and frameworks offer</p></li>
+<li><p>Does not scale very well (in terms of developer ease of use)</p></li>
+<li><p>Compilation (or package manager use) is obviously required for your platform and required to use ANY of these libraries, but that’s okay because all libraries need some version of Lua anyways, so you always have this!</p></li>
+</ul>
+<p>kaguya -</p>
+<ul class="simple">
+<li><p>Table variables / member variables are automatically turned into <code class="docutils literal notranslate"><span class="pre">obj:x(</span> <span class="pre">value</span> <span class="pre">)</span></code> to set and <code class="docutils literal notranslate"><span class="pre">obj:x()</span></code> to get</p></li>
+<li><p>Has optional support</p></li>
+<li><p>Inspired coroutine support for Sol</p></li>
+<li><p>Library author (satoren) is a nice guy!</p></li>
+<li><p>C++11/14, or boostified (which makes it C++03 compatible)</p></li>
+<li><p>Class registration is a bit verbose, but not as offensive as OOLua or lua-intf or others</p></li>
+<li><p>Constructor setting syntax is snazzy and good</p></li>
+</ul>
+<p>Sol -</p>
+<ul class="simple">
+<li><p>One of the few libraries with optional support!</p></li>
+<li><p>Basically the fastest in almomst all respects: <a class="reference external" href="http://sol2.readthedocs.io/en/latest/benchmarks.html">http://sol2.readthedocs.io/en/latest/benchmarks.html</a></p></li>
+<li><p>Overloading support can get messy with inheritance, see <a class="reference internal" href="api/overload.html"><span class="doc">here</span></a></p></li>
+<li><p>C++14/”C++1y” (-std=c++14, -std=c++1y, =std=c++1z) flags are used (available since GCC 4.9 and Clang 3.5)</p></li>
+<li><p>Active issues, active individuals</p></li>
+<li><p>Deserves lots of love!</p></li>
+</ul>
+<p>lua-intf -</p>
+<ul class="simple">
+<li><p>Can be both header-only or compiled</p></li>
+<li><p>Has optional support</p></li>
+<li><p>C++11</p></li>
+<li><p>Macro-based registration (strange pseudo-language)</p></li>
+<li><p>Fairly fast in most regards</p></li>
+<li><p>Registering classes/”modules” in using C++ code is extremely verbose</p></li>
+<li><p>In order to chain lookups, one has to glue the keys together (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;mykey.mykey2&quot;</span></code>) on the <code class="docutils literal notranslate"><span class="pre">operator[]</span></code> lookup (e.g., you can’t nest them arbitrarily, you have to pre-compose the proper lookup string) (fails miserably for non-string lookups!).</p></li>
+<li><p>Not too shabby!</p></li>
+</ul>
+<p>Selene -</p>
+<ul class="simple">
+<li><p>Table variables / member variables are automatically turned into <code class="docutils literal notranslate"><span class="pre">obj:set_x(</span> <span class="pre">value</span> <span class="pre">)</span></code> to set and <code class="docutils literal notranslate"><span class="pre">obj:x()</span></code> to get</p></li>
+<li><p>Registering classes/”modules” using C++ code is extremely verbose, similar to lua-intf’s style</p></li>
+<li><p>Eats crap when it comes to performance, most of the time (see <a class="reference internal" href="benchmarks.html"><span class="doc">benchmarks</span></a>)</p></li>
+<li><p>Lots of users (blogpost etc. made it popular), but the Repository is kinda stagnant…</p></li>
+</ul>
+<p>luawrapper -</p>
+<ul class="simple">
+<li><p>Takes the approach of writing and reading tables using <code class="docutils literal notranslate"><span class="pre">readVariable</span></code> and <code class="docutils literal notranslate"><span class="pre">writeVariable</span></code> functions</p></li>
+<li><p>C++11, no macros!</p></li>
+<li><p>The interface can be clunky (no table-like data structures: most things go though <code class="docutils literal notranslate"><span class="pre">readVariable</span></code> / <code class="docutils literal notranslate"><span class="pre">writeVariable</span></code>)</p></li>
+<li><p>Internal Compiler errors in Visual Studio 2015 - submitted a PR to fix it, hopefully it’ll get picked up</p></li>
+</ul>
+<p>SWIG (3.0) -</p>
+<ul class="simple">
+<li><p>Very comprehensive for binding concepts of C++ (classes, variables, etc.) to Lua</p></li>
+<li><p>Helps with literally nothing else (tables, threads, stack abstractions, etc.)</p></li>
+<li><p>Not really a good, full-featured Library…</p></li>
+<li><p>Requires preprocessing step (but it’s not a… TERRIBLY complicated preprocessing step); some boilerplate in writing additional classes that you’ve already declared</p></li>
+</ul>
+<p>luacppinterface -</p>
+<ul class="simple">
+<li><p>The branch that fixes VC++ warnings and introduces some new work has type checker issues, so use the stable branch only</p></li>
+<li><p>No table variable support</p></li>
+<li><p>Actually has tables (but no operator[])</p></li>
+<li><p>Does not support arbitrary keys</p></li>
+</ul>
+<p>luabind -</p>
+<ul class="simple">
+<li><p>One of the older frameworks, but has many people updating it and providing “deboostified” versions</p></li>
+<li><dl class="simple">
+<dt>Strange in-lua keywords and parsing to allow for classes to be written in lua</dt><dd><ul>
+<li><p>not sure if good feature; vendor lock-in to that library to depend on this specific class syntax?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Comprehensive lua bindings (can even bind “properties”)</p></li>
+<li><p>There’s some code that produces an ICE in Visual C++: I submitted a fix to the library in the hopes that it’ll get accepted</p></li>
+<li><p>Wonky table support: no basic conversion functions on <code class="docutils literal notranslate"><span class="pre">luabind::object</span></code>; have to push object then use lua API to get what you want</p></li>
+</ul>
+<p>lua-api-pp -</p>
+<ul class="simple">
+<li><p>Compiled, but the recommendation is to add the source files directly to your project</p></li>
+<li><dl class="simple">
+<dt>Userdata registration with thick setup-macros: LUAPP_USERDATA( … ) plus a bunch of free functions that take a <code class="docutils literal notranslate"><span class="pre">T&amp;</span> <span class="pre">self</span></code> argument</dt><dd><ul>
+<li><p>You can bind member functions directly but only if you override metatable entries</p></li>
+<li><p>Otherwise, COMPLICATED self-registration that makes you wonder why you’re using the framework</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>You have to create a context and then call it to start accessing the lua state (adding more boilerplate… thanks)</dt><dd><ul>
+<li><p>Thankfully, unlike many libraries, it actually has a Table type that can be used semi-easily. FINALLY</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>C++11-ish in some regards</p></li>
+<li><p>Sad face, thanks to the way userdata registration is handled</p></li>
+</ul>
+<p>SLB3 -</p>
+<ul class="simple">
+<li><p>Old code exported to github from dying google code</p></li>
+<li><p>“.NET Style” - to override functionality, derive from class – boilerplate (isn’t that what we’re trying to get rid of?)</p></li>
+<li><p>Pointers everywhere: ownership semantics unclear</p></li>
+<li><p>Piss-poor documentation, ugh!</p></li>
+<li><p>Least favorite to work with, for sure!</p></li>
+</ul>
+<p>oolua -</p>
+<ul class="simple">
+<li><p>The syntax for this library. <a class="reference external" href="https://oolua.org/docs/index.html">Go read the docs</a></p></li>
+<li><dl class="simple">
+<dt>The worst in terms of how to use it: may have docs, but the DSL is extraordinarily crappy with thick, hard-to-debug/hard-to-error-check macros</dt><dd><ul>
+<li><p>Same problem as lua-api-pp: cannot have the declaration macros anywhere but the toplevel namespace because of template declaration macro</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Supports not having exceptions or rtti turned on (shiny!)</p></li>
+<li><dl class="simple">
+<dt>Poor RAII support: default-construct-and-get style (requires some form of initalization to perform a <code class="docutils literal notranslate"><span class="pre">get</span></code> of an object, and it’s hard to extend)</dt><dd><ul>
+<li><p>The library author has informed me that he does personally advises individuals do not use the <code class="docutils literal notranslate"><span class="pre">Table</span></code> abstraction in OOLua… Do I likewise tell people to consider its table abstractions defunct?</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Table variables / member variables from C++ are turned into function calls (<code class="docutils literal notranslate"><span class="pre">get_x</span></code> and <code class="docutils literal notranslate"><span class="pre">set_x</span></code> by default)</p></li>
+</ul>
+<p>luwra -</p>
+<ul class="simple">
+<li><p>How do you store stateful functors / lambas? So far, no support for such.</p></li>
+<li><p>Cannot pull functions without first leaving them on the stack: manual cleanup becomes a thing</p></li>
+<li><p>Doesn’t understand <code class="docutils literal notranslate"><span class="pre">std::function</span></code> conversions and the like (but with some extra code can get it to work)</p></li>
+<li><p>Recently improved by a lot: can chain tables and such, even if performance is a bit sad for that use case</p></li>
+<li><p>When you do manage to set function calls with the macros they are fast (can a template solution do just as good? Sol is going to find out!)</p></li>
+<li><p>No table variable support - get turned into getter/setter functions, similar to kaguya</p></li>
+<li><p>Table variables become class statics (surprising)</p></li>
+</ul>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="compilation.html">supported compilers, binary size, compile time</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="functions.html">functions</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

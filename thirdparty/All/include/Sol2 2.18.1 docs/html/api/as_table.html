@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>as_table &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="usertype&lt;T&gt;" href="usertype.html" />
+    <link rel="prev" title="nested" href="nested.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>as_table</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="nested.html">nested</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="usertype.html">usertype&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="as-table">
+<h1>as_table<a class="headerlink" href="#as-table" title="Permalink to this headline">¶</a></h1>
+<p><em>make sure an object is pushed as a table</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">as_table_t</span> <span class="p">{</span> <span class="p">...</span> <span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">as_table_t</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">as_function</span> <span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">container</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>This function serves the purpose of ensuring that an object is pushed – if possible – like a table into Lua. The container passed here can be a pointer, a reference, a <code class="docutils literal notranslate"><span class="pre">std::reference_wrapper</span></code> around a container, or just a plain container value. It must have a begin/end function, and if it has a <code class="docutils literal notranslate"><span class="pre">std::pair&lt;Key,</span> <span class="pre">Value&gt;</span></code> as its <code class="docutils literal notranslate"><span class="pre">value_type</span></code>, it will be pushed as a dictionary. Otherwise, it’s pushed as a sequence.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">();</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;my_table&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_table</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">{</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span> <span class="p">}));</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;for k, v in ipairs(my_table) do print(k, v) assert(k == v) end&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Note that any caveats with Lua tables apply the moment it is serialized, and the data cannot be gotten out back out in C++ as a C++ type. You can deserialize the Lua table into something explicitly using the <code class="docutils literal notranslate"><span class="pre">sol::as_table_t</span></code> marker for your get and conversion operations using Sol. At that point, the returned type is deserialized <strong>from</strong> a table, meaning you cannot reference any kind of C++ data directly as you do with regular userdata/usertypes. <em>All C++ type information is lost upon serialization into Lua.</em></p>
+<p>If you need this functionality with a member variable, use a <a class="reference internal" href="property.html"><span class="doc">property on a getter function</span></a> that returns the result of <code class="docutils literal notranslate"><span class="pre">sol::as_table</span></code>.</p>
+<p>This marker does NOT apply to <a class="reference internal" href="usertype.html"><span class="doc">usertypes</span></a>.</p>
+<p>You can also use this to nest types and retrieve tables within tables as shown by <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_simple.cpp">this example</a>.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="nested.html">nested</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="usertype.html">usertype&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

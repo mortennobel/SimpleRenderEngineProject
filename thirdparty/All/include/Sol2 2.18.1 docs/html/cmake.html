@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>CMake Script &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="licenses" href="licenses.html" />
+    <link rel="prev" title="std::(w/u16/u32)string support" href="codecvt.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>CMake Script</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="codecvt.html">std::(w/u16/u32)string support</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="licenses.html">licenses</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="cmake-script">
+<h1>CMake Script<a class="headerlink" href="#cmake-script" title="Permalink to this headline">¶</a></h1>
+<p>Thanks to <a class="reference external" href="https://github.com/ThePhD/sol2/issues/89">Kevin Brightwell</a>, you can drop this CMake Script into your CMake Projects to have Sol part of one of its builds:</p>
+<div class="literal-block-wrapper docutils container" id="cmake-build-script">
+<div class="code-block-caption"><span class="caption-text">CMake Build Script</span><a class="headerlink" href="#cmake-build-script" title="Permalink to this code">¶</a></div>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Needed for ExternalProject_Add()</span>
+<span class="nb">include</span><span class="p">(</span><span class="s">ExternalProject</span><span class="p">)</span>
+
+<span class="c"># Needed for building single header for sol2</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">PythonInterp</span> <span class="s">3</span> <span class="s">REQUIRED</span><span class="p">)</span>
+
+<span class="c"># Configuration data for What sol2 version to use and where to put it</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">SOL2_TAG</span> <span class="s">v2.5.6</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">SOL2_HPP</span> <span class="s2">&quot;${CMAKE_BINARY_DIR}/include/sol.hpp&quot;</span><span class="p">)</span>
+
+<span class="c"># Download and &quot;install&quot; sol2</span>
+<span class="nb">ExternalProject_add</span><span class="p">(</span>
+    <span class="s">sol2</span>
+    <span class="s">PREFIX</span> <span class="o">${</span><span class="nv">VENDOR_PATH</span><span class="o">}</span> <span class="c"># Set this value yourself</span>
+
+    <span class="s">GIT_REPOSITORY</span> <span class="s2">&quot;https://github.com/ThePhD/sol2.git&quot;</span>
+    <span class="s">GIT_TAG</span> <span class="o">${</span><span class="nv">SOL2_TAG</span><span class="o">}</span>
+
+    <span class="c"># No CMake commands to run, so tell CMake not to configure</span>
+    <span class="s">CONFIGURE_COMMAND</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c"># Generate the single header and put it in ${SOL2_HPP}</span>
+    <span class="s">BINARY_DIR</span> <span class="o">${</span><span class="nv">VENDOR_PREFIX</span><span class="o">}</span><span class="s">/src/sol2</span>
+    <span class="s">BUILD_COMMAND</span>
+            <span class="o">${</span><span class="nv">CMAKE_COMMAND</span><span class="o">}</span> <span class="s">-E</span> <span class="s">make_directory</span> <span class="o">${</span><span class="nv">CMAKE_BINARY_DIR</span><span class="o">}</span><span class="s">/include</span>
+        <span class="s">COMMAND</span>
+            <span class="o">${</span><span class="nv">PYTHON_EXECUTABLE</span><span class="o">}</span> <span class="s">./single.py</span> <span class="s">-o</span> <span class="s2">&quot;${SOL2_HPP}&quot;</span>
+
+    <span class="c"># No install or test command for the library</span>
+    <span class="s">INSTALL_COMMAND</span> <span class="s2">&quot;&quot;</span>
+    <span class="s">TEST_COMMAND</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="c"># Conditionally turn on SOL_CHECK_ARGUMENTS if using Debug mode</span>
+<span class="nb">if</span> <span class="p">(</span><span class="s">CMAKE_BUILD_TYPE</span> <span class="s">MATCHES</span> <span class="s2">&quot;[Dd]ebug&quot;</span><span class="p">)</span>
+    <span class="nb">if</span> <span class="p">(</span><span class="s">VERBOSE</span><span class="p">)</span>
+        <span class="nb">message</span><span class="p">(</span><span class="s">STATUS</span> <span class="s2">&quot;Turning on SOL_CHECK_ARGUMENTS in Debug mode.&quot;</span><span class="p">)</span>
+    <span class="nb">endif</span><span class="p">()</span>
+    <span class="nb">add_definitions</span><span class="p">(</span><span class="s">-DSOL_CHECK_ARGUMENTS</span><span class="p">)</span>
+<span class="nb">endif</span><span class="p">()</span>
+
+<span class="c"># Make sure sol2 is found as a system directory</span>
+<span class="nb">include_directories</span><span class="p">(</span><span class="s">SYSTEM</span> <span class="o">${</span><span class="nv">CMAKE_BINARY_DIR</span><span class="o">}</span><span class="s">/include</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="codecvt.html">std::(w/u16/u32)string support</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="licenses.html">licenses</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

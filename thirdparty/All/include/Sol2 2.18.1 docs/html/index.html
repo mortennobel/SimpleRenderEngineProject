@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sol 2.18 &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="tutorial: quick ‘n’ dirty" href="tutorial/all-the-things.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="#">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>Sol 2.18</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tutorial/all-the-things.html">tutorial: quick ‘n’ dirty</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <a class="reference external image-reference" href="https://github.com/ThePhD/sol2"><img alt="sol2 repository" src="_images/sol.png" /></a>
+<div class="section" id="sol-version">
+<h1>Sol 2.18<a class="headerlink" href="#sol-version" title="Permalink to this headline">¶</a></h1>
+<p><em>a fast, simple C++ and Lua Binding</em></p>
+<p>When you need to hit the ground running with Lua and C++, <a class="reference external" href="https://github.com/ThePhD/sol2">Sol</a> is the go-to framework for high-performance binding with an easy to use API.</p>
+<a class="reference external image-reference" href="https://travis-ci.org/ThePhD/sol2"><img alt="build status" src="https://travis-ci.org/ThePhD/sol2.svg?branch=develop" /></a>
+<a class="reference external image-reference" href="https://gitter.im/chat-sol2/Lobby"><img alt="chat about sol2 on gitter" src="https://badges.gitter.im/chat-sol2/Lobby.svg" /></a>
+<div class="section" id="get-going">
+<h2>get going:<a class="headerlink" href="#get-going" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound" id="mastertoc">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/all-the-things.html">tutorial: quick ‘n’ dirty</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/tutorial-top.html">tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">errors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compilation.html">supported compilers, binary size, compile time</a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usertypes.html">usertypes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="containers.html">containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="threading.html">threading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="traits.html">customization traits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/api-top.html">api reference manual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mentions.html">mentions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="benchmarks.html">benchmarks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">getting performance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="safety.html">safety</a></li>
+<li class="toctree-l1"><a class="reference internal" href="exceptions.html">exceptions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rtti.html">run-time type information (rtti)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="codecvt.html">std::(w/u16/u32)string support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cmake.html">CMake Script</a></li>
+<li class="toctree-l1"><a class="reference internal" href="licenses.html">licenses</a></li>
+<li class="toctree-l1"><a class="reference internal" href="origin.html">origin</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="i-need-feature-x-maybe-you-have-it">
+<h2>“I need feature X, maybe you have it?”<a class="headerlink" href="#i-need-feature-x-maybe-you-have-it" title="Permalink to this headline">¶</a></h2>
+<p>Take a look at the <a class="reference internal" href="features.html"><span class="doc">Features</span></a> page: it links to much of the API. You can also just straight up browse the <a class="reference internal" href="api/api-top.html"><span class="doc">api</span></a> or ease in with the <a class="reference internal" href="tutorial/tutorial-top.html"><span class="doc">tutorials</span></a>. To know more about the implementation for usertypes, see <a class="reference internal" href="usertypes.html"><span class="doc">here</span></a> To know how function arguments are handled, see <a class="reference internal" href="functions.html#function-argument-handling"><span class="std std-ref">this note</span></a>. Don’t see a feature you want? Send inquiries for support for a particular abstraction to the <a class="reference external" href="https://github.com/ThePhD/sol2/issues">issues</a> tracker.</p>
+</div>
+<div class="section" id="the-basics">
+<h2>the basics:<a class="headerlink" href="#the-basics" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>More examples can be found in the <a class="reference external" href="https://github.com/ThePhD/sol2/tree/develop/examples">examples directory</a></p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">functions</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;cassert&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;beep&quot;</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">x</span><span class="p">]{</span> <span class="o">++</span><span class="n">x</span><span class="p">;</span> <span class="p">});</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;beep()&quot;</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">beep</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;beep&quot;</span><span class="p">];</span>
+        <span class="n">beep</span><span class="p">();</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">linking C++ structures to Lua</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;cassert&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">vars</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">boop</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="kt">int</span> <span class="nf">bop</span> <span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">boop</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">vars</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;vars&quot;</span><span class="p">,</span>
+                <span class="s">&quot;boop&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">vars</span><span class="o">::</span><span class="n">boop</span>
+                <span class="s">&quot;bop&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">vars</span><span class="o">::</span><span class="n">bop</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;beep = vars.new()</span><span class="se">\n</span><span class="s">&quot;</span>
+                <span class="s">&quot;beep.boop = 1</span><span class="se">\n</span><span class="s">&quot;</span>
+                <span class="s">&quot;bopvalue = beep:bop()&quot;</span><span class="p">);</span>
+
+        <span class="n">vars</span><span class="o">&amp;</span> <span class="n">beep</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;beep&quot;</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">bopvalue</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bopvalue&quot;</span><span class="p">];</span>
+
+        <span class="n">assert</span><span class="p">(</span><span class="n">beep</span><span class="p">.</span><span class="n">boop</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">lua</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">vars</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;beep&quot;</span><span class="p">).</span><span class="n">boop</span> <span class="o">==</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">beep</span><span class="p">.</span><span class="n">bop</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">bopvalue</span> <span class="o">==</span> <span class="mi">2</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tutorial/all-the-things.html">tutorial: quick ‘n’ dirty</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

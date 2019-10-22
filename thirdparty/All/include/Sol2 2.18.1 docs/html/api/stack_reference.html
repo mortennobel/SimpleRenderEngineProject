@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>stack_reference &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="make_object/make_reference" href="make_reference.html" />
+    <link rel="prev" title="reference" href="reference.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>stack_reference</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="reference.html">reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="make_reference.html">make_object/make_reference</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="stack-reference">
+<h1>stack_reference<a class="headerlink" href="#stack-reference" title="Permalink to this headline">¶</a></h1>
+<p><em>zero-overhead object on the stack</em></p>
+<p>When you work with a <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a>, the object gotten from the stack has a reference to it made in the registry, keeping it alive. If you want to work with the Lua stack directly without having any additional references made, <code class="docutils literal notranslate"><span class="pre">sol::stack_reference</span></code> is for you. Its API is identical to <code class="docutils literal notranslate"><span class="pre">sol::reference</span></code> in every way, except it contains a <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">stack_index()</span></code> member function that allows you to retrieve the stack index.</p>
+<p>Note that this will not pin the object since a copy is not made in the registry, meaning things can be pulled out from under it, the stack can shrink under it, things can be added onto the stack before this object’s position, and what <code class="docutils literal notranslate"><span class="pre">sol::stack_reference</span></code> will point to will change. Please know what the Lua stack is and have discipline while managing your Lua stack when working at this level.</p>
+<p>All of the base types have <code class="docutils literal notranslate"><span class="pre">stack</span></code> versions of themselves, and the APIs are identical to their non-stack forms. This includes <a class="reference internal" href="table.html"><span class="doc">sol::stack_table</span></a>, <a class="reference internal" href="function.html"><span class="doc">sol::stack_function</span></a>, <a class="reference internal" href="protected_function.html"><span class="doc">sol::stack_protected_function</span></a>, <a class="reference internal" href="userdata.html"><span class="doc">sol::stack_(light_)userdata</span></a> and <a class="reference internal" href="object.html"><span class="doc">sol::stack_object</span></a>. There is a special case for <code class="docutils literal notranslate"><span class="pre">sol::stack_function</span></code>, which has an extra type called <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_function</span></code> (and similar <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_protected_function</span></code>).</p>
+<div class="section" id="stack-aligned-function">
+<h2>stack_aligned_function<a class="headerlink" href="#stack-aligned-function" title="Permalink to this headline">¶</a></h2>
+<p>This type is particular to working with the stack. It does not push the function object on the stack before pushing the arguments, assuming that the function present is already on the stack before going ahead and invoking the function it is targeted at. It is identical to <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a> and has a protected counterpart as well. If you are working with the stack and know there is a callable object in the right place (i.e., at the top of the Lua stack), use this abstraction to have it call your stack-based function while still having the easy-to-use Lua abstractions.</p>
+<p>Furthermore, if you know you have a function in the right place alongside proper arguments on top of it, you can use the <code class="docutils literal notranslate"><span class="pre">sol::stack_count</span></code> structure and give its constructor the number of arguments off the top that you want to call your pre-prepared function with:</p>
+<div class="literal-block-wrapper docutils container" id="stack-top-example">
+<div class="code-block-caption"><span class="caption-text">stack_aligned_function.cpp</span><a class="headerlink" href="#stack-top-example" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;cassert&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span><span class="p">[])</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;func&quot;</span><span class="p">,</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;});</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">reference</span> <span class="n">func_ref</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;func&quot;</span><span class="p">];</span>
+        <span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">lua_state</span><span class="p">();</span>
+
+        <span class="c1">// for some reason, you need to use the low-level API</span>
+        <span class="n">func_ref</span><span class="p">.</span><span class="n">push</span><span class="p">();</span> <span class="c1">// function on stack now</span>
+
+        <span class="c1">// maybe this is in a lua_CFunction you bind,</span>
+        <span class="c1">// or maybe you&#39;re trying to work with a pre-existing system</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">stack_aligned_function</span> <span class="n">func</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">lua_pushinteger</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">5</span><span class="p">);</span> <span class="c1">// argument 1</span>
+        <span class="n">lua_pushinteger</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="mi">6</span><span class="p">);</span> <span class="c1">// argument 2</span>
+        <span class="c1">// take 2 arguments from the top,</span>
+        <span class="c1">// and use &quot;stack_aligned_function&quot; to call</span>
+        <span class="kt">int</span> <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">stack_count</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+
+        <span class="c1">// make sure everything is clean</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="mi">22</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">lua</span><span class="p">.</span><span class="n">stack_top</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">);</span> <span class="c1">// stack is empty/balanced</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Finally, there is a special abstraction that provides further stack optimizations for <code class="docutils literal notranslate"><span class="pre">sol::protected_function</span></code> variants that are aligned, and it is called <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_stack_handler_protected_function</span></code>. This typedef expects you to pass a <code class="docutils literal notranslate"><span class="pre">stack_reference</span></code> handler to its constructor, meaning that you have already placed an appropriate error-handling function somewhere on the stack before the aligned function. You can use <code class="docutils literal notranslate"><span class="pre">sol::stack_count</span></code> with this type as well,</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do not use <code class="docutils literal notranslate"><span class="pre">sol::stack_count</span></code> with a <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_protected_function</span></code>. The default behavior checks if the <code class="docutils literal notranslate"><span class="pre">error_handler</span></code> member variable is valid, and attempts to push the handler onto the stack in preparation for calling the function. This inevitably changes the stack. Only use <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_protected_function</span></code> with <code class="docutils literal notranslate"><span class="pre">sol::stack_count</span></code> if you know that the handler is not valid (it is <code class="docutils literal notranslate"><span class="pre">nil</span></code> or its <code class="docutils literal notranslate"><span class="pre">error_handler.valid()</span></code> function returns <code class="docutils literal notranslate"><span class="pre">false</span></code>), or if you use <code class="docutils literal notranslate"><span class="pre">sol::stack_aligned_stack_handler_protected_function</span></code>, which references an existing stack index that can be before the precise placement of the function and its arguments.</p>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="reference.html">reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="make_reference.html">make_object/make_reference</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

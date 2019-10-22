@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>usertypes &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="containers" href="containers.html" />
+    <link rel="prev" title="functions" href="functions.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>usertypes</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="functions.html">functions</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="containers.html">containers</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="usertypes">
+<h1>usertypes<a class="headerlink" href="#usertypes" title="Permalink to this headline">¶</a></h1>
+<p>Perhaps the most powerful feature of sol2, <code class="docutils literal notranslate"><span class="pre">usertypes</span></code> are the way sol2 and C++ communicate your classes to the Lua runtime and bind things between both tables and to specific blocks of C++ memory, allowing you to treat Lua userdata and other things like classes.</p>
+<p>To learn more about usertypes, visit:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="tutorial/cxx-in-lua.html"><span class="doc">the basic tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="tutorial/customization.html"><span class="doc">customization point tutorial</span></a></p></li>
+<li><p><a class="reference internal" href="api/usertype.html"><span class="doc">api documentation</span></a></p></li>
+<li><p><a class="reference internal" href="api/usertype_memory.html"><span class="doc">memory documentation</span></a></p></li>
+</ul>
+<p>The examples folder also has a number of really great examples for you to see. There are also some notes about guarantees you can find about usertypes, and their associated userdata, below:</p>
+<ul class="simple">
+<li><p>Containers get pushed as special usertypes, but can be disabled if problems arise as detailed <a class="reference internal" href="containers.html"><span class="doc">here</span></a>.</p></li>
+<li><p><a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_automatic_operators.cpp">Certain operators</a> are detected and bound automatically for usertypes</p></li>
+<li><p>You can use bitfields but it requires some finesse on your part. We have an example to help you get started <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_bitfields.cpp">here, that uses a few tricks</a>.</p></li>
+<li><dl class="simple">
+<dt>All usertypes are runtime extensible in both <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_advanced.cpp#L81">Lua</a> and <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_simple.cpp#L51">C++</a></dt><dd><ul>
+<li><p>If you need dynamic callbacks or runtime overridable functions, have a <code class="docutils literal notranslate"><span class="pre">std::function</span></code> member variable and get/set it on the usertype object</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std::function</span></code> works as a member variable or in passing as an argument / returning as a value (you can even use it with <code class="docutils literal notranslate"><span class="pre">sol::property</span></code>)</p></li>
+<li><p>You can also create an entirely dynamic object: see the <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/dynamic_object.cpp">dynamic_object example</a> for more details</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>(Advanced) You can override the iteration function for Lua 5.2 and above (LuaJIT does not have the capability) <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/pairs.cpp">as shown in the pairs example</a></p></li>
+<li><p>You can use <a class="reference internal" href="api/filters.html"><span class="doc">filters</span></a> to control dependencies and streamline return values, as well as apply custom behavior to a functions return</p></li>
+<li><dl class="simple">
+<dt>Please note that the colon is necessary to “automatically” pass the <code class="docutils literal notranslate"><span class="pre">this</span></code>/<code class="docutils literal notranslate"><span class="pre">self</span></code> argument to Lua methods</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">obj:method_name()</span></code> is how you call “member” methods in Lua</p></li>
+<li><p>It is purely syntactic sugar that passes the object name as the first argument to the <code class="docutils literal notranslate"><span class="pre">method_name</span></code> function</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">my_obj:foo(bar,</span> <span class="pre">baz)</span></code> is the same as <code class="docutils literal notranslate"><span class="pre">my_obj.foo(my_obj,</span> <span class="pre">bar,</span> <span class="pre">baz)</span></code></p></li>
+<li><p><strong>Please note</strong> that one uses a colon, and the other uses a dot, and forgetting to do this properly will crash your code</p></li>
+<li><p>There are safety defines outlined in the <a class="reference internal" href="safety.html#config"><span class="std std-ref">safety page here</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>You can push types classified as userdata before you register a usertype.</dt><dd><ul>
+<li><p>You can register a usertype with the Lua runtime at any time</p></li>
+<li><p>You can retrieve a usertype from the Lua runtime at any time</p></li>
+<li><p>Methods and properties will be added to the type only after you register the usertype with the Lua runtime</p></li>
+<li><p>All methods and properties will appear on all userdata, even if that object was pushed before the usertype (all userdata will be updated)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Types either copy once or move once into the memory location, if it is a value type. If it is a pointer, we store only the reference.</dt><dd><ul>
+<li><p>This means retrieval of class types (not primitive types like strings or integers) by <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code> or <code class="docutils literal notranslate"><span class="pre">T*</span></code> allow you to modify the data in Lua directly.</p></li>
+<li><p>Retrieve a plain <code class="docutils literal notranslate"><span class="pre">T</span></code> to get a copy</p></li>
+<li><p>Return types and passing arguments to <code class="docutils literal notranslate"><span class="pre">sol::function</span></code>-types use perfect forwarding and reference semantics, which means no copies happen unless you specify a value explicitly. See <a class="reference internal" href="functions.html#function-argument-handling"><span class="std std-ref">this note for details</span></a>.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>You can set <code class="docutils literal notranslate"><span class="pre">index</span></code> and <code class="docutils literal notranslate"><span class="pre">new_index</span></code> freely on any usertype you like to override the default “if a key is missing, find it / set it here” functionality of a specific object of a usertype.</dt><dd><ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">new_index</span></code> and <code class="docutils literal notranslate"><span class="pre">index</span></code> will not be called if you try to manipulate the named usertype table directly. sol2’s will be called to add that function to the usertype’s function/variable lookup table.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">new_index</span></code> and <code class="docutils literal notranslate"><span class="pre">index</span></code> will be called if you attempt to call a key that does not exist on an actual userdata object (the C++ object) itself.</p></li>
+<li><p>If you made a usertype named <code class="docutils literal notranslate"><span class="pre">test</span></code>, this means <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">=</span> <span class="pre">test()</span></code>, with <code class="docutils literal notranslate"><span class="pre">t.hi</span> <span class="pre">=</span> <span class="pre">54</span></code> will call your function, but <code class="docutils literal notranslate"><span class="pre">test.hi</span> <span class="pre">=</span> <span class="pre">function</span> <span class="pre">()</span> <span class="pre">print</span> <span class="pre">(&quot;hi&quot;);</span> <span class="pre">end</span></code> will instead set the key <code class="docutils literal notranslate"><span class="pre">hi</span></code> to to lookup that function for all <code class="docutils literal notranslate"><span class="pre">test</span></code> types</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>The first <code class="docutils literal notranslate"><span class="pre">sizeof(</span> <span class="pre">void*</span> <span class="pre">)</span></code> bytes is always a pointer to the typed C++ memory. What comes after is based on what you’ve pushed into the system according to <a class="reference internal" href="api/usertype_memory.html"><span class="doc">the memory specification for usertypes</span></a>. This is compatible with a number of systems other than just sol2, making it easy to interop with select other Lua systems.</p></li>
+<li><dl class="simple">
+<dt>Member methods, properties, variables and functions taking <code class="docutils literal notranslate"><span class="pre">self&amp;</span></code> arguments modify data directly</dt><dd><ul>
+<li><p>Work on a copy by taking arguments or returning by value.</p></li>
+<li><p>Do not use r-value references: they do not mean anything in Lua code.</p></li>
+<li><p>Move-only types can only be taken by reference: sol2 cannot know if/when to move a value (except when serializing with perfect forwarding <em>into</em> Lua)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>The actual metatable associated with the usertype has a long name and is defined to be opaque by the Sol implementation.</p></li>
+<li><p>The actual metatable inner workings is opaque and defined by the Sol implementation, and there are no internal docs because optimizations on the operations are applied based on heuristics we discover from performance testing the system.</p></li>
+</ul>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="functions.html">functions</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="containers.html">containers</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

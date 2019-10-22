@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tie &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="function" href="function.html" />
+    <link rel="prev" title="unique_usertype_traits&lt;T&gt;" href="unique_usertype_traits.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>tie</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="unique_usertype_traits.html">unique_usertype_traits&lt;T&gt;</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="function.html">function</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="tie">
+<h1>tie<a class="headerlink" href="#tie" title="Permalink to this headline">¶</a></h1>
+<p><em>improved version of ``std::tie``</em></p>
+<p><a class="reference external" href="http://en.cppreference.com/w/cpp/utility/tuple/tie">std::tie()</a> does not work well with <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a>’s <code class="docutils literal notranslate"><span class="pre">sol::function_result</span></code> returns. Use <code class="docutils literal notranslate"><span class="pre">sol::tie</span></code> instead. Because they’re both named <cite>tie</cite>, you’ll need to be explicit when you use Sol’s by naming it with the namespace (<code class="docutils literal notranslate"><span class="pre">sol::tie</span></code>), even with a <code class="docutils literal notranslate"><span class="pre">using</span> <span class="pre">namespace</span> <span class="pre">sol;</span></code>. Here’s an example:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">code</span> <span class="o">=</span> <span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">function test()</span>
+<span class="s">        return 1, 2, 3</span>
+<span class="s">end</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="n">code</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+<span class="c1">//std::tie(a, b, c) = lua[&quot;test&quot;]();</span>
+<span class="c1">// will error: use the line below</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">tie</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;test&quot;</span><span class="p">]();</span>
+</pre></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="unique_usertype_traits.html">unique_usertype_traits&lt;T&gt;</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="function.html">function</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

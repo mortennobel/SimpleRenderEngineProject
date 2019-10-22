@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>table &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="userdata" href="userdata.html" />
+    <link rel="prev" title="make_object/make_reference" href="make_reference.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>table</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="make_reference.html">make_object/make_reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="userdata.html">userdata</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="table">
+<h1>table<a class="headerlink" href="#table" title="Permalink to this headline">¶</a></h1>
+<p><em>a representation of a Lua (meta)table</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="kt">bool</span> <span class="n">global</span><span class="o">&gt;</span>
+<span class="k">class</span> <span class="nc">table_core</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="n">table_core</span><span class="o">&lt;</span><span class="nb">false</span><span class="o">&gt;</span> <span class="n">table</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">table_core</span><span class="o">&lt;</span><span class="nb">true</span><span class="o">&gt;</span> <span class="n">global_table</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sol::table</span></code> is an extremely efficient manipulator of state that brings most of the magic of the Sol abstraction. Capable of doing multiple sets at once, multiple gets into a <code class="docutils literal notranslate"><span class="pre">std::tuple</span></code>, being indexed into using <code class="docutils literal notranslate"><span class="pre">[key]</span></code> syntax and setting keys with a similar syntax (see: <a class="reference internal" href="proxy.html"><span class="doc">here</span></a>), <code class="docutils literal notranslate"><span class="pre">sol::table</span></code> is the corner of the interaction between Lua and C++.</p>
+<p>There are two kinds of tables: the global table and non-global tables: however, both have the exact same interface and all <code class="docutils literal notranslate"><span class="pre">sol::global_table</span></code> s are convertible to regular <code class="docutils literal notranslate"><span class="pre">sol::table</span></code> s.</p>
+<p>Tables are the core of Lua, and they are very much the core of Sol.</p>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">constructor: table</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">table</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="n">table</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">new_table</span> <span class="n">nt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The first takes a table from the Lua stack at the specified index and allows a person to use all of the abstractions therein. The second creates a new table using the capacity hints specified in <code class="docutils literal notranslate"><span class="pre">sol::new_table</span></code>’s structure (<code class="docutils literal notranslate"><span class="pre">sequence_hint</span></code> and <code class="docutils literal notranslate"><span class="pre">map_hint</span></code>). If you don’t care exactly about the capacity, create a table using <code class="docutils literal notranslate"><span class="pre">sol::table</span> <span class="pre">my_table(my_lua_state,</span> <span class="pre">sol::create);</span></code>. Otherwise, specify the table creation size hints by initializing it manually through <a class="reference internal" href="new_table.html"><span class="doc">sol::new_table’s simple constructor</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: get / traversing get</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Keys</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">get</span><span class="p">(</span><span class="n">Keys</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">keys</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Keys</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">traverse_get</span><span class="p">(</span><span class="n">Keys</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">keys</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Key</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">get_or</span><span class="p">(</span><span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">otherwise</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">D</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">get_or</span><span class="p">(</span><span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">D</span><span class="o">&amp;&amp;</span> <span class="n">otherwise</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>These functions retrieve items from the table. The first one (<code class="docutils literal notranslate"><span class="pre">get</span></code>) can pull out <em>multiple</em> values, 1 for each key value passed into the function. In the case of multiple return values, it is returned in a <code class="docutils literal notranslate"><span class="pre">std::tuple&lt;Args...&gt;</span></code>. It is similar to doing <code class="docutils literal notranslate"><span class="pre">return</span> <span class="pre">table[&quot;a&quot;],</span> <span class="pre">table[&quot;b&quot;],</span> <span class="pre">table[&quot;c&quot;]</span></code>. Because it returns a <code class="docutils literal notranslate"><span class="pre">std::tuple</span></code>, you can use <code class="docutils literal notranslate"><span class="pre">std::tie</span></code>/<code class="docutils literal notranslate"><span class="pre">std::make_tuple</span></code> on a multi-get to retrieve all of the necessary variables. The second one (<code class="docutils literal notranslate"><span class="pre">traverse_get</span></code>) pulls out a <em>single</em> value,      using each successive key provided to do another lookup into the last. It is similar to doing <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">table[&quot;a&quot;][&quot;b&quot;][&quot;c&quot;][...]</span></code>.</p>
+<p>If the keys within nested queries try to traverse into a table that doesn’t exist, the second lookup into the nil-returned variable and belong will cause a panic to be fired by the lua C API. If you need to check for keys, check with <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">table.get&lt;sol::optional&lt;int&gt;&gt;(</span> <span class="pre">std::tie(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;,</span> <span class="pre">&quot;c&quot;</span> <span class="pre">)</span> <span class="pre">);</span></code>, and then use the <a class="reference internal" href="optional.html"><span class="doc">optional</span></a> interface to check for errors. As a short-hand, easy method for returning a default if a value doesn’t exist, you can use <code class="docutils literal notranslate"><span class="pre">get_or</span></code> instead.</p>
+<div class="literal-block-wrapper docutils container" id="set-value">
+<div class="code-block-caption"><span class="caption-text">function: set / traversing set</span><a class="headerlink" href="#set-value" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">set</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">traverse_set</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These functions set items into the table. The first one (<code class="docutils literal notranslate"><span class="pre">set</span></code>) can set  <em>multiple</em> values, in the form <code class="docutils literal notranslate"><span class="pre">key_a,</span> <span class="pre">value_a,</span> <span class="pre">key_b,</span> <span class="pre">value_b,</span> <span class="pre">...</span></code>. It is similar to <code class="docutils literal notranslate"><span class="pre">table[key_a]</span> <span class="pre">=</span> <span class="pre">value_a;</span> <span class="pre">table[key_b]</span> <span class="pre">=</span> <span class="pre">value_b,</span> <span class="pre">...</span></code>. The second one (<code class="docutils literal notranslate"><span class="pre">traverse_set</span></code>) sets a <em>single</em> value, using all but the last argument as keys to do another lookup into the value retrieved prior to it. It is equivalent to <code class="docutils literal notranslate"><span class="pre">table[key_a][key_b][...]</span> <span class="pre">=</span> <span class="pre">value;</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Value semantics are applied to all set operations. If you do not <code class="docutils literal notranslate"><span class="pre">std::ref(</span> <span class="pre">obj</span> <span class="pre">)</span></code> or specifically make a pointer with <code class="docutils literal notranslate"><span class="pre">std::addressof(</span> <span class="pre">obj</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">&amp;obj</span></code>, it will copy / move. This is different from how <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a> behaves with its call operator. Also note that this does not detect callables by default: see the <a class="reference internal" href="../functions.html#binding-callable-objects"><span class="std std-ref">note here</span></a>.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="set-function">
+<div class="code-block-caption"><span class="caption-text">function: set a function with the specified key into lua</span><a class="headerlink" href="#set-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Fx</span><span class="o">&gt;</span>
+<span class="n">state_view</span><span class="o">&amp;</span> <span class="n">set_function</span><span class="p">(</span><span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">Fx</span><span class="o">&amp;&amp;</span> <span class="n">fx</span><span class="p">,</span> <span class="p">[...]);</span>
+</pre></div>
+</div>
+</div>
+<p>Sets the desired function to the specified key value. Note that it also allows for passing a member function plus a member object or just a single member function: however, using a lambda is almost always better when you want to bind a member function + class instance to a single function call in Lua. Also note that this will allow Lua to understand that a callable object (such as a lambda) should be serialized as a function and not as a userdata: see the <a class="reference internal" href="../functions.html#binding-callable-objects"><span class="std std-ref">note here</span></a> for more details.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">function: add</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">add</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This function appends a value to a table. The definition of appends here is only well-defined for a table which has a perfectly sequential (and integral) ordering of numeric keys with associated non-null values (the same requirement for the <a class="reference internal" href="#size-function"><span class="std std-ref">size</span></a> function). Otherwise, this falls to the implementation-defined behavior of your Lua VM, whereupon is may add keys into empty ‘holes’ in the array (e.g., the first empty non-sequential integer key it gets to from <code class="docutils literal notranslate"><span class="pre">size</span></code>) or perhaps at the very “end” of the “array”. Do yourself the favor of making sure your keys are sequential.</p>
+<p>Each argument is appended to the list one at a time.</p>
+<div class="literal-block-wrapper docutils container" id="size-function">
+<div class="code-block-caption"><span class="caption-text">function: size</span><a class="headerlink" href="#size-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">size</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This function returns the size of a table. It is only well-defined in the case of a Lua table which has a perfectly sequential (and integral) ordering of numeric keys with associated non-null values.</p>
+<div class="literal-block-wrapper docutils container" id="new-usertype">
+<div class="code-block-caption"><span class="caption-text">function: setting a usertype</span><a class="headerlink" href="#new-usertype" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CTor0</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">CTor</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">CArgs</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">constructors</span><span class="o">&lt;</span><span class="n">CArgs</span><span class="p">...</span><span class="o">&gt;</span> <span class="n">ctor</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This class of functions creates a new <a class="reference internal" href="usertype.html"><span class="doc">usertype</span></a> with the specified arguments, providing a few extra details for constructors. After creating a usertype with the specified argument, it passes it to <a class="reference internal" href="#set-usertype"><span class="std std-ref">set_usertype</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="new-simple-usertype">
+<div class="code-block-caption"><span class="caption-text">function: setting a simple usertype</span><a class="headerlink" href="#new-simple-usertype" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_simple_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CTor0</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">CTor</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_simple_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Class</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">CArgs</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">new_simple_usertype</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">constructors</span><span class="o">&lt;</span><span class="n">CArgs</span><span class="p">...</span><span class="o">&gt;</span> <span class="n">ctor</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This class of functions creates a new <a class="reference internal" href="simple_usertype.html"><span class="doc">simple usertype</span></a> with the specified arguments, providing a few extra details for constructors and passing the <code class="docutils literal notranslate"><span class="pre">sol::simple</span></code> tag as well. After creating a usertype with the specified argument, it passes it to <a class="reference internal" href="#set-usertype"><span class="std std-ref">set_usertype</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="new-enum">
+<div class="code-block-caption"><span class="caption-text">function: creating an enum</span><a class="headerlink" href="#new-enum" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="kt">bool</span> <span class="n">read_only</span> <span class="o">=</span> <span class="nb">true</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">basic_table_core</span><span class="o">&amp;</span> <span class="n">new_enum</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Use this function to create an enumeration type in Lua. By default, the enum will be made read-only, which creates a tiny performance hit to make the values stored in this table behave exactly like a read-only enumeration in C++. If you plan on changing the enum values in Lua, set the <code class="docutils literal notranslate"><span class="pre">read_only</span></code> template parameter in your <code class="docutils literal notranslate"><span class="pre">new_enum</span></code> call to false. The arguments are expected to come in <code class="docutils literal notranslate"><span class="pre">key,</span> <span class="pre">value,</span> <span class="pre">key,</span> <span class="pre">value,</span> <span class="pre">...</span></code> list.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<span id="set-usertype"></span><div class="code-block-caption"><span class="caption-text">function: setting a pre-created usertype</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">set_usertype</span><span class="p">(</span><span class="n">usertype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span> <span class="n">user</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">table</span><span class="o">&amp;</span> <span class="n">set_usertype</span><span class="p">(</span><span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">usertype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span> <span class="n">user</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Sets a previously created usertype with the specified <code class="docutils literal notranslate"><span class="pre">key</span></code> into the table. Note that if you do not specify a key, the implementation falls back to setting the usertype with a <code class="docutils literal notranslate"><span class="pre">key</span></code> of <code class="docutils literal notranslate"><span class="pre">usertype_traits&lt;T&gt;::name</span></code>, which is an implementation-defined name that tends to be of the form <code class="docutils literal notranslate"><span class="pre">{namespace_name</span> <span class="pre">1}_[{namespace_name</span> <span class="pre">2</span> <span class="pre">...}_{class</span> <span class="pre">name}</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="table-iterators">
+<div class="code-block-caption"><span class="caption-text">function: begin / end for iteration</span><a class="headerlink" href="#table-iterators" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">table_iterator</span> <span class="nf">begin</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">table_iterator</span> <span class="nf">end</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">table_iterator</span> <span class="nf">cbegin</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">table_iterator</span> <span class="nf">cend</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Provides (what can barely be called) <a class="reference external" href="http://en.cppreference.com/w/cpp/concept/InputIterator">input iterators</a> for a table. This allows tables to work with single-pass, input-only algorithms (like <code class="docutils literal notranslate"><span class="pre">std::for_each</span></code>). Note that manually getting an iterator from <code class="docutils literal notranslate"><span class="pre">.begin()</span></code> without a <code class="docutils literal notranslate"><span class="pre">.end()</span></code> or using postfix incrementation (<code class="docutils literal notranslate"><span class="pre">++mytable.begin()</span></code>) will lead to poor results. The Lua stack is manipulated by an iterator and thusly not performing the full iteration once you start is liable to ruin either the next iteration or break other things subtly. Use a C++11 ranged for loop, <code class="docutils literal notranslate"><span class="pre">std::for_each</span></code>, or other algorithims which pass over the entire collection at least once and let the iterators fall out of scope.</p>
+<div class="admonition warning" id="iteration-note">
+<p class="admonition-title">Warning</p>
+<p>The iterators you use to walk through a <code class="docutils literal notranslate"><span class="pre">sol::table</span></code> are NOT guaranteed to iterate in numeric order, or ANY kind of order. They may iterate backwards, forwards, in the style of cuckoo-hashing, by accumulating a visited list while calling <code class="docutils literal notranslate"><span class="pre">rand()</span></code> to find the next target, or some other crazy scheme. Now, no implementation would be crazy, but it is behavior specifically left undefined because there are many ways that your Lua package can implement the table type.</p>
+<p>Iteration order is NOT something you should rely on. If you want to figure out the length of a table, call the length operation (<code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">count</span> <span class="pre">=</span> <span class="pre">mytable.size();</span></code> using the sol API) and then iterate from <code class="docutils literal notranslate"><span class="pre">1</span></code> to <code class="docutils literal notranslate"><span class="pre">count</span></code> (inclusive of the value of count, because Lua expects iteration to work in the range of <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">count]</span></code>). This will save you some headaches in the future when the implementation decides not to iterate in numeric order.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="table-for-each">
+<div class="code-block-caption"><span class="caption-text">function: iteration with a function</span><a class="headerlink" href="#table-for-each" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fx</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">for_each</span><span class="p">(</span><span class="n">Fx</span><span class="o">&amp;&amp;</span> <span class="n">fx</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>A functional <code class="docutils literal notranslate"><span class="pre">for_each</span></code> loop that calls the desired function. The passed in function must take either <code class="docutils literal notranslate"><span class="pre">sol::object</span> <span class="pre">key,</span> <span class="pre">sol::object</span> <span class="pre">value</span></code> or take a <code class="docutils literal notranslate"><span class="pre">std::pair&lt;sol::object,</span> <span class="pre">sol::object&gt;</span> <span class="pre">key_value_pair</span></code>. This version can be a bit safer as allows the implementation to definitively pop the key/value off the Lua stack after each call of the function.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">function: operator[] access</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&lt;</span><span class="n">table</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="k">operator</span><span class="p">[](</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">);</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">table</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;</span> <span class="k">operator</span><span class="p">[](</span><span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Generates a <a class="reference internal" href="proxy.html"><span class="doc">proxy</span></a> that is templated on the table type and the key type. Enables lookup of items and their implicit conversion to a desired type.</p>
+<div class="literal-block-wrapper docutils container" id="table-create">
+<div class="code-block-caption"><span class="caption-text">function: create a table with defaults</span><a class="headerlink" href="#table-create" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="nf">create</span><span class="p">(</span><span class="kt">int</span> <span class="n">narr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Value</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span> <span class="n">create</span><span class="p">(</span><span class="kt">int</span> <span class="n">narr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span><span class="p">,</span> <span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">Value</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+
+<span class="k">static</span> <span class="n">table</span> <span class="nf">create</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Value</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">static</span> <span class="n">table</span> <span class="n">create</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span><span class="p">,</span> <span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">Value</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Creates a table, optionally with the specified values pre-set into the table. If <code class="docutils literal notranslate"><span class="pre">narr</span></code> or <code class="docutils literal notranslate"><span class="pre">nrec</span></code> are 0, then compile-time shenanigans are used to guess the amount of array entries (e.g., integer keys) and the amount of hashable entries (e.g., all other entries).</p>
+<div class="literal-block-wrapper docutils container" id="table-create-with">
+<div class="code-block-caption"><span class="caption-text">function: create a table with compile-time defaults assumed</span><a class="headerlink" href="#table-create-with" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span> <span class="n">create_with</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">static</span> <span class="n">table</span> <span class="n">create_with</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Creates a table, optionally with the specified values pre-set into the table. It checks every 2nd argument (the keys) and generates hints for how many array or map-style entries will be placed into the table. Applies the same rules as <a class="reference internal" href="#set-value"><span class="std std-ref">table.set</span></a> when putting the argument values into the table, including how it handles callable objects.</p>
+<div class="literal-block-wrapper docutils container" id="table-create-named">
+<div class="code-block-caption"><span class="caption-text">function: create a named table with compile-time defaults assumed</span><a class="headerlink" href="#table-create-named" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Name</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">table</span> <span class="n">create_named</span><span class="p">(</span><span class="n">Name</span><span class="o">&amp;&amp;</span> <span class="n">name</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Creates a table, optionally with the specified values pre-set into the table, and sets it as the key <code class="docutils literal notranslate"><span class="pre">name</span></code> in the table. Applies the same rules as <a class="reference internal" href="#set-value"><span class="std std-ref">table.set</span></a> when putting the argument values into the table, including how it handles callable objects.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="make_reference.html">make_object/make_reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="userdata.html">userdata</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

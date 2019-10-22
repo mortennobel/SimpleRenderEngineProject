@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>coroutine &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="error" href="error.html" />
+    <link rel="prev" title="protected_function" href="protected_function.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>coroutine</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="protected_function.html">protected_function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="error.html">error</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="coroutine">
+<h1>coroutine<a class="headerlink" href="#coroutine" title="Permalink to this headline">¶</a></h1>
+<p><em>resumable/yielding functions from Lua</em></p>
+<p>A <code class="docutils literal notranslate"><span class="pre">coroutine</span></code> is a <a class="reference internal" href="reference.html"><span class="doc">reference</span></a> to a function in Lua that can be called multiple times to yield a specific result. It is run on the <a class="reference internal" href="state.html"><span class="doc">lua_State</span></a> that was used to create it (see <a class="reference internal" href="thread.html"><span class="doc">thread</span></a> for an example on how to get a coroutine that runs on a thread separate from your usual “main” <a class="reference internal" href="state.html"><span class="doc">lua_State</span></a>).</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">coroutine</span></code> object is entirely similar to the <a class="reference internal" href="protected_function.html"><span class="doc">protected_function</span></a> object, with additional member functions to check if a coroutine has yielded (<a class="reference internal" href="types.html"><span class="doc">call_status::yielded</span></a>) and is thus runnable again, whether it has completed (<a class="reference internal" href="types.html#call-status"><span class="std std-ref">call_status::ok</span></a>) and thus cannot yield anymore values, or whether it has suffered an error (see <a class="reference internal" href="#status"><span class="std std-ref">status()</span></a> and <a class="reference internal" href="types.html#call-status"><span class="std std-ref">call_status</span></a>’s error codes).</p>
+<p>For example, you can work with a coroutine like this:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">co.lua</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span>    <span class="kr">function</span> <span class="nf">loop</span><span class="p">()</span>
+        <span class="kr">while</span> <span class="n">counter</span> <span class="o">~=</span> <span class="mi">30</span>
+        <span class="kr">do</span>
+            <span class="nb">coroutine.yield</span><span class="p">(</span><span class="n">counter</span><span class="p">);</span>
+            <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="kr">end</span>
+        <span class="kr">return</span> <span class="n">counter</span>
+    <span class="kr">end</span>
+</pre></div>
+</div>
+</div>
+<p>This is a function that yields:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">main.cpp</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">coroutine</span><span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span><span class="s">&quot;co.lua&quot;</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">coroutine</span> <span class="n">cr</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;loop&quot;</span><span class="p">];</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// start from 0</span>
+    <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="o">&amp;&amp;</span> <span class="n">cr</span><span class="p">;</span> <span class="c1">// we want 10 values, and we only want to run if the coroutine &quot;cr&quot; is valid</span>
+    <span class="c1">// Alternative: counter &lt; 10 &amp;&amp; cr.valid()</span>
+    <span class="o">++</span><span class="n">counter</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Call the coroutine, does the computation and then suspends</span>
+        <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">cr</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Note that this code doesn’t check for errors: to do so, you can call the function and assign it as <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">result</span> <span class="pre">=</span> <span class="pre">cr();</span></code>, then check <code class="docutils literal notranslate"><span class="pre">result.valid()</span></code> as is the case with <a class="reference internal" href="protected_function.html"><span class="doc">protected_function</span></a>. Finally, you can  run this coroutine on another thread by doing the following:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">main_with_thread.cpp</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">coroutine</span><span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span><span class="s">&quot;co.lua&quot;</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="kr">thread</span> <span class="n">runner</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="kr">thread</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">lua</span><span class="p">.</span><span class="n">lua_state</span><span class="p">());</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">state_view</span> <span class="n">runnerstate</span> <span class="o">=</span> <span class="n">runner</span><span class="p">.</span><span class="n">state</span><span class="p">();</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">coroutine</span> <span class="n">cr</span> <span class="o">=</span> <span class="n">runnerstate</span><span class="p">[</span><span class="s">&quot;loop&quot;</span><span class="p">];</span>
+
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">10</span> <span class="o">&amp;&amp;</span> <span class="n">cr</span><span class="p">;</span> <span class="o">++</span><span class="n">counter</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Call the coroutine, does the computation and then suspends</span>
+    <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">cr</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>The following are the members of <code class="docutils literal notranslate"><span class="pre">sol::coroutine</span></code>:</p>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">function: constructor</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">coroutine</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Grabs the coroutine at the specified index given a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="status">
+<div class="code-block-caption"><span class="caption-text">returning the coroutine’s status</span><a class="headerlink" href="#status" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">call_status</span> <span class="nf">status</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Returns the status of a coroutine.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">checks for an error</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">error</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Checks if an error occured when the coroutine was run.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<span id="runnable"></span><div class="code-block-caption"><span class="caption-text">runnable and explicit operator bool</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">runnable</span> <span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+<span class="k">explicit</span> <span class="k">operator</span> <span class="nf">bool</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>These functions allow you to check if a coroutine can still be called (has more values to yield and has not errored). If you have a coroutine object <code class="docutils literal notranslate"><span class="pre">coroutine</span> <span class="pre">my_co</span> <span class="pre">=</span> <span class="pre">/*...*/</span></code>, you can either check <code class="docutils literal notranslate"><span class="pre">runnable()</span></code> or do <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(</span> <span class="pre">my_co</span> <span class="pre">)</span> <span class="pre">{</span> <span class="pre">/*</span> <span class="pre">use</span> <span class="pre">coroutine</span> <span class="pre">*/</span> <span class="pre">}</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">calling a coroutine</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">call</span><span class="p">(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">types</span><span class="o">&lt;</span><span class="n">Ret</span><span class="p">...</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Calls the coroutine. The second <code class="docutils literal notranslate"><span class="pre">operator()</span></code> lets you specify the templated return types using the <code class="docutils literal notranslate"><span class="pre">my_co(sol::types&lt;int,</span> <span class="pre">std::string&gt;,</span> <span class="pre">...)</span></code> syntax. Check <code class="docutils literal notranslate"><span class="pre">status()</span></code> afterwards for more information about the success of the run or just check the coroutine object in an ifs tatement, as shown <a class="reference internal" href="#runnable"><span class="std std-ref">above</span></a>.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="protected_function.html">protected_function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="error.html">error</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,275 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>variables &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="functions and You" href="functions.html" />
+    <link rel="prev" title="integrating into existing code" href="existing.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>variables</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="existing.html">integrating into existing code</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="functions.html">functions and You</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="variables">
+<h1>variables<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h1>
+<p>Working with variables is easy with Sol, and behaves pretty much like any associative array / map structure you’ve dealt with previously. Given this lua file that gets loaded into Sol:</p>
+<div class="section" id="reading">
+<h2>reading<a class="headerlink" href="#reading" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">variables.lua</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">fullscreen</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="n">resolution</span> <span class="o">=</span> <span class="p">{</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">768</span> <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="literal-block-wrapper docutils container" id="variables-main-cpp">
+<div class="code-block-caption"><span class="caption-text">main.cpp</span><a class="headerlink" href="#variables-main-cpp" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span> <span class="n">variables</span><span class="p">.</span><span class="n">lua</span> <span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>You can interact with the variables like this:</p>
+<div class="literal-block-wrapper docutils container" id="extended-variables-main-cpp">
+<div class="code-block-caption"><span class="caption-text">main.cpp extended</span><a class="headerlink" href="#extended-variables-main-cpp" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;tuple&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;utility&gt; // for std::pair</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span> <span class="n">variables</span><span class="p">.</span><span class="n">lua</span> <span class="p">);</span>
+
+        <span class="c1">// the type &quot;state&quot; behaves exactly like a table!</span>
+        <span class="kt">bool</span> <span class="n">isfullscreen</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;fullscreen&quot;</span><span class="p">];</span> <span class="c1">// can get nested variables</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">config</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">];</span>
+
+        <span class="c1">// can also get it using the &quot;get&quot; member function</span>
+        <span class="c1">// auto replaces the unqualified type name</span>
+        <span class="k">auto</span> <span class="n">resolution</span> <span class="o">=</span> <span class="n">config</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">sol</span><span class="o">::</span><span class="n">table</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;resolution );</span>
+
+        <span class="c1">// table and state can have multiple things pulled out of it too</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">xyresolution</span> <span class="o">=</span> <span class="n">resolution</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="s">&quot;y&quot;</span> <span class="p">);</span>
+        <span class="c1">// As an example, you can also pull out a tuple as well</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">xyresolutiontuple</span> <span class="o">=</span> <span class="n">resolution</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;x&quot;</span><span class="p">,</span> <span class="s">&quot;y&quot;</span> <span class="p">);</span>
+
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>From this example, you can see that there’s many ways to pull out the varaibles you want. For example, to determine if a nested variable exists or not, you can use <code class="docutils literal notranslate"><span class="pre">auto</span></code> to capture the value of a <code class="docutils literal notranslate"><span class="pre">table[key]</span></code> lookup, and then use the <code class="docutils literal notranslate"><span class="pre">.valid()</span></code> method:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">safe lookup</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">bark</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">bark</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// branch not taken: config / bark is not a variable</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// Branch taken: config is a not a variable</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This comes in handy when you want to check if a nested variable exists. You can also check if a toplevel variable is present or not by using <code class="docutils literal notranslate"><span class="pre">sol::optional</span></code>, which also checks if A) the keys you’re going into exist and B) the type you’re trying to get is of a specific type:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">optional lookup</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">not_an_integer</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;fullscreen&quot;</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">not_an_integer</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Branch not taken: value is not an integer</span>
+<span class="p">}</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span> <span class="n">is_a_boolean</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;fullscreen&quot;</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">is_a_boolean</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Branch taken: the value is a boolean</span>
+<span class="p">}</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">does_not_exist</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;not_a_variable&quot;</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">does_not_exist</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Branch not taken: that variable is not present</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This can come in handy when, even in optimized or release modes, you still want the safety of checking.  You can also use the <cite>get_or</cite> methods to, if a certain value may be present but you just want to default the value to something else:</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">get_or lookup</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// this will result in a value of &#39;24&#39;</span>
+<span class="kt">int</span> <span class="n">is_defaulted</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;fullscreen&quot;</span><span class="p">].</span><span class="n">get_or</span><span class="p">(</span> <span class="mi">24</span> <span class="p">);</span>
+
+<span class="c1">// This will result in the value of the config, which is &#39;false&#39;</span>
+<span class="kt">bool</span> <span class="n">is_not_defaulted</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;config&quot;</span><span class="p">][</span><span class="s">&quot;fullscreen&quot;</span><span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>That’s all it takes to read variables!</p>
+</div>
+<div class="section" id="writing">
+<h2>writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h2>
+<p>Writing gets a lot simpler. Even without scripting a file or a string, you can read and write variables into lua as you please:</p>
+<div class="literal-block-wrapper docutils container" id="writing-main-cpp">
+<div class="code-block-caption"><span class="caption-text">main.cpp</span><a class="headerlink" href="#writing-main-cpp" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+        <span class="c1">// open those basic lua libraries again, like print() etc.</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span> <span class="p">);</span>
+
+        <span class="c1">// value in the global table</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+
+        <span class="c1">// a table being created in the global table</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;some_table&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_table_with</span><span class="p">(</span>
+                <span class="s">&quot;key0&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span>
+                <span class="s">&quot;key1&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span>
+                <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">],</span> <span class="s">&quot;the key is 50 and this string is its value!&quot;</span>
+        <span class="p">);</span>
+
+        <span class="c1">// Run a plain ol&#39; string of lua code</span>
+        <span class="c1">// Note you can interact with things set through Sol in C++ with lua!</span>
+        <span class="c1">// Using a &quot;Raw String Literal&quot; to have multi-line goodness: http://en.cppreference.com/w/cpp/language/string_literal</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+
+<span class="s">        print(some_table[50])</span>
+<span class="s">        print(some_table[&quot;key0&quot;])</span>
+<span class="s">        print(some_table[&quot;key1&quot;])</span>
+
+<span class="s">        -- a lua comment: access a global in a lua script with the _G table</span>
+<span class="s">        print(_G[&quot;bark&quot;])</span>
+
+<span class="s">        </span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This example pretty much sums up what can be done. Note that the syntax <code class="docutils literal notranslate"><span class="pre">lua[&quot;non_existing_key_1&quot;]</span> <span class="pre">=</span> <span class="pre">1</span></code> will make that variable, but if you tunnel too deep without first creating a table, the Lua API will panic (e.g., <code class="docutils literal notranslate"><span class="pre">lua[&quot;does_not_exist&quot;][&quot;b&quot;]</span> <span class="pre">=</span> <span class="pre">20</span></code> will trigger a panic). You can also be lazy with reading / writing values:</p>
+<div class="literal-block-wrapper docutils container" id="lazy-main-cpp">
+<div class="code-block-caption"><span class="caption-text">main.cpp</span><a class="headerlink" href="#lazy-main-cpp" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+        <span class="k">auto</span> <span class="n">barkkey</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">barkkey</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+                <span class="c1">// Branch not taken: doesn&#39;t exist yet</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;How did you get in here, arf?!&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">barkkey</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">barkkey</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+                <span class="c1">// Branch taken: value exists!</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Bark Bjork Wan Wan Wan&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Finally, it’s possible to erase a reference/variable by setting it to <code class="docutils literal notranslate"><span class="pre">nil</span></code>, using the constant <code class="docutils literal notranslate"><span class="pre">sol::nil</span></code> in C++:</p>
+<div class="literal-block-wrapper docutils container" id="erase-main-cpp">
+<div class="code-block-caption"><span class="caption-text">main.cpp</span><a class="headerlink" href="#erase-main-cpp" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+        <span class="c1">// x will have a value</span>
+
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="n">nil</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+        <span class="c1">// y will not have a value</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>It’s easy to see that there’s a lot of options to do what you want here. But, these are just traditional numbers and strings. What if we want more power, more capabilities than what these limited types can offer us? Let’s throw some <a class="reference internal" href="functions.html"><span class="doc">functions in there</span></a> <a class="reference internal" href="cxx-in-lua.html"><span class="doc">C++ classes into the mix</span></a>!</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="existing.html">integrating into existing code</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="functions.html">functions and You</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

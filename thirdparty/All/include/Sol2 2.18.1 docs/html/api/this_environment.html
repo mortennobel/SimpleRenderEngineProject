@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>this_environment &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="proxy, (protected_)function_result - proxy_base derivatives" href="proxy.html" />
+    <link rel="prev" title="environment" href="environment.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>this_environment</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="environment.html">environment</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="proxy.html">proxy, (protected_)function_result - proxy_base derivatives</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="this-environment">
+<h1>this_environment<a class="headerlink" href="#this-environment" title="Permalink to this headline">¶</a></h1>
+<p><em>retrieving the environment of the calling function</em></p>
+<p>Sometimes in C++ it’s useful to know where a Lua call is coming from and what <a class="reference internal" href="environment.html"><span class="doc">environment</span></a> it is from. The former is covered by Lua’s Debug API, which is extensive and is not fully wrapped up by sol2. But, sol2 covers the latter in letting you get the environment of the calling script / function, if it has one. <code class="docutils literal notranslate"><span class="pre">sol::this_environment</span></code> is a <em>transparent argument</em> and does not need to be passed in Lua scripts or provided when using <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a>, similar to <a class="reference internal" href="this_state.html"><span class="doc">sol::this_state</span></a>:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+
+<span class="kt">void</span> <span class="nf">env_check</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">this_state</span> <span class="n">ts</span><span class="p">,</span> <span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">this_environment</span> <span class="n">te</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;In C++, &#39;int x&#39; is in the second position, and its value is: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">te</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;function does not have an environment: exiting function early&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+                <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span> <span class="o">=</span> <span class="n">te</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state_view</span> <span class="n">lua</span> <span class="o">=</span> <span class="n">ts</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">environment</span> <span class="n">freshenv</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;freshenv&quot;</span><span class="p">];</span>
+        <span class="kt">bool</span> <span class="n">is_same_env</span> <span class="o">=</span> <span class="n">freshenv</span> <span class="o">==</span> <span class="n">env</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;env == freshenv : &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">is_same_env</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">environment</span> <span class="n">freshenv</span><span class="p">(</span><span class="n">lua</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">create</span><span class="p">,</span> <span class="n">lua</span><span class="p">.</span><span class="n">globals</span><span class="p">());</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;freshenv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">freshenv</span><span class="p">;</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="n">env_check</span><span class="p">);</span>
+
+        <span class="c1">// note that &quot;f&quot; only takes 1 argument and is okay here</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;f(25)&quot;</span><span class="p">,</span> <span class="n">freshenv</span><span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>Also see <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/environment_snooping.cpp">this example</a> for more details.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="environment.html">environment</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="proxy.html">proxy, (protected_)function_result - proxy_base derivatives</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

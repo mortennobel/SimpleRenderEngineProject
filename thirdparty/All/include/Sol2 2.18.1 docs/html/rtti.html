@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>run-time type information (rtti) &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="std::(w/u16/u32)string support" href="codecvt.html" />
+    <link rel="prev" title="exceptions" href="exceptions.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>run-time type information (rtti)</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="exceptions.html">exceptions</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="codecvt.html">std::(w/u16/u32)string support</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="run-time-type-information-rtti">
+<h1>run-time type information (rtti)<a class="headerlink" href="#run-time-type-information-rtti" title="Permalink to this headline">¶</a></h1>
+<p><em>because somebody’s going to want to shut this off, too…</em></p>
+<p>Sol does not use RTTI anymore.</p>
+<p><em>THE BELOW IS NO LONGER NEEDED.</em></p>
+<p>Not compiling with C++’s run-time type information? Do a <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_NO_RTII</span></code> before you include <code class="docutils literal notranslate"><span class="pre">sol.hpp</span></code> or define <code class="docutils literal notranslate"><span class="pre">SOL_NO_RTTI</span></code> on your command line. Be sure to understand the <a class="reference internal" href="api/usertype.html#usertype-inheritance"><span class="std std-ref">implications</span></a> of doing so if you also turn off exceptions.</p>
+<p>If you come across bugs or can’t compile because there’s a stray <cite>typeid</cite> or <cite>typeinfo</cite> that wasn’t hidden behind a <code class="docutils literal notranslate"><span class="pre">#ifndef</span> <span class="pre">SOL_NO_RTTI</span></code>, please file <a class="reference external" href="https://github.com/ThePhD/sol2/issues">an issue</a> or even make a pull request so it can be fixed for everyone.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="exceptions.html">exceptions</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="codecvt.html">std::(w/u16/u32)string support</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

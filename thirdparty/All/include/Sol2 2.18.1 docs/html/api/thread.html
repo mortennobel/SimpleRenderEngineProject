@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>thread &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="optional&lt;T&gt;" href="optional.html" />
+    <link rel="prev" title="object" href="object.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>thread</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="object.html">object</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="optional.html">optional&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="thread">
+<h1>thread<a class="headerlink" href="#thread" title="Permalink to this headline">¶</a></h1>
+<p><em>a separate state that can contain and run functions</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">thread</span> <span class="o">:</span> <span class="k">public</span> <span class="n">reference</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">};</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sol::thread</span></code> is a separate runnable part of the Lua VM that can be used to execute work separately from the main thread, such as with <a class="reference internal" href="coroutine.html"><span class="doc">coroutines</span></a>. To take a table or a coroutine and run it specifically on the <code class="docutils literal notranslate"><span class="pre">sol::thread</span></code> you either pulled out of lua or created, just get that function through the <a class="reference internal" href="#thread-state"><span class="std std-ref">state of the thread</span></a></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A CPU thread is not always equivalent to a new thread in Lua: <code class="docutils literal notranslate"><span class="pre">std::this_thread::get_id()</span></code> can be the same for 2 callbacks that have 2 distinct Lua threads. In order to know which thread a callback was called in, hook into <a class="reference internal" href="this_state.html"><span class="doc">sol::this_state</span></a> from your Lua callback and then construct a <code class="docutils literal notranslate"><span class="pre">sol::thread</span></code>, passing in the <code class="docutils literal notranslate"><span class="pre">sol::this_state</span></code> for both the first and last arguments. Then examine the results of the status and <code class="docutils literal notranslate"><span class="pre">is_...</span></code> calls below.</p>
+</div>
+<div class="section" id="free-function">
+<h2>free function<a class="headerlink" href="#free-function" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">function: main_thread</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">main_thread</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">current</span><span class="p">,</span> <span class="n">lua_State</span><span class="o">*</span> <span class="n">backup_if_bad_platform</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The function <code class="docutils literal notranslate"><span class="pre">sol::main_thread(</span> <span class="pre">...</span> <span class="pre">)</span></code> retrieves the main thread of the application on Lua 5.2 and above <em>only</em>. It is designed for code that needs to be multithreading-aware (e.g., uses multiple <a class="reference internal" href="#"><span class="doc">threads</span></a> and <a class="reference internal" href="coroutine.html"><span class="doc">coroutines</span></a>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This code function will be present in Lua 5.1/LuaJIT, but only have proper behavior when given a single argument on Lua 5.2 and beyond. Lua 5.1 does not support retrieving the main thread from its registry, and therefore it is entirely suggested if you are writing cross-platform Lua code that you must store the main thread of your application in some global storage accessible somewhere. Then, pass this item into the <code class="docutils literal notranslate"><span class="pre">sol::main_thread(</span> <span class="pre">possibly_thread_state,</span> <span class="pre">my_actual_main_state</span> <span class="pre">)</span></code> and it will select that <code class="docutils literal notranslate"><span class="pre">my_actual_main_state</span></code> every time. If you are not going to use Lua 5.1 / LuaJIT, you can ignore the last parameter.</p>
+</div>
+</div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">constructor: thread</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kr">thread</span><span class="p">(</span><span class="n">stack_reference</span> <span class="n">r</span><span class="p">);</span>
+<span class="kr">thread</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="kr">thread</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">lua_State</span><span class="o">*</span> <span class="n">actual_thread</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Takes a thread from the Lua stack at the specified index and allows a person to use all of the abstractions therein. It can also take an actual thread state to make a thread from that as well.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: view into thread_state()’s state</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">state_view</span> <span class="nf">state</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This retrieves the current state of the thread, producing a <a class="reference internal" href="state.html"><span class="doc">state_view</span></a> that can be manipulated like any other. <a class="reference internal" href="coroutine.html"><span class="doc">Coroutines</span></a> pulled from Lua using the thread’s state will be run on that thread specifically.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<span id="thread-state"></span><div class="code-block-caption"><span class="caption-text">function: retrieve thread state object</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">lua_State</span><span class="o">*</span> <span class="nf">thread_state</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This function retrieves the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> that represents the thread.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">current thread status</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">thread_status</span> <span class="nf">status</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Retrieves the <a class="reference internal" href="types.html"><span class="doc">thread status</span></a> that describes the current state of the thread.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">main thread status</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">is_main_thread</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Checks to see if the thread is the main Lua thread.</p>
+<div class="literal-block-wrapper docutils container" id="thread-create">
+<div class="code-block-caption"><span class="caption-text">function: thread creation</span><a class="headerlink" href="#thread-create" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kr">thread</span> <span class="nf">create</span><span class="p">();</span>
+<span class="k">static</span> <span class="kr">thread</span> <span class="nf">create</span> <span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Creates a new thread from the given a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="object.html">object</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="optional.html">optional&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

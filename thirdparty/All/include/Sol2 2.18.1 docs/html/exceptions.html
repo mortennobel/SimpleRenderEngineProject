@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>exceptions &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="run-time type information (rtti)" href="rtti.html" />
+    <link rel="prev" title="safety" href="safety.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>exceptions</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="safety.html">safety</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="rtti.html">run-time type information (rtti)</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="exceptions">
+<h1>exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="since-somebody-is-going-to-ask-about-it">
+<h2>since somebody is going to ask about it…<a class="headerlink" href="#since-somebody-is-going-to-ask-about-it" title="Permalink to this headline">¶</a></h2>
+<p>Yes, you can turn off exceptions in Sol with <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_NO_EXCEPTIONS</span></code> before including or by passing the command line argument that defines <code class="docutils literal notranslate"><span class="pre">SOL_NO_EXCEPTIONS</span></code>. We don’t recommend it unless you’re playing with a Lua distro that also doesn’t play nice with exceptions (like non-x64 versions of <a class="reference internal" href="#luajit-and-exceptions"><span class="std std-ref">LuaJIT</span></a> ).</p>
+<p>If you turn this off, the default <a class="reference external" href="http://www.Lua.org/manual/5.3/manual.html#4.6">at_panic</a> function <a class="reference internal" href="api/state.html"><span class="doc">state</span></a> set for you will not throw. Instead, the default Lua behavior of aborting will take place (and give you no chance of escape unless you implement your own at_panic function and decide to try <code class="docutils literal notranslate"><span class="pre">longjmp</span></code> out).</p>
+<p>To make this not be the case, you can set a panic function directly with <code class="docutils literal notranslate"><span class="pre">lua_atpanic(</span> <span class="pre">lua,</span> <span class="pre">my_panic_function</span> <span class="pre">);</span></code> or when you create the <code class="docutils literal notranslate"><span class="pre">sol::state</span></code> with <code class="docutils literal notranslate"><span class="pre">sol::state</span> <span class="pre">lua(my_panic_function);</span></code>. Here’s an example <code class="docutils literal notranslate"><span class="pre">my_panic_function</span></code> you can have that prints out its errors:</p>
+<div class="literal-block-wrapper docutils container" id="typical-panic-function">
+<div class="code-block-caption"><span class="caption-text">regular panic function</span><a class="headerlink" href="#typical-panic-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="kr">inline</span> <span class="kt">void</span> <span class="nf">my_panic</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">maybe_msg</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Lua is in a panic state and will now abort() the application&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">maybe_msg</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">maybe_msg</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">error message: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">msg</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="c1">// When this function exits, Lua will exhibit default behavior and abort()</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">c_call</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">my_panic</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">my_panic</span><span class="o">&gt;</span><span class="p">);</span>
+        <span class="c1">// or, if you already have a lua_State* L</span>
+        <span class="c1">// lua_atpanic( L, sol::c_call&lt;decltype(&amp;my_panic)&gt;, &amp;my_panic&gt; );</span>
+        <span class="c1">// or, with state/state_view:</span>
+        <span class="c1">// sol::state_view lua(L);</span>
+        <span class="c1">// lua.set_panic( sol::c_call&lt;decltype(&amp;my_panic)&gt;, &amp;my_panic&gt; );</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">SOL_NO_EXCEPTIONS</span></code> will also disable <a class="reference internal" href="api/protected_function.html"><span class="doc">protected_function</span></a>’s ability to catch C++ errors you throw from C++ functions bound to Lua that you are calling through that API. So, only turn off exceptions in Sol if you’re sure you’re never going to use exceptions ever. Of course, if you are ALREADY not using Exceptions, you don’t have to particularly worry about this and now you can use Sol!</p>
+<p>If there is a place where a throw statement is called or a try/catch is used and it is not hidden behind a <code class="docutils literal notranslate"><span class="pre">#ifndef</span> <span class="pre">SOL_NO_EXCEPTIONS</span></code> block, please file an issue at <a class="reference external" href="https://github.com/ThePhD/sol2/issues/">issue</a> or submit your very own pull request so everyone can benefit!</p>
+</div>
+<div class="section" id="luajit-and-exceptions">
+<span id="id1"></span><h2>LuaJIT and exceptions<a class="headerlink" href="#luajit-and-exceptions" title="Permalink to this headline">¶</a></h2>
+<p>It is important to note that a popular 5.1 distribution of Lua, LuaJIT, has some serious <a class="reference external" href="http://luajit.org/extensions.html#exceptions">caveats regarding exceptions</a>. LuaJIT’s exception promises are flaky at best on x64 (64-bit) platforms, and entirely terrible on non-x64 (32-bit, ARM, etc.) platforms. The trampolines we have in place for all functions bound through conventional means in Sol will catch exceptions and turn them into Lua errors so that LuaJIT remainds unperturbed, but if you link up a C function directly yourself and throw, chances are you might have screwed the pooch.</p>
+<p>Testing in <a class="reference external" href="https://github.com/ThePhD/sol2/issues/28">this closed issue</a> that it doesn’t play nice on 64-bit Linux in many cases either, especially when it hits an error internal to the interpreter (and does not go through Sol). We do have tests, however, that compile for our continuous integration check-ins that check this functionality across several compilers and platforms to keep you protected and given hard, strong guarantees for what happens if you throw in a function bound by Sol. If you stray outside the realm of Sol’s protection, however… Good luck.</p>
+</div>
+<div class="section" id="lua-and-luajit-c-exception-full-interoperability">
+<span id="exception-interop"></span><h2>Lua and LuaJIT C++ Exception Full Interoperability<a class="headerlink" href="#lua-and-luajit-c-exception-full-interoperability" title="Permalink to this headline">¶</a></h2>
+<p>You can <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_EXCEPTIONS_SAFE_PROPAGATION</span></code> before including Sol or define <code class="docutils literal notranslate"><span class="pre">SOL_EXCEPTIONS_SAFE_PROPAGATION</span></code> on the command line if you know your implmentation of Lua has proper unwinding semantics that can be thrown through the version of the Lua API you have built / are using.</p>
+<p>This will prevent sol from catching <code class="docutils literal notranslate"><span class="pre">(...)</span></code> errors in platforms and compilers that have full C++ exception interoperability. This means that Lua errors can be caught with <code class="docutils literal notranslate"><span class="pre">catch</span> <span class="pre">(...)</span></code> in the C++ end of your code after it goes through Lua, and exceptions can pass through the Lua API and Stack safely.</p>
+<p>Currently, the only known platform to do this is the listed “Full” <a class="reference external" href="http://luajit.org/extensions.html#exceptions">platforms for LuaJIT</a> and Lua compiled as C++. This define is turned on automatically for compiling Lua as C++.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">SOL_EXCEPTIONS_SAFE_PROPAGATION</span></code> is not defined automatically when Sol detects LuaJIT. <em>It is your job to define it if you know that your platform supports it</em>!</p>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="safety.html">safety</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="rtti.html">run-time type information (rtti)</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>api reference manual &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="state" href="state.html" />
+    <link rel="prev" title="customization traits" href="../traits.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>api reference manual</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="../traits.html">customization traits</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="state.html">state</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="api-reference-manual">
+<h1>api reference manual<a class="headerlink" href="#api-reference-manual" title="Permalink to this headline">¶</a></h1>
+<p>Browse the various function and classes <a class="reference internal" href="../index.html"><span class="doc">Sol</span></a> utilizes to make your life easier when working with Lua.</p>
+<div class="toctree-wrapper compound" id="apitoc">
+<p class="caption"><span class="caption-text">Sol API</span><a class="headerlink" href="#apitoc" title="Permalink to this toctree">¶</a></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="state.html">state</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="state.html#enumerations">enumerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="state.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="this_state.html">this_state</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#members">members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#non-members">non-members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="stack_reference.html">stack_reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stack_reference.html#stack-aligned-function">stack_aligned_function</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="make_reference.html">make_object/make_reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="table.html">table</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="table.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="userdata.html">userdata</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">environment</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#free-functions">free functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="environment.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="this_environment.html">this_environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="proxy.html">proxy, (protected_)function_result - proxy_base derivatives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#proxy">proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#members">members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#operator-proxy-only-members"><code class="docutils literal notranslate"><span class="pre">operator[]</span></code> proxy-only members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#stack-proxy">stack_proxy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#function-result">function_result</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#protected-function-result">protected_function_result</a></li>
+<li class="toctree-l2"><a class="reference internal" href="proxy.html#on-function-objects-and-proxies">on function objects and proxies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="containers.html">containers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="containers.html#a-complete-example">a complete example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="as_container.html">as_container</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nested.html">nested</a></li>
+<li class="toctree-l1"><a class="reference internal" href="as_table.html">as_table</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usertype.html">usertype&lt;T&gt;</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#enumerations">enumerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#members">members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#runtime-functions">runtime functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#overloading">overloading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#inheritance">inheritance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#inheritance-overloading">inheritance + overloading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#compilation-speed">compilation speed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype.html#performance-note">performance note</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simple_usertype.html">simple_usertype&lt;T&gt;</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usertype_memory.html">usertype memory</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="usertype_memory.html#to-retrieve-a-t">To retrieve a <code class="docutils literal notranslate"><span class="pre">T</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype_memory.html#for-t">For <code class="docutils literal notranslate"><span class="pre">T</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype_memory.html#id1">For <code class="docutils literal notranslate"><span class="pre">T*</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="usertype_memory.html#for-std-unique-ptr-t-d-and-std-shared-ptr-t">For <code class="docutils literal notranslate"><span class="pre">std::unique_ptr&lt;T,</span> <span class="pre">D&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">std::shared_ptr&lt;T&gt;</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="unique_usertype_traits.html">unique_usertype_traits&lt;T&gt;</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tie.html">tie</a></li>
+<li class="toctree-l1"><a class="reference internal" href="function.html">function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protected_function.html">protected_function</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="protected_function.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="coroutine.html">coroutine</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="coroutine.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="error.html">error</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object.html">object</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="object.html#members">members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object.html#non-members">non-members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="thread.html">thread</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="thread.html#free-function">free function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thread.html#members">members</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="optional.html">optional&lt;T&gt;</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variadic_args.html">variadic_args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variadic_results.html">variadic_results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="as_args.html">as_args</a></li>
+<li class="toctree-l1"><a class="reference internal" href="as_returns.html">as_returns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overload.html">overload</a></li>
+<li class="toctree-l1"><a class="reference internal" href="property.html">property</a></li>
+<li class="toctree-l1"><a class="reference internal" href="var.html">var</a></li>
+<li class="toctree-l1"><a class="reference internal" href="protect.html">protect</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filters.html">filters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readonly.html">readonly</a></li>
+<li class="toctree-l1"><a class="reference internal" href="as_function.html">as_function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="c_call.html">c_call</a></li>
+<li class="toctree-l1"><a class="reference internal" href="resolve.html">resolve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stack.html">stack namespace</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stack.html#structures">structures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stack.html#members">members</a></li>
+<li class="toctree-l2"><a class="reference internal" href="stack.html#objects-extension-points">objects (extension points)</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user.html">light&lt;T&gt;/user&lt;T&gt;</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compatibility.html">compatibility.hpp</a></li>
+<li class="toctree-l1"><a class="reference internal" href="types.html">types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="types.html#enumerations">enumerations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#type-traits">type traits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#special-types">special types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#functions">functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="types.html#structs">structs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="metatable_key.html">metatable_key</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_table.html">new_table</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="new_table.html#members">members</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="../traits.html">customization traits</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="state.html">state</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

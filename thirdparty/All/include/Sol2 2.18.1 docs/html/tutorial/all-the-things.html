@@ -1,0 +1,645 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>tutorial: quick ‘n’ dirty &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tutorial" href="tutorial-top.html" />
+    <link rel="prev" title="Sol 2.18" href="../index.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>tutorial: quick ‘n’ dirty</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="../index.html">Sol 2.18</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tutorial-top.html">tutorial</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="tutorial-quick-n-dirty">
+<h1>tutorial: quick ‘n’ dirty<a class="headerlink" href="#tutorial-quick-n-dirty" title="Permalink to this headline">¶</a></h1>
+<p>These are all the things. Use your browser’s search to find things you want.</p>
+<p>You’ll need to <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;sol.hpp&gt;</span></code>/<code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&quot;sol.hpp&quot;</span></code> somewhere in your code. Sol is header-only, so you don’t need to compile anything.</p>
+<div class="section" id="opening-a-state">
+<h2>opening a state<a class="headerlink" href="#opening-a-state" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="c1">// open some common libraries</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">package</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="s">&quot;print(&#39;bark bark bark!&#39;)&quot;</span> <span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="sol-state-on-lua-state">
+<h2>sol::state on lua_State*<a class="headerlink" href="#sol-state-on-lua-state" title="Permalink to this headline">¶</a></h2>
+<p>For your system/game that already has lua, but you’d like something nice:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">pre_existing_system</span><span class="p">(</span> <span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state_view</span> <span class="n">lua</span><span class="p">(</span><span class="n">L</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="s">&quot;print(&#39;bark bark bark!&#39;)&quot;</span> <span class="p">);</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-lua-code">
+<h2>running lua code<a class="headerlink" href="#running-lua-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="c1">// load and execute from string</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;a = &#39;test&#39;&quot;</span><span class="p">);</span>
+<span class="c1">// load and execute from file</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span><span class="s">&quot;path/to/luascript.lua&quot;</span><span class="p">);</span>
+
+<span class="c1">// run a script, get the result</span>
+<span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;return 54&quot;</span><span class="p">);</span>
+<span class="c1">// value == 54</span>
+</pre></div>
+</div>
+<p>To run Lua code but have an error handler in case things go wrong:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// the default handler panics or throws, depending on your settings</span>
+<span class="k">auto</span> <span class="n">result1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;bad.code&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">sol</span><span class="o">::</span><span class="n">default_on_error</span><span class="p">);</span>
+
+<span class="k">auto</span> <span class="n">result2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;123 herp.derp&quot;</span><span class="p">,</span> <span class="p">[](</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">pfr</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// pfr will contain things that went wrong, for either loading or executing the script</span>
+        <span class="c1">// Can throw your own custom error</span>
+        <span class="c1">// You can also just return it, and let the call-site handle the error if necessary.</span>
+        <span class="k">return</span> <span class="n">pfr</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+</div>
+<p>To check the success of a loading operation:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// load file without execute</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">script1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">load_file</span><span class="p">(</span><span class="s">&quot;path/to/luascript.lua&quot;</span><span class="p">);</span>
+<span class="n">script1</span><span class="p">();</span> <span class="c1">//execute</span>
+
+<span class="c1">// load string without execute</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">script2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;a = &#39;test&#39;&quot;</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">script2result</span> <span class="o">=</span> <span class="n">script2</span><span class="p">();</span> <span class="c1">//execute</span>
+<span class="c1">// optionally, check if it worked</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">script2result</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// yay!</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// aww</span>
+<span class="p">}</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">script3</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;return 24&quot;</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">value2</span> <span class="o">=</span> <span class="n">script3</span><span class="p">();</span> <span class="c1">// execute, get return value</span>
+<span class="c1">// value2 == 24</span>
+</pre></div>
+</div>
+<p>To check whether a script was successfully run or not (if the actual loading is successful):</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// execute and return result</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">result1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">do_string</span><span class="p">(</span><span class="s">&quot;return 24&quot;</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">result1</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">result1</span><span class="p">;</span>
+        <span class="c1">// value == 24</span>
+        <span class="c1">// yay!</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// ahhh :c</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There is also <code class="docutils literal notranslate"><span class="pre">lua.do_file(&quot;path/to/luascript.lua&quot;);</span></code>.</p>
+</div>
+<div class="section" id="set-and-get-variables">
+<h2>set and get variables<a class="headerlink" href="#set-and-get-variables" title="Permalink to this headline">¶</a></h2>
+<p>You can set/get everything.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">lua_state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="c1">// integer types</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;number&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">);</span>
+
+<span class="c1">// floating point numbers</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;number2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">24.5</span><span class="p">;</span>
+
+<span class="c1">// string types</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;important_string&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;woof woof&quot;</span><span class="p">;</span>
+
+<span class="c1">// is callable, therefore gets stored as a function</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;a_function&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[](){</span> <span class="k">return</span> <span class="mi">100</span><span class="p">;</span> <span class="p">};</span>
+<span class="c1">// otherwise, non-recognized types is stored as userdata</span>
+
+<span class="c1">// make a table</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;some_table&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_table_with</span><span class="p">(</span><span class="s">&quot;value&quot;</span><span class="p">,</span> <span class="mi">24</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Equivalent to loading a lua file with:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">number</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">number2</span> <span class="o">=</span> <span class="mf">24.5</span>
+<span class="n">important_string</span> <span class="o">=</span> <span class="s2">&quot;woof woof&quot;</span>
+<span class="n">a_function</span> <span class="o">=</span> <span class="kr">function</span> <span class="p">()</span> <span class="kr">return</span> <span class="mi">100</span> <span class="kr">end</span>
+<span class="n">some_table</span> <span class="o">=</span> <span class="p">{</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">24</span> <span class="p">}</span>
+</pre></div>
+</div>
+<p>Retrieve these variables using this syntax:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// implicit conversion</span>
+<span class="kt">int</span> <span class="n">number</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;number&quot;</span><span class="p">];</span>
+
+<span class="c1">// explicit get</span>
+<span class="k">auto</span> <span class="n">number2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;number2&quot;</span><span class="p">);</span>
+
+<span class="c1">// strings too</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">important_string</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;important_string&quot;</span><span class="p">];</span>
+
+<span class="c1">// dig into a table</span>
+<span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;some_table&quot;</span><span class="p">][</span><span class="s">&quot;value&quot;</span><span class="p">];</span>
+
+<span class="c1">// get a function</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">a_function</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;a_function&quot;</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">value_is_100</span> <span class="o">=</span> <span class="n">a_function</span><span class="p">();</span>
+
+<span class="c1">// get a std::function</span>
+<span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">()</span><span class="o">&gt;</span> <span class="n">a_std_function</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;a_function&quot;</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">value_is_still_100</span> <span class="o">=</span> <span class="n">a_std_function</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Retrieve Lua types using <code class="docutils literal notranslate"><span class="pre">object</span></code> and other <code class="docutils literal notranslate"><span class="pre">sol::</span></code> types.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// ... everything from before</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">number_obj</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">sol</span><span class="o">::</span><span class="n">object</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;number&quot;</span> <span class="p">);</span>
+<span class="c1">// sol::type::number</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">type</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">number_obj</span><span class="p">.</span><span class="n">get_type</span><span class="p">();</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">function_obj</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span> <span class="s">&quot;a_function&quot;</span> <span class="p">];</span>
+<span class="c1">// sol::type::function</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">type</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">function_obj</span><span class="p">.</span><span class="n">get_type</span><span class="p">();</span>
+<span class="kt">bool</span> <span class="n">is_it_really</span> <span class="o">=</span> <span class="n">function_obj</span><span class="p">.</span><span class="n">is</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">()</span><span class="o">&gt;&gt;</span><span class="p">();</span> <span class="c1">// true</span>
+
+<span class="c1">// will not contain data</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">check_for_me</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;a_function&quot;</span><span class="p">];</span>
+</pre></div>
+</div>
+<p>You can erase things by setting it to <code class="docutils literal notranslate"><span class="pre">nullptr</span></code> or <code class="docutils literal notranslate"><span class="pre">sol::nil</span></code>.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;exists = 250&quot;</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="n">first_try</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">get_or</span><span class="p">(</span> <span class="s">&quot;exists&quot;</span><span class="p">,</span> <span class="mi">322</span> <span class="p">);</span>
+<span class="c1">// first_try == 250</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;exists&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">nil</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">second_try</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">get_or</span><span class="p">(</span> <span class="s">&quot;exists&quot;</span><span class="p">,</span> <span class="mi">322</span> <span class="p">);</span>
+<span class="c1">// second_try == 322</span>
+</pre></div>
+</div>
+<p>Note that if its a <a class="reference internal" href="../api/usertype.html"><span class="doc">userdata/usertype</span></a> for a C++ type, the destructor will run only when the garbage collector deems it appropriate to destroy the memory. If you are relying on the destructor being run when its set to <code class="docutils literal notranslate"><span class="pre">sol::nil</span></code>, you’re probably committing a mistake.</p>
+</div>
+<div class="section" id="tables">
+<h2>tables<a class="headerlink" href="#tables" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="../api/state.html"><span class="doc">sol::state</span></a> is a table too.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// Raw string literal for easy multiline</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">        abc = { [0] = 24 }</span>
+<span class="s">        def = {</span>
+<span class="s">                ghi = {</span>
+<span class="s">                        bark = 50,</span>
+<span class="s">                        woof = abc</span>
+<span class="s">                }</span>
+<span class="s">        }</span>
+<span class="dl">)</span><span class="s">&quot;</span>
+<span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">abc</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;abc&quot;</span><span class="p">];</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">def</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;def&quot;</span><span class="p">];</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">ghi</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;def&quot;</span><span class="p">][</span><span class="s">&quot;ghi&quot;</span><span class="p">];</span>
+
+<span class="kt">int</span> <span class="n">bark1</span> <span class="o">=</span> <span class="n">def</span><span class="p">[</span><span class="s">&quot;ghi&quot;</span><span class="p">][</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">bark2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;def&quot;</span><span class="p">][</span><span class="s">&quot;ghi&quot;</span><span class="p">][</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+<span class="c1">// bark1 == bark2 == 50</span>
+
+<span class="kt">int</span> <span class="n">abcval1</span> <span class="o">=</span> <span class="n">abc</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="kt">int</span> <span class="n">abcval2</span> <span class="o">=</span> <span class="n">ghi</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+<span class="c1">// abcval1 == abcval2 == 24</span>
+</pre></div>
+</div>
+<p>If you’re going deep, be safe:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">will_not_error</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;abc&quot;</span><span class="p">][</span><span class="s">&quot;DOESNOTEXIST&quot;</span><span class="p">][</span><span class="s">&quot;ghi&quot;</span><span class="p">];</span>
+<span class="c1">// will_not_error == sol::nullopt</span>
+<span class="kt">int</span> <span class="n">also_will_not_error</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;abc&quot;</span><span class="p">][</span><span class="s">&quot;def&quot;</span><span class="p">][</span><span class="s">&quot;ghi&quot;</span><span class="p">][</span><span class="s">&quot;jklm&quot;</span><span class="p">].</span><span class="n">get_or</span><span class="p">(</span><span class="mi">25</span><span class="p">);</span>
+<span class="c1">// is 25</span>
+
+<span class="c1">// if you don&#39;t go safe,</span>
+<span class="c1">// will throw (or do at_panic if no exceptions)</span>
+<span class="kt">int</span> <span class="n">aaaahhh</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;boom&quot;</span><span class="p">][</span><span class="s">&quot;the_dynamite&quot;</span><span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="make-tables">
+<h2>make tables<a class="headerlink" href="#make-tables" title="Permalink to this headline">¶</a></h2>
+<p>Make some:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;abc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_table_with</span><span class="p">(</span>
+        <span class="mi">0</span><span class="p">,</span> <span class="mi">24</span>
+<span class="p">);</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">create_named_table</span><span class="p">(</span><span class="s">&quot;def&quot;</span><span class="p">,</span>
+        <span class="s">&quot;ghi&quot;</span><span class="p">,</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_table_with</span><span class="p">(</span>
+                <span class="s">&quot;bark&quot;</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="c1">// can reference other existing stuff too</span>
+                <span class="s">&quot;woof&quot;</span><span class="p">,</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;abc&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>Equivalent Lua code:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">abc</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">24</span> <span class="p">}</span>
+<span class="n">def</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">ghi</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">bark</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+                <span class="n">woof</span> <span class="o">=</span> <span class="n">abc</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>You can put anything you want in tables as values or keys, including strings, numbers, functions, other tables.</p>
+<p>Note that this idea that things can be nested is important and will help later when you get into <a class="reference internal" href="#namespacing"><span class="std std-ref">namespacing</span></a>.</p>
+</div>
+<div class="section" id="functions">
+<h2>functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<p>They’re great. Use them:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function f (a, b, c, d) return 1 end&quot;</span><span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function g (a, b) return a + b end&quot;</span><span class="p">);</span>
+
+<span class="c1">// fixed signature std::function&lt;...&gt;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">double</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">stdfx</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+<span class="c1">// sol::function is often easier:</span>
+<span class="c1">// takes a variable number/types of arguments...</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">fx</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+
+<span class="kt">int</span> <span class="n">is_one</span> <span class="o">=</span> <span class="n">stdfx</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">34.5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;bark&quot;</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">is_also_one</span> <span class="o">=</span> <span class="n">fx</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;boop&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;bark&quot;</span><span class="p">);</span>
+
+<span class="c1">// call through operator[]</span>
+<span class="kt">int</span> <span class="n">is_three</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;g&quot;</span><span class="p">](</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="c1">// is_three == 3</span>
+<span class="kt">double</span> <span class="n">is_4_8</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;g&quot;</span><span class="p">](</span><span class="mf">2.4</span><span class="p">,</span> <span class="mf">2.4</span><span class="p">);</span>
+<span class="c1">// is_4_8 == 4.8</span>
+</pre></div>
+</div>
+<p>If you need to protect against errors and parser problems and you’re not ready to deal with Lua’s <cite>longjmp</cite> problems (if you compiled with C), use <a class="reference internal" href="../api/protected_function.html"><span class="doc">sol::protected_function</span></a>.</p>
+<p>You can bind member variables as functions too, as well as all KINDS of function-like things:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">some_function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;some function!&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">some_other_function</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;some other function!&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">some_class</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">variable</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+
+        <span class="kt">double</span> <span class="nf">member_function</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="mf">24.5</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="c1">// put an instance of &quot;some_class&quot; into lua</span>
+<span class="c1">// (we&#39;ll go into more detail about this later</span>
+<span class="c1">// just know here that it works and is</span>
+<span class="c1">// put into lua as a userdata</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;sc&quot;</span><span class="p">,</span> <span class="n">some_class</span><span class="p">());</span>
+
+<span class="c1">// binds a plain function</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;f1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">some_function</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;f2&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">some_other_function</span><span class="p">);</span>
+
+<span class="c1">// binds just the member function</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;m1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">some_class</span><span class="o">::</span><span class="n">member_function</span><span class="p">;</span>
+
+<span class="c1">// binds the class to the type</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;m2&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">some_class</span><span class="o">::</span><span class="n">member_function</span><span class="p">,</span> <span class="n">some_class</span><span class="p">{});</span>
+
+<span class="c1">// binds just the member variable as a function</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;v1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">some_class</span><span class="o">::</span><span class="n">variable</span><span class="p">;</span>
+
+<span class="c1">// binds class with member variable as function</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;v2&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">some_class</span><span class="o">::</span><span class="n">variable</span><span class="p">,</span> <span class="n">some_class</span><span class="p">{});</span>
+</pre></div>
+</div>
+<p>The lua code to call these things is:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">f1</span><span class="p">()</span> <span class="c1">-- some function!</span>
+<span class="n">f2</span><span class="p">()</span> <span class="c1">-- some other function!</span>
+
+<span class="c1">-- need class instance if you don&#39;t bind it with the function</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m1</span><span class="p">(</span><span class="n">sc</span><span class="p">))</span> <span class="c1">-- 24.5</span>
+<span class="c1">-- does not need class instance: was bound to lua with one</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">m2</span><span class="p">())</span> <span class="c1">-- 24.5</span>
+
+<span class="c1">-- need class instance if you</span>
+<span class="c1">-- don&#39;t bind it with the function</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">v1</span><span class="p">(</span><span class="n">sc</span><span class="p">))</span> <span class="c1">-- 30</span>
+<span class="c1">-- does not need class instance:</span>
+<span class="c1">-- it was bound with one</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">v2</span><span class="p">())</span> <span class="c1">-- 30</span>
+
+<span class="c1">-- can set, still</span>
+<span class="c1">-- requires instance</span>
+<span class="n">v1</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="mi">212</span><span class="p">)</span>
+<span class="c1">-- can set, does not need</span>
+<span class="c1">-- class instance: was bound with one</span>
+<span class="n">v2</span><span class="p">(</span><span class="mi">254</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">v1</span><span class="p">(</span><span class="n">sc</span><span class="p">))</span> <span class="c1">-- 212</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">v2</span><span class="p">())</span> <span class="c1">-- 254</span>
+</pre></div>
+</div>
+<p>Can use <code class="docutils literal notranslate"><span class="pre">sol::readonly(</span> <span class="pre">&amp;some_class::variable</span> <span class="pre">)</span></code> to make a variable readonly and error if someone tries to write to it.</p>
+</div>
+<div class="section" id="self-call">
+<h2>self call<a class="headerlink" href="#self-call" title="Permalink to this headline">¶</a></h2>
+<p>You can pass the ‘self’ argument through C++ to emulate ‘member function’ calls in Lua.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">package</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">table</span><span class="p">);</span>
+
+<span class="c1">// a small script using &#39;self&#39; syntax</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">some_table = { some_val = 100 }</span>
+
+<span class="s">function some_table:add_to_some_val(value)</span>
+<span class="s">    self.some_val = self.some_val + value</span>
+<span class="s">end</span>
+
+<span class="s">function print_some_val()</span>
+<span class="s">    print(&quot;some_table.some_val = &quot; .. some_table.some_val)</span>
+<span class="s">end</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+
+<span class="c1">// do some printing</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;print_some_val&quot;</span><span class="p">]();</span>
+<span class="c1">// 100</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">self</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;some_table&quot;</span><span class="p">];</span>
+<span class="n">self</span><span class="p">[</span><span class="s">&quot;add_to_some_val&quot;</span><span class="p">](</span><span class="n">self</span><span class="p">,</span> <span class="mi">10</span><span class="p">);</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;print_some_val&quot;</span><span class="p">]();</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiple-returns-from-lua">
+<h2>multiple returns from lua<a class="headerlink" href="#multiple-returns-from-lua" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function f (a, b, c) return a, b, c end&quot;</span><span class="p">);</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">;</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">](</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">);</span>
+<span class="c1">// result == { 100, 200, 300 }</span>
+<span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">b</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">c</span><span class="p">;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">tie</span><span class="p">(</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="p">)</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">](</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s">&quot;bark&quot;</span><span class="p">);</span>
+<span class="c1">// a == 100</span>
+<span class="c1">// b == 200</span>
+<span class="c1">// c == &quot;bark&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="multiple-returns-to-lua">
+<h2>multiple returns to lua<a class="headerlink" href="#multiple-returns-to-lua" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">c</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// sol::object can be anything here: just pass it through</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_tuple</span><span class="p">(</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="p">);</span>
+<span class="p">};</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">](</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">);</span>
+<span class="c1">// result == { 100, 200, 300 }</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">result2</span><span class="p">;</span>
+<span class="n">result2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">](</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s">&quot;BARK BARK BARK!&quot;</span><span class="p">);</span>
+<span class="c1">// result2 == { 100, 200, &quot;BARK BARK BARK!&quot; }</span>
+
+<span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">c</span><span class="p">;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">tie</span><span class="p">(</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="p">)</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">](</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="s">&quot;bark&quot;</span><span class="p">);</span>
+<span class="c1">// a == 100</span>
+<span class="c1">// b == 200</span>
+<span class="c1">// c == &quot;bark&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-classes-from-c">
+<h2>C++ classes from C++<a class="headerlink" href="#c-classes-from-c" title="Permalink to this headline">¶</a></h2>
+<p>Everything that is not a:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>primitive type: <code class="docutils literal notranslate"><span class="pre">bool</span></code>, <code class="docutils literal notranslate"><span class="pre">char/short/int/long/long</span> <span class="pre">long</span></code>, <code class="docutils literal notranslate"><span class="pre">float/double</span></code></p></li>
+<li><p>string type: <code class="docutils literal notranslate"><span class="pre">std::string</span></code>, <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char*</span></code></p></li>
+<li><p>function type: function pointers, <code class="docutils literal notranslate"><span class="pre">lua_CFunction</span></code>, <code class="docutils literal notranslate"><span class="pre">std::function</span></code>, <a class="reference internal" href="../api/function.html"><span class="doc">sol::function/sol::protected_function</span></a>, <a class="reference internal" href="../api/coroutine.html"><span class="doc">sol::coroutine</span></a>, member variable, member function</p></li>
+<li><p>designated sol type: <a class="reference internal" href="../api/table.html"><span class="doc">sol::table</span></a>, <a class="reference internal" href="../api/thread.html"><span class="doc">sol::thread</span></a>, <a class="reference internal" href="../api/error.html"><span class="doc">sol::error</span></a>, <a class="reference internal" href="../api/object.html"><span class="doc">sol::object</span></a></p></li>
+<li><p>transparent argument type: <a class="reference internal" href="../api/variadic_args.html"><span class="doc">sol::variadic_arg</span></a>, <a class="reference internal" href="../api/this_state.html"><span class="doc">sol::this_state</span></a></p></li>
+<li><p>usertype&lt;T&gt; class: <a class="reference internal" href="../api/usertype.html"><span class="doc">sol::usertype</span></a></p></li>
+</ul>
+</div></blockquote>
+<p>Is set as a <a class="reference internal" href="../api/usertype.html"><span class="doc">userdata + usertype</span></a>.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Doge</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">tailwag</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">Doge</span> <span class="n">dog</span><span class="p">{};</span>
+
+<span class="c1">// Copy into lua: destroyed by Lua VM during garbage collection</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dog</span><span class="p">;</span>
+<span class="c1">// OR: move semantics - will call move constructor if present instead</span>
+<span class="c1">// Again, owned by Lua</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span> <span class="n">dog</span> <span class="p">);</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Doge</span><span class="p">{};</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">Doge</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Doge</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="c1">// Identical to above</span>
+
+<span class="n">Doge</span> <span class="n">dog2</span><span class="p">{};</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">dog2</span><span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">dog2</span><span class="p">));</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">Doge</span><span class="p">{});</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Doge</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">Doge</span><span class="p">()));</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Doge</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">Doge</span><span class="p">()));</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">std::unique_ptr</span></code>/<code class="docutils literal notranslate"><span class="pre">std::shared_ptr</span></code>’s reference counts / deleters will <a class="reference internal" href="../api/unique_usertype_traits.html"><span class="doc">be respected</span></a>. If you want it to refer to something, whose memory you know won’t die in C++, do the following:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Doge</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">tailwag</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="n">Doge</span> <span class="n">dog</span><span class="p">{};</span> <span class="c1">// Kept alive somehow</span>
+
+<span class="c1">// Later...</span>
+<span class="c1">// The following stores a reference, and does not copy/move</span>
+<span class="c1">// lifetime is same as dog in C++</span>
+<span class="c1">// (access after it is destroyed is bad)</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">dog</span><span class="p">;</span>
+<span class="c1">// Same as above: respects std::reference_wrapper</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ref</span><span class="p">(</span><span class="n">dog</span><span class="p">);</span>
+<span class="c1">// These two are identical to above</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span> <span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">dog</span> <span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span> <span class="s">&quot;dog&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">ref</span><span class="p">(</span> <span class="n">dog</span> <span class="p">)</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>Get userdata in the same way as everything else:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Doge</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">tailwag</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="n">Doge</span><span class="o">&amp;</span> <span class="n">dog</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// References Lua memory</span>
+<span class="n">Doge</span><span class="o">*</span> <span class="n">dog_pointer</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// References Lua memory</span>
+<span class="n">Doge</span> <span class="n">dog_copy</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// Copies, will not affect lua</span>
+</pre></div>
+</div>
+<p>Note that you can change the data of usertype variables and it will affect things in lua if you get a pointer or a reference from Sol:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Doge</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">tailwag</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="n">Doge</span><span class="o">&amp;</span> <span class="n">dog</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// References Lua memory</span>
+<span class="n">Doge</span><span class="o">*</span> <span class="n">dog_pointer</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// References Lua memory</span>
+<span class="n">Doge</span> <span class="n">dog_copy</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;dog&quot;</span><span class="p">];</span> <span class="c1">// Copies, will not affect lua</span>
+
+<span class="n">dog_copy</span><span class="p">.</span><span class="n">tailwag</span> <span class="o">=</span> <span class="mi">525</span><span class="p">;</span>
+<span class="c1">// Still 50</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;assert(dog.tailwag == 50)&quot;</span><span class="p">);</span>
+
+<span class="n">dog</span><span class="p">.</span><span class="n">tailwag</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+<span class="c1">// Now 100</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;assert(dog.tailwag == 100)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-classes-put-into-lua">
+<h2>C++ classes put into Lua<a class="headerlink" href="#c-classes-put-into-lua" title="Permalink to this headline">¶</a></h2>
+<p>See this <a class="reference internal" href="cxx-in-lua.html"><span class="doc">section here</span></a> and after perhaps see if <a class="reference internal" href="../api/simple_usertype.html"><span class="doc">simple usertypes suit your needs</span></a>. Also check out some <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype.cpp">a basic example</a>, <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_special_functions.cpp">special functions</a> and  <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_initializers.cpp">initializers</a>,</p>
+</div>
+<div class="section" id="namespacing">
+<span id="id1"></span><h2>namespacing<a class="headerlink" href="#namespacing" title="Permalink to this headline">¶</a></h2>
+<p>You can emulate namespacing by having a table and giving it the namespace names you want before registering enums or usertypes:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">my_class</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">24</span><span class="p">;</span>
+
+        <span class="kt">int</span> <span class="nf">f</span> <span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="mi">24</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">void</span> <span class="nf">g</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="o">++</span><span class="n">b</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">();</span>
+
+<span class="c1">// set up table</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">bark</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_named_table</span><span class="p">(</span><span class="s">&quot;bark&quot;</span><span class="p">);</span>
+
+<span class="n">bark</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">my_class</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;my_class&quot;</span><span class="p">,</span>
+        <span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_class</span><span class="o">::</span><span class="n">f</span><span class="p">,</span>
+        <span class="s">&quot;g&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_class</span><span class="o">::</span><span class="n">g</span>
+<span class="p">);</span> <span class="c1">// the usual</span>
+
+<span class="c1">// &#39;bark&#39; namespace</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;obj = bark.my_class.new()&quot;</span> <span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;obj:g()&quot;</span><span class="p">);</span>
+<span class="n">my_class</span><span class="o">&amp;</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;obj&quot;</span><span class="p">];</span>
+<span class="c1">// obj.b == 25</span>
+</pre></div>
+</div>
+<p>This technique can be used to register namespace-like functions and classes. It can be as deep as you want. Just make a table and name it appropriately, in either Lua script or using the equivalent Sol code. As long as the table FIRST exists (e.g., make it using a script or with one of Sol’s methods or whatever you like), you can put anything you want specifically into that table using <a class="reference internal" href="../api/table.html"><span class="doc">sol::table’s</span></a> abstractions.</p>
+</div>
+<div class="section" id="advanced">
+<h2>advanced<a class="headerlink" href="#advanced" title="Permalink to this headline">¶</a></h2>
+<dl class="simple">
+<dt>Some more advanced things you can do/read about:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="../api/metatable_key.html"><span class="doc">metatable manipulations</span></a> allow a user to change how indexing, function calls, and other things work on a single type.</p></li>
+<li><p><a class="reference internal" href="ownership.html"><span class="doc">ownership semantics</span></a> are described for how Lua deals with its own internal references and (raw) pointers.</p></li>
+<li><p><a class="reference internal" href="../api/stack.html"><span class="doc">stack manipulation</span></a> to safely play with the stack. You can also define customization points for <code class="docutils literal notranslate"><span class="pre">stack::get</span></code>/<code class="docutils literal notranslate"><span class="pre">stack::check</span></code>/<code class="docutils literal notranslate"><span class="pre">stack::push</span></code> for your type.</p></li>
+<li><p><a class="reference internal" href="../api/make_reference.html"><span class="doc">make_reference/make_object convenience function</span></a> to get the same benefits and conveniences as the low-level stack API but put into objects you can specify.</p></li>
+<li><p><a class="reference internal" href="../api/stack_reference.html"><span class="doc">stack references</span></a> to have zero-overhead Sol abstractions while not copying to the Lua registry.</p></li>
+<li><p><a class="reference internal" href="../api/unique_usertype_traits.html"><span class="doc">unique usertype traits</span></a> allows you to specialize handle/RAII types from other frameworks, like boost and Unreal, to work with Sol.</p></li>
+<li><p><a class="reference internal" href="../api/variadic_args.html"><span class="doc">variadic arguments</span></a> in functions with <code class="docutils literal notranslate"><span class="pre">sol::variadic_args</span></code>.</p></li>
+<li><p><a class="reference internal" href="../api/this_state.html"><span class="doc">this_state</span></a> to get the current <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>.</p></li>
+<li><p><a class="reference internal" href="../api/resolve.html"><span class="doc">resolve</span></a> overloads in case you have overloaded functions; a cleaner casting utility. You must use this to emulate default parameters.</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="../index.html">Sol 2.18</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tutorial-top.html">tutorial</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

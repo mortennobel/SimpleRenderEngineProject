@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>reference &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="stack_reference" href="stack_reference.html" />
+    <link rel="prev" title="this_state" href="this_state.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>reference</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="this_state.html">this_state</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="stack_reference.html">stack_reference</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="reference">
+<h1>reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
+<p><em>general purpose reference to Lua object in registry</em></p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">reference</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">reference</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This type keeps around a reference to something inside of Lua, whether that object was on the stack or already present as an object in the Lua Runtime. It places the object Lua registry and will keep it alive.</p>
+<p>It is the backbone for all things that reference items on the stack that need to be kept around beyond their appearance and lifetime on said Lua stack or need to be kept alive outside of a script beyond garbage collection times. Its progeny include <a class="reference internal" href="coroutine.html"><span class="doc">sol::coroutine</span></a>, <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a>, <a class="reference internal" href="protected_function.html"><span class="doc">sol::protected_function</span></a>, <a class="reference internal" href="object.html"><span class="doc">sol::object</span></a>, <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a>/<a class="reference internal" href="table.html"><span class="doc">sol::global_table</span></a>, <a class="reference internal" href="thread.html"><span class="doc">sol::thread</span></a>, and <a class="reference internal" href="userdata.html"><span class="doc">sol::(light_)userdata</span></a>, which are type-specific versions of <code class="docutils literal notranslate"><span class="pre">sol::reference</span></code>.</p>
+<p>Note that if you need to keep a reference to something inside of Lua, it is better to use <code class="docutils literal notranslate"><span class="pre">sol::reference</span></code> or <a class="reference internal" href="object.html"><span class="doc">sol::object</span></a> to keep a reference to it and then use the <code class="docutils literal notranslate"><span class="pre">obj.as&lt;T&gt;()</span></code> member function to retrieve what you need than to take a direct dependency on the memory by retrieving a pointer or reference to the userdata itself. This will ensure that if a script or the Lua Runtime is finished with an object, it will not be garbage collected. Do this only if you need long-term storage.</p>
+<p>For all of these types, there’s also a <code class="docutils literal notranslate"><span class="pre">sol::stack_{x}</span></code> version of them, such as <code class="docutils literal notranslate"><span class="pre">sol::stack_table</span></code>. They are useful for a small performance boost at the cost of not having a strong reference, which has implications for what happens when the item is moved off of the stack. See <a class="reference internal" href="stack_reference.html"><span class="doc">sol::stack_reference</span></a> for more details.</p>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">constructor: reference</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">reference</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="n">reference</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">ref_index</span> <span class="n">index</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Object</span><span class="o">&gt;</span>
+<span class="n">reference</span><span class="p">(</span><span class="n">Object</span><span class="o">&amp;&amp;</span> <span class="n">o</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The first constructor creates a reference from the Lua stack at the specified index, saving it into the metatable registry. The second attemtps to register something that already exists in the registry. The third attempts to reference a pre-existing object and create a reference to it. These constructors are exposed on all types that derive from <code class="docutils literal notranslate"><span class="pre">sol::reference</span></code>, meaning that you can grab tables, functions, and coroutines from the registry, stack, or from other objects easily.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: push referred-to element from the stack</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">push</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This function pushes the referred-to data onto the stack and returns how many things were pushed. Typically, it returns 1.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">function: reference value</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">registry_index</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>The value of the reference in the registry.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">functions: non-nil, non-null check</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">valid</span> <span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+<span class="k">explicit</span> <span class="k">operator</span> <span class="nf">bool</span> <span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>These functions check if the reference at <code class="docutils literal notranslate"><span class="pre">T</span></code> is valid: that is, if it is not <a class="reference internal" href="types.html#nil"><span class="std std-ref">nil</span></a> and if it is not non-existing (doesn’t refer to anything, including nil) reference. The explicit operator bool allows you to use it in the context of an <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">(</span> <span class="pre">my_obj</span> <span class="pre">)</span></code> context.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">function: retrieves the type</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">type</span> <span class="nf">get_type</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the <a class="reference internal" href="types.html"><span class="doc">sol::type</span></a> of the reference; that is, the Lua reference.</p>
+<div class="literal-block-wrapper docutils container" id="id7">
+<div class="code-block-caption"><span class="caption-text">function: lua_State* of the reference</span><a class="headerlink" href="#id7" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">lua_State</span><span class="o">*</span> <span class="nf">lua_state</span><span class="p">()</span> <span class="k">const</span> <span class="k">noexcept</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> this reference exists in.</p>
+</div>
+<div class="section" id="non-members">
+<h2>non-members<a class="headerlink" href="#non-members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id8">
+<div class="code-block-caption"><span class="caption-text">functions: reference comparators</span><a class="headerlink" href="#id8" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span> <span class="n">reference</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">reference</span><span class="o">&amp;</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">!=</span><span class="p">(</span><span class="k">const</span> <span class="n">reference</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">reference</span><span class="o">&amp;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Compares two references using the Lua API’s <a class="reference external" href="https://www.lua.org/manual/5.3/manual.html#lua_compare">lua_compare</a> for equality.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="this_state.html">this_state</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="stack_reference.html">stack_reference</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

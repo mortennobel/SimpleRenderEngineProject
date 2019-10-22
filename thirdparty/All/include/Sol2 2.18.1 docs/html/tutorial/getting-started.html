@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>getting started &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="integrating into existing code" href="existing.html" />
+    <link rel="prev" title="tutorial" href="tutorial-top.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>getting started</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tutorial-top.html">tutorial</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="existing.html">integrating into existing code</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="getting-started">
+<h1>getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>Let’s get you going with Sol! To start, you’ll need to use a lua distribution of some sort. Sol doesn’t provide that: it only wraps the API that comes with it, so you can pick whatever distribution you like for your application. There are lots, but the two popular ones are <a class="reference external" href="https://www.lua.org/">vanilla Lua</a> and speedy <a class="reference external" href="http://luajit.org/">LuaJIT</a> . We recommend vanilla Lua if you’re getting started, LuaJIT if you need speed and can handle some caveats: the interface for Sol doesn’t change no matter what Lua version you’re using.</p>
+<p>If you need help getting or building Lua, check out the <a class="reference external" href="https://www.lua.org/start.html">Lua page on getting started</a>. Note that for Visual Studio, one can simply download the sources, include all the Lua library files in that project, and then build for debug/release, x86/x64/ARM rather easily and with minimal interference. Just make sure to adjust the Project Property page to build as a static library (or a DLL with the proper define set in the <code class="docutils literal notranslate"><span class="pre">Preprocessor</span></code> step).</p>
+<p>After that, make sure you grab either the <a class="reference external" href="https://github.com/ThePhD/sol2/releases">single header file release</a>, or just perform a clone of the <a class="reference external" href="https://github.com/ThePhD/sol2">github repository here</a> and set your include paths up so that you can get at <code class="docutils literal notranslate"><span class="pre">sol.hpp</span></code> somehow. Note that we also have the latest version of the single header file with all dependencies included kept in the <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/single/sol/sol.hpp">repository as well</a>. We recommend the single-header-file release, since it’s easier to move around, manage and update if you commit it with some form of version control. You can also clone/submodule the repository and then point at the <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/single/sol/sol.hpp">single/sol/sol.hpp</a> on your include files path. Clone with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">ThePhD</span><span class="o">/</span><span class="n">sol2</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>When you’re ready, try compiling this short snippet:</p>
+<div class="literal-block-wrapper docutils container" id="the-first-snippet">
+<div class="code-block-caption"><span class="caption-text">test.cpp: the first snippet</span><a class="headerlink" href="#the-first-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt; // or #include &quot;sol.hpp&quot;, whichever suits your needs</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span> <span class="p">);</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="s">&quot;print(&#39;bark bark bark!&#39;)&quot;</span> <span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Using this simple command line:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">++</span> <span class="o">-</span><span class="n">std</span><span class="o">=</span><span class="n">c</span><span class="o">++</span><span class="mi">14</span> <span class="n">test</span><span class="o">.</span><span class="n">cpp</span> <span class="o">-</span><span class="n">I</span><span class="s2">&quot;path/to/lua/include&quot;</span> <span class="o">-</span><span class="n">L</span><span class="s2">&quot;path/to/lua/lib&quot;</span> <span class="o">-</span><span class="n">llua</span>
+</pre></div>
+</div>
+<p>Or using your favorite IDE / tool after setting up your include paths and library paths to Lua according to the documentation of the Lua distribution you got. Remember your linked lua library (<code class="docutils literal notranslate"><span class="pre">-llua</span></code>) and include / library paths will depend on your OS, file system, Lua distribution and your installation / compilation method of your Lua distribution.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you get an avalanche of errors (particularly referring to <code class="docutils literal notranslate"><span class="pre">auto</span></code>), you may not have enabled C++14 / C++17 mode for your compiler. Add one of <code class="docutils literal notranslate"><span class="pre">std=c++14</span></code>, <code class="docutils literal notranslate"><span class="pre">std=c++1z</span></code> OR <code class="docutils literal notranslate"><span class="pre">std=c++1y</span></code> to your compiler options. By default, this is always-on for VC++ compilers in Visual Studio and friends, but g++ and clang++ require a flag (unless you’re on <a class="reference external" href="https://gcc.gnu.org/gcc-6/changes.html">GCC 6.0</a>).</p>
+</div>
+<p>If this works, you’re ready to start! The first line creates the <code class="docutils literal notranslate"><span class="pre">lua_State</span></code> and will hold onto it for the duration of the scope its declared in (e.g., from the opening <code class="docutils literal notranslate"><span class="pre">{</span></code> to the closing <code class="docutils literal notranslate"><span class="pre">}</span></code>). It will automatically close / cleanup that lua state when it gets destructed.</p>
+<p>The second line opens a single lua-provided library, “base”. There are several other libraries that come with lua that you can open by default, and those are included in the <a class="reference internal" href="../api/state.html#lib-enum"><span class="std std-ref">sol::lib</span></a> enumeration. You can open multiple base libraries by specifying multiple <code class="docutils literal notranslate"><span class="pre">sol::lib</span></code> arguments:</p>
+<div class="literal-block-wrapper docutils container" id="the-second-snippet">
+<div class="code-block-caption"><span class="caption-text">test.cpp: the first snippet</span><a class="headerlink" href="#the-second-snippet" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">coroutine</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">string</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">io</span> <span class="p">);</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="s">&quot;print(&#39;bark bark bark!&#39;)&quot;</span> <span class="p">);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>If you’re interested in integrating Sol with a project that already uses some other library or Lua in the codebase, check out the <a class="reference internal" href="existing.html"><span class="doc">existing example</span></a> to see how to work with Sol when you add it to a project (the existing example covers <code class="docutils literal notranslate"><span class="pre">require</span></code> as well)!</p>
+<p>Some more ways of loading scripts and handling errors is shown <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/basic.cpp">in this example</a>!</p>
+<p>Next, let’s start <a class="reference internal" href="variables.html"><span class="doc">reading/writing some variables</span></a> from Lua into C++, and vice-versa!</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tutorial-top.html">tutorial</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="existing.html">integrating into existing code</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

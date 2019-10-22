@@ -1,0 +1,623 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>usertype&lt;T&gt; &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="simple_usertype&lt;T&gt;" href="simple_usertype.html" />
+    <link rel="prev" title="as_table" href="as_table.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>usertype&lt;T&gt;</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_table.html">as_table</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="simple_usertype.html">simple_usertype&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="usertype-t">
+<h1>usertype&lt;T&gt;<a class="headerlink" href="#usertype-t" title="Permalink to this headline">¶</a></h1>
+<p><em>structures and classes from C++ made available to Lua code</em></p>
+<p><em>Note: ``T`` refers to the type being turned into a usertype.</em></p>
+<p>While other frameworks extend lua’s syntax or create Data Structure Languages (DSLs) to create classes in Lua, <a class="reference internal" href="../index.html"><span class="doc">Sol</span></a> instead offers the ability to generate easy bindings. These use metatables and userdata in Lua for their implementation. Usertypes are also <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_advanced.cpp#L81">runtime extensible</a>. If you need a usertype that has less compiler crunch-time to it, try the <a class="reference internal" href="simple_usertype.html"><span class="doc">simple version of this after reading these docs</span></a> Given this C++ class:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">ship</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">bullets</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">life</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+
+        <span class="kt">bool</span> <span class="nf">shoot</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">bullets</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="o">--</span><span class="n">bullets</span><span class="p">;</span>
+                        <span class="c1">// successfully shot</span>
+                        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="c1">// cannot shoot</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">bool</span> <span class="nf">hurt</span> <span class="p">(</span><span class="kt">int</span> <span class="n">by</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">life</span> <span class="o">-=</span> <span class="n">by</span><span class="p">;</span>
+                <span class="c1">// have we died?</span>
+                <span class="k">return</span> <span class="n">life</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+<p>You can bind the it to Lua using the following C++ code:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">ship</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;ship&quot;</span><span class="p">,</span> <span class="c1">// the name of the class, as you want it to be used in lua</span>
+        <span class="c1">// List the member functions you wish to bind:</span>
+        <span class="c1">// &quot;name_of_item&quot;, &amp;class_name::function_or_variable</span>
+        <span class="s">&quot;shoot&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">shoot</span><span class="p">,</span>
+        <span class="s">&quot;hurt&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">hurt</span><span class="p">,</span>
+        <span class="c1">// bind variable types, too</span>
+        <span class="s">&quot;life&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">life</span><span class="p">,</span>
+        <span class="c1">// names in lua don&#39;t have to be the same as C++,</span>
+        <span class="c1">// but it probably helps if they&#39;re kept the same,</span>
+        <span class="c1">// here we change it just to show its possible</span>
+        <span class="s">&quot;bullet_count&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">bullets</span>
+<span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<p>Equivalently, you can also write:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// Use constructor directly</span>
+<span class="hll"><span class="n">usertype</span><span class="o">&lt;</span><span class="n">ship</span><span class="o">&gt;</span> <span class="n">shiptype</span><span class="p">(</span>
+</span>        <span class="s">&quot;shoot&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">shoot</span><span class="p">,</span>
+        <span class="s">&quot;hurt&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">hurt</span><span class="p">,</span>
+        <span class="s">&quot;life&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">life</span><span class="p">,</span>
+        <span class="s">&quot;bullet_count&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ship</span><span class="o">::</span><span class="n">bullets</span>
+<span class="p">);</span>
+
+<span class="c1">// set usertype explicitly, with the given name</span>
+<span class="hll"><span class="n">lua</span><span class="p">.</span><span class="n">set_usertype</span><span class="o">&lt;</span><span class="n">ship</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;ship&quot;</span><span class="p">,</span> <span class="n">shiptype</span> <span class="p">);</span>
+</span>
+<span class="c1">// shiptype is now a useless skeleton type, just let it destruct naturally and don&#39;t use it again.</span>
+</pre></div>
+</td></tr></table></div>
+<p>Note that here, because the C++ class is default-constructible, it will automatically generate a creation function that can be called in lua called “new” that takes no arguments. You can use it like this in lua code:</p>
+<div class="highlight-lua notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">fwoosh</span> <span class="o">=</span> <span class="n">ship</span><span class="p">.</span><span class="n">new</span><span class="p">()</span>
+<span class="c1">-- note the &quot;:&quot; that is there: this is mandatory for member function calls</span>
+<span class="c1">-- &quot;:&quot; means &quot;pass self&quot; in Lua</span>
+<span class="kd">local</span> <span class="n">success</span> <span class="o">=</span> <span class="n">fwoosh</span><span class="p">:</span><span class="n">shoot</span><span class="p">()</span>
+<span class="kd">local</span> <span class="n">is_dead</span> <span class="o">=</span> <span class="n">fwoosh</span><span class="p">:</span><span class="n">hurt</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="c1">-- check if it works</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">is_dead</span><span class="p">)</span> <span class="c1">-- the ship is not dead at this point</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fwoosh</span><span class="p">.</span><span class="n">life</span> <span class="o">..</span> <span class="s2">&quot;life left&quot;</span><span class="p">)</span> <span class="c1">-- 80 life left</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fwoosh</span><span class="p">.</span><span class="n">bullet_count</span><span class="p">)</span> <span class="c1">-- 19</span>
+</pre></div>
+</td></tr></table></div>
+<p>There are more advanced use cases for how to create and use a usertype, which are all based on how to use its constructor (see below).</p>
+<div class="section" id="enumerations">
+<h2>enumerations<a class="headerlink" href="#enumerations" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id1">
+<span id="meta-function-enum"></span><div class="code-block-caption"><span class="caption-text">meta_function enumeration for names</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">meta_function</span> <span class="p">{</span>
+        <span class="n">construct</span><span class="p">,</span>
+        <span class="n">index</span><span class="p">,</span>
+        <span class="n">new_index</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">,</span>
+        <span class="n">call</span><span class="p">,</span>
+        <span class="n">metatable</span><span class="p">,</span>
+        <span class="n">to_string</span><span class="p">,</span>
+        <span class="n">length</span><span class="p">,</span>
+        <span class="n">unary_minus</span><span class="p">,</span>
+        <span class="n">addition</span><span class="p">,</span>
+        <span class="n">subtraction</span><span class="p">,</span>
+        <span class="n">multiplication</span><span class="p">,</span>
+        <span class="n">division</span><span class="p">,</span>
+        <span class="n">modulus</span><span class="p">,</span>
+        <span class="n">power_of</span><span class="p">,</span>
+        <span class="n">involution</span> <span class="o">=</span> <span class="n">power_of</span><span class="p">,</span>
+        <span class="n">concatenation</span><span class="p">,</span>
+        <span class="n">equal_to</span><span class="p">,</span>
+        <span class="n">less_than</span><span class="p">,</span>
+        <span class="n">less_than_or_equal_to</span><span class="p">,</span>
+        <span class="n">garbage_collect</span><span class="p">,</span>
+        <span class="n">call_function</span> <span class="o">=</span> <span class="n">call</span><span class="p">,</span>
+        <span class="n">pairs</span>
+<span class="p">};</span>
+
+<span class="k">typedef</span> <span class="n">meta_function</span> <span class="n">meta_method</span><span class="p">;</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Use this enumeration to specify names in a manner friendlier than memorizing the special lua metamethod names for each of these. Each binds to a specific operation indicated by the descriptive name of the enum. You can read more about <a class="reference external" href="https://www.lua.org/manual/5.3/manual.html#2.4">the metamethods in the Lua manual</a> and learn about how they work and are supposed to be implemented there. Each of the names here (except for the ones used as shortcuts to other names like <code class="docutils literal notranslate"><span class="pre">meta_function::call_function</span></code> and <code class="docutils literal notranslate"><span class="pre">meta_function::involution</span></code> and not including <code class="docutils literal notranslate"><span class="pre">construct</span></code>, which just maps to the name <code class="docutils literal notranslate"><span class="pre">new</span></code>) link directly to the Lua name for the operation. <code class="docutils literal notranslate"><span class="pre">meta_function::pairs</span></code> is only available in Lua 5.2 and above (does not include LuaJIT or Lua 5.1).</p>
+</div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="usertype-constructor">
+<div class="code-block-caption"><span class="caption-text">function: usertype&lt;T&gt; constructor</span><a class="headerlink" href="#usertype-constructor" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">usertype</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The constructor of usertype takes a variable number of arguments. It takes an even number of arguments (except in the case where the very first argument is passed as the <a class="reference internal" href="#constructor"><span class="std std-ref">constructor list type</span></a>). Names can either be strings, <a class="reference internal" href="#meta-function-enum"><span class="std std-ref">special meta_function enumerations</span></a>, or one of the special indicators for initializers.</p>
+<div class="section" id="usertype-constructor-options">
+<h3>usertype constructor options<a class="headerlink" href="#usertype-constructor-options" title="Permalink to this headline">¶</a></h3>
+<p>If you don’t specify any constructor options at all and the type is <a class="reference external" href="http://en.cppreference.com/w/cpp/types/is_constructible">default_constructible</a>, Sol will generate a <code class="docutils literal notranslate"><span class="pre">new</span></code> for you. Otherwise, the following are special ways to handle the construction of a usertype:</p>
+<ul class="simple" id="constructor">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">constructors&lt;T(),</span> <span class="pre">T(arg-1-0),</span> <span class="pre">T(arg-2-0,</span> <span class="pre">arg-2-1),</span> <span class="pre">...&gt;</span></code></dt><dd><ul>
+<li><p>Specify the constructors to be bound under <code class="docutils literal notranslate"><span class="pre">name</span></code>: list constructors by specifying their function signature with <code class="docutils literal notranslate"><span class="pre">class_type(arg0,</span> <span class="pre">arg1,</span> <span class="pre">...</span> <span class="pre">argN)</span></code></p></li>
+<li><p>If you pass the <code class="docutils literal notranslate"><span class="pre">constructors&lt;...&gt;</span></code> argument first when constructing the usertype, then it will automatically be given a <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code> of <code class="docutils literal notranslate"><span class="pre">&quot;new&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">constructors&lt;Type-List-0,</span> <span class="pre">Type-List-1,</span> <span class="pre">...&gt;</span></code></dt><dd><ul>
+<li><p>This syntax is longer and provided for backwards-compatibility: the above argument syntax is shorter and cleaner</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Type-List-N</span></code> must be a <code class="docutils literal notranslate"><span class="pre">sol::types&lt;Args...&gt;</span></code>, where <code class="docutils literal notranslate"><span class="pre">Args...</span></code> is a list of types that a constructor takes. Supports overloading by default</p></li>
+<li><p>If you pass the <code class="docutils literal notranslate"><span class="pre">constructors&lt;...&gt;</span></code> argument first when constructing the usertype, then it will automatically be given a <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code> of <code class="docutils literal notranslate"><span class="pre">&quot;new&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::initializers(</span> <span class="pre">func1,</span> <span class="pre">func2,</span> <span class="pre">...</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Used to handle <em>initializer functions</em> that need to initialize the memory itself (but not actually allocate the memory, since that comes as a userdata block from Lua)</p></li>
+<li><dl class="simple">
+<dt>Given one or more functions, provides an overloaded Lua function for creating a the specified type</dt><dd><ul>
+<li><p>The function must have the argument signature <code class="docutils literal notranslate"><span class="pre">func(</span> <span class="pre">T*,</span> <span class="pre">Arguments...</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">func(</span> <span class="pre">T&amp;,</span> <span class="pre">Arguments...</span> <span class="pre">)</span></code>, where the pointer or reference will point to a place of allocated memory that has an uninitialized <code class="docutils literal notranslate"><span class="pre">T</span></code>. Note that Lua controls the memory, so performing a <code class="docutils literal notranslate"><span class="pre">new</span></code> and setting it to the <code class="docutils literal notranslate"><span class="pre">T*</span></code> or <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code> is a bad idea: instead, use <code class="docutils literal notranslate"><span class="pre">placement</span> <span class="pre">new</span></code> to invoke a constructor, or deal with the memory exactly as you see fit</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">{anything},</span> <span class="pre">sol::factories(</span> <span class="pre">func1,</span> <span class="pre">func2,</span> <span class="pre">...</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Used to indicate that a factory function (e.g., something that produces a <code class="docutils literal notranslate"><span class="pre">std::unique_ptr&lt;T,</span> <span class="pre">...&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">std::shared_ptr&lt;T&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">T</span></code>, or similar) will be creating the object type</p></li>
+<li><dl class="simple">
+<dt>Given one or more functions, provides an overloaded function for invoking</dt><dd><ul>
+<li><p>The functions can take any form and return anything, since they’re just considered to be some plain function and no placement new or otherwise needs to be done. Results from this function will be pushed into Lua according to the same rules as everything else.</p></li>
+<li><p>Can be used to stop the generation of a <code class="docutils literal notranslate"><span class="pre">.new()</span></code> default constructor since a <code class="docutils literal notranslate"><span class="pre">sol::factories</span></code> entry will be recognized as a constructor for the usertype</p></li>
+<li><p>If this is not sufficient, see next 2 entries on how to specifically block a constructor</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">{anything},</span> <span class="pre">{some_factory_function}</span></code></dt><dd><ul>
+<li><p>Essentially binds whatever the function is to name <code class="docutils literal notranslate"><span class="pre">{anything}</span></code></p></li>
+<li><p>When used WITH the <code class="docutils literal notranslate"><span class="pre">sol::no_constructor</span></code> option below (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;new&quot;,</span> <span class="pre">sol::no_constructor</span></code> and after that having <code class="docutils literal notranslate"><span class="pre">&quot;create&quot;,</span> <span class="pre">&amp;my_creation_func</span></code>), one can remove typical constructor avenues and then only provide specific factory functions. Note that this combination is similar to using the <code class="docutils literal notranslate"><span class="pre">sol::factories</span></code> method mentioned earlier in this list. To control the destructor as well, see further below</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sol::call_constructor,</span> <span class="pre">{valid</span> <span class="pre">constructor</span> <span class="pre">/</span> <span class="pre">initializer</span> <span class="pre">/</span> <span class="pre">factory}</span></code></dt><dd><ul>
+<li><p>The purpose of this is to enable the syntax <code class="docutils literal notranslate"><span class="pre">local</span> <span class="pre">v</span> <span class="pre">=</span> <span class="pre">my_class(</span> <span class="pre">24</span> <span class="pre">)</span></code> and have that call a constructor; it has no other purpose</p></li>
+<li><p>This is compatible with luabind, kaguya and other Lua library syntaxes and looks similar to C++ syntax, but the general consensus in Programming with Lua and other places is to use a function named <code class="docutils literal notranslate"><span class="pre">new</span></code></p></li>
+<li><p>Note that with the <code class="docutils literal notranslate"><span class="pre">sol::call_constructor</span></code> key, a construct type above must be specified. A free function without it will pass in the metatable describing this object as the first argument without that distinction, which can cause strange runtime errors.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">{anything},</span> <span class="pre">sol::no_constructor</span></code></dt><dd><ul>
+<li><p>Specifically tells Sol not to create a <code class="docutils literal notranslate"><span class="pre">.new()</span></code> if one is not specified and the type is default-constructible</p></li>
+<li><p>When the key <code class="docutils literal notranslate"><span class="pre">{anything}</span></code> is called on the table, it will result in an error. The error might be that the type is not-constructible.</p></li>
+<li><p><em>Use this plus some of the above to allow a factory function for your function type but prevent other types of constructor idioms in Lua</em></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="usertype-destructor-options">
+<h3>usertype destructor options<a class="headerlink" href="#usertype-destructor-options" title="Permalink to this headline">¶</a></h3>
+<p>If you don’t specify anything at all and the type is <a class="reference external" href="http://en.cppreference.com/w/cpp/types/is_destructible">destructible</a>, then a destructor will be bound to the garbage collection metamethod. Otherwise, the following are special ways to handle the destruction of a usertype:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;__gc&quot;,</span> <span class="pre">sol::destructor(</span> <span class="pre">func</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">sol::meta_function::garbage_collect,</span> <span class="pre">sol::destructor(</span> <span class="pre">func</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Creates a custom destructor that takes an argument <code class="docutils literal notranslate"><span class="pre">T*</span></code> or <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code> and expects it to be destructed/destroyed. Note that lua controls the memory and thusly will deallocate the necessary space AFTER this function returns (e.g., do not call <code class="docutils literal notranslate"><span class="pre">delete</span></code> as that will attempt to deallocate memory you did not <code class="docutils literal notranslate"><span class="pre">new</span></code>)</p></li>
+<li><p>If you just want the default constructor, you can replace the second argument with <code class="docutils literal notranslate"><span class="pre">sol::default_destructor</span></code></p></li>
+<li><p>The usertype will error / throw if you specify a destructor specifically but do not map it to <code class="docutils literal notranslate"><span class="pre">sol::meta_function::gc</span></code> or a string equivalent to <code class="docutils literal notranslate"><span class="pre">&quot;__gc&quot;</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You MUST specify <code class="docutils literal notranslate"><span class="pre">sol::destructor</span></code> around your destruction function, otherwise it will be ignored.</p>
+</div>
+</div>
+<div class="section" id="usertype-regular-function-options">
+<h3>usertype regular function options<a class="headerlink" href="#usertype-regular-function-options" title="Permalink to this headline">¶</a></h3>
+<p>If you don’t specify a <code class="docutils literal notranslate"><span class="pre">sol::meta_function</span></code> name (or equivalent string metamethod name) and the type <code class="docutils literal notranslate"><span class="pre">T</span></code> supports certain operations, sol2 will generate the following operations provided it can find a good default implementation:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>for <code class="docutils literal notranslate"><span class="pre">to_string</span></code> operations where <code class="docutils literal notranslate"><span class="pre">std::ostream&amp;</span> <span class="pre">operator&lt;&lt;(</span> <span class="pre">std::ostream&amp;,</span> <span class="pre">const</span> <span class="pre">T&amp;</span> <span class="pre">)</span></code> exists on the C++ type</dt><dd><ul>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">sol::meta_function::to_string</span></code> operator will be generated</p></li>
+<li><p>writing is done into a <code class="docutils literal notranslate"><span class="pre">std::ostringstream</span></code> before the underlying string is serialized into Lua</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>for call operations where <code class="docutils literal notranslate"><span class="pre">operator()(</span> <span class="pre">parameters</span> <span class="pre">...</span> <span class="pre">)</span></code> exists on the C++ type</dt><dd><ul>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">sol::meta_function::call</span></code> operator will be generated</p></li>
+<li><p>the function call operator in C++ must not be overloaded, otherwise sol will be unable to bind it automagically</p></li>
+<li><p>the function call operator in C++ must not be templated, otherwise sol will be unable to bind it automagically</p></li>
+<li><p>if it is overloaded or templated, it is your reponsibility to bind it properly</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>for automatic iteration where <code class="docutils literal notranslate"><span class="pre">begin()</span></code> and <code class="docutils literal notranslate"><span class="pre">end()</span></code> exist on the C++ type</dt><dd><ul>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">sol::meta_function::pairs</span></code> operator is generated for you</p></li>
+<li><p>Allows you to iterate using <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">k,</span> <span class="pre">v</span> <span class="pre">in</span> <span class="pre">pairs(</span> <span class="pre">obj</span> <span class="pre">)</span> <span class="pre">do</span> <span class="pre">...</span> <span class="pre">end</span></code> in Lua</p></li>
+<li><p><strong>Lua 5.2 and better only: LuaJIT does not allow this, Lua 5.1 does NOT allow this</strong></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>for comparison operations where <code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">&lt;</span></code> and <code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">&lt;=</span></code> exist on the C++ type</dt><dd><ul>
+<li><p>These two <code class="docutils literal notranslate"><span class="pre">sol::meta_function::less_than(_or_equal_to)</span></code> are generated for you</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code> operators are generated in Lua based on <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;=</span></code> operators</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>for <code class="docutils literal notranslate"><span class="pre">operator==</span></code></dt><dd><ul>
+<li><p>An equality operator will always be generated, doing pointer comparison if <code class="docutils literal notranslate"><span class="pre">operator==</span></code> on the two value types is not supported or doing a reference comparison and a value comparison if <code class="docutils literal notranslate"><span class="pre">operator==</span></code> is supported</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>heterogenous operators cannot be supported for equality, as Lua specifically checks if they use the same function to do the comparison: if they do not, then the equality method is not invoked; one way around this would be to write one <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">super_equality_function(lua_State*</span> <span class="pre">L)</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code>, pull out arguments 1 and 2 from the stack for your type, and check all the types and then invoke <code class="docutils literal notranslate"><span class="pre">operator==</span></code> yourself after getting the types out of Lua (possibly using <a class="reference internal" href="stack.html#stack-get"><span class="std std-ref">sol::stack::get</span></a> and <a class="reference internal" href="stack.html#stack-check-get"><span class="std std-ref">sol::stack::check_get</span></a>)</p></li>
+</ul>
+<p>Otherwise, the following is used to specify functions to bind on the specific usertype for <code class="docutils literal notranslate"><span class="pre">T</span></code>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">&amp;free_function</span></code></dt><dd><ul>
+<li><p>Binds a free function / static class function / function object (lambda) to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code>. If the first argument is <code class="docutils literal notranslate"><span class="pre">T*</span></code> or <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code>, then it will bind it as a member function. If it is not, it will be bound as a “static” function on the lua table</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">&amp;type::function_name</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">&amp;type::member_variable</span></code></dt><dd><ul>
+<li><p>Binds a typical member function or variable to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code>. In the case of a member variable or member function, <code class="docutils literal notranslate"><span class="pre">type</span></code> must be <code class="docutils literal notranslate"><span class="pre">T</span></code> or a base of <code class="docutils literal notranslate"><span class="pre">T</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::readonly(</span> <span class="pre">&amp;type::member_variable</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Binds a typical variable to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code>. Similar to the above, but the variable will be read-only, meaning an error will be generated if anything attemps to write to this variable</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::as_function(</span> <span class="pre">&amp;type::member_variable</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Binds a typical variable to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code> <em>but forces the syntax to be callable like a function</em>. This produces a getter and a setter accessible by <code class="docutils literal notranslate"><span class="pre">obj:name()</span></code> to get and <code class="docutils literal notranslate"><span class="pre">obj::name(value)</span></code> to set.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::property(</span> <span class="pre">getter_func,</span> <span class="pre">setter_func</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Binds a typical variable to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code>, but gets and sets using the specified setter and getter functions. Not that if you do not pass a setter function, the variable will be read-only. Also not that if you do not pass a getter function, it will be write-only</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::var(</span> <span class="pre">some_value</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::var(</span> <span class="pre">std::ref(</span> <span class="pre">some_value</span> <span class="pre">)</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Binds a typical variable to <code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;</span></code>, optionally by reference (e.g., refers to the same memory in C++). This is useful for global variables / static class variables and the like</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&quot;{name}&quot;,</span> <span class="pre">sol::overloaded(</span> <span class="pre">Func1,</span> <span class="pre">Func2,</span> <span class="pre">...</span> <span class="pre">)</span></code></dt><dd><ul>
+<li><p>Creates an oveloaded member function that discriminates on number of arguments and types.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sol::base_classes,</span> <span class="pre">sol::bases&lt;Bases...&gt;</span></code></dt><dd><ul>
+<li><p>Tells a usertype what its base classes are. You need this to have derived-to-base conversions work properly. See <a class="reference internal" href="#usertype-inheritance"><span class="std std-ref">inheritance</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="usertype-arguments-simple-usertype">
+<h3>usertype arguments - simple usertype<a class="headerlink" href="#usertype-arguments-simple-usertype" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">sol::simple</span></code></dt><dd><ul>
+<li><p>Only allowed as the first argument to the usertype constructor, must be accompanied by a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code></p></li>
+<li><p>This tag triggers the <a class="reference internal" href="simple_usertype.html"><span class="doc">simple usertype</span></a> changes / optimizations</p></li>
+<li><p>Only supported when directly invoking the constructor (e.g. not when calling <code class="docutils literal notranslate"><span class="pre">sol::table::new_usertype</span></code> or <code class="docutils literal notranslate"><span class="pre">sol::table::new_simple_usertype</span></code>)</p></li>
+<li><p>Should probably not be used directly. Use <code class="docutils literal notranslate"><span class="pre">sol::table::new_usertype</span></code> or <code class="docutils literal notranslate"><span class="pre">sol::table::new_simple_usertype</span></code> instead</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="runtime-functions">
+<h2>runtime functions<a class="headerlink" href="#runtime-functions" title="Permalink to this headline">¶</a></h2>
+<p>You can add functions at runtime <strong>to the whole class</strong>. Set a name under the metatable name you bound using <code class="docutils literal notranslate"><span class="pre">new_usertype</span></code>/<code class="docutils literal notranslate"><span class="pre">new_simple_usertype</span></code> to an object. For example:</p>
+<div class="literal-block-wrapper docutils container" id="runtime-extension">
+<div class="code-block-caption"><span class="caption-text">runtime_extension.cpp</span><a class="headerlink" href="#runtime-extension" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">object</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span><span class="p">[])</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">object</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;object&quot;</span> <span class="p">);</span>
+
+        <span class="c1">// runtime additions: through the sol API</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;object&quot;</span><span class="p">][</span><span class="s">&quot;func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[](</span><span class="n">object</span><span class="o">&amp;</span> <span class="n">o</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">o</span><span class="p">.</span><span class="n">value</span><span class="p">;</span> <span class="p">};</span>
+        <span class="c1">// runtime additions: through a lua script</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;function object:print () print(self:func()) end&quot;</span><span class="p">);</span>
+
+        <span class="c1">// see it work</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;local obj = object.new() </span><span class="se">\n</span><span class="s"> obj:print()&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You cannot add functions to an individual object. You can only add functions to the whole class / usertype.</p>
+</div>
+</div>
+<div class="section" id="overloading">
+<h2>overloading<a class="headerlink" href="#overloading" title="Permalink to this headline">¶</a></h2>
+<p>Functions set on a usertype support overloading. See <a class="reference internal" href="overload.html"><span class="doc">here</span></a> for an example.</p>
+</div>
+<div class="section" id="inheritance">
+<span id="usertype-inheritance"></span><h2>inheritance<a class="headerlink" href="#inheritance" title="Permalink to this headline">¶</a></h2>
+<p>Sol can adjust pointers from derived classes to base classes at runtime, but it has some caveats based on what you compile with:</p>
+<p>If your class has no complicated™ virtual inheritance or multiple inheritance, than you can try to sneak away with a performance boost from not specifying any base classes and doing any casting checks. (What does “complicated™” mean? Ask your compiler’s documentation, if you’re in that deep.)</p>
+<p>For the rest of us safe individuals out there: You must specify the <code class="docutils literal notranslate"><span class="pre">sol::base_classes</span></code> tag with the <code class="docutils literal notranslate"><span class="pre">sol::bases&lt;Types...&gt;()</span></code> argument, where <code class="docutils literal notranslate"><span class="pre">Types...</span></code> are all the base classes of the single type <code class="docutils literal notranslate"><span class="pre">T</span></code> that you are making a usertype out of.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Always specify your bases if you plan to retrieve a base class using the Sol abstraction directly and not casting yourself.</p>
+</div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">A</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+        <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">call</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+<span class="k">struct</span> <span class="nl">B</span> <span class="p">:</span> <span class="n">A</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+        <span class="k">virtual</span> <span class="kt">int</span> <span class="nf">call</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">20</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+<p>Then, to register the base classes explicitly:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">B</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;B&quot;</span><span class="p">,</span>
+        <span class="s">&quot;call&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">B</span><span class="o">::</span><span class="n">call</span><span class="p">,</span>
+<span class="hll">        <span class="n">sol</span><span class="o">::</span><span class="n">base_classes</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">bases</span><span class="o">&lt;</span><span class="n">A</span><span class="o">&gt;</span><span class="p">()</span>
+</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You must list ALL base classes, including (if there were any) the base classes of A, and the base classes of those base classes, etc. if you want Sol/Lua to handle them automagically.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Sol does not support down-casting from a base class to a derived class at runtime.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Specify all base class member variables and member functions to avoid current implementation caveats regarding automatic base member lookup. Sol currently attempts to link base class methods and variables with their derived classes with an undocumented, unsupported feature, provided you specify <code class="docutils literal notranslate"><span class="pre">sol::bases&lt;...&gt;</span></code>. Unfortunately, this can come at the cost of performance, depending on how “far” the base is from the derived class in the bases lookup list. If you do not want to suffer the performance degradation while we iron out the kinks in the implementation (and want it to stay performant forever), please specify all the base methods on the derived class in the method listing you write. In the future, we hope that with reflection we will not have to worry about this.</p>
+</div>
+</div>
+<div class="section" id="inheritance-overloading">
+<h2>inheritance + overloading<a class="headerlink" href="#inheritance-overloading" title="Permalink to this headline">¶</a></h2>
+<p>While overloading is supported regardless of inheritance caveats or not, the current version of Sol has a first-match, first-call style of overloading when it comes to inheritance. Put the functions with the most derived arguments first to get the kind of matching you expect or cast inside of an intermediary C++ function and call the function you desire.</p>
+</div>
+<div class="section" id="compilation-speed">
+<h2>compilation speed<a class="headerlink" href="#compilation-speed" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you find that compilation times are too long and you’re only binding member functions, consider perhaps using <a class="reference internal" href="simple_usertype.html"><span class="doc">simple usertypes</span></a>. This can reduce compile times (but may cost memory size and speed). See the simple usertypes documentation for more details.</p>
+</div>
+</div>
+<div class="section" id="performance-note">
+<h2>performance note<a class="headerlink" href="#performance-note" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that performance for member function calls goes down by a fixed overhead if you also bind variables as well as member functions. This is purely a limitation of the Lua implementation and there is, unfortunately, nothing that can be done about it. If you bind only functions and no variables, however, Sol will automatically optimize the Lua runtime and give you the maximum performance possible. <em>Please consider ease of use and maintenance of code before you make everything into functions.</em></p>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_table.html">as_table</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="simple_usertype.html">simple_usertype&lt;T&gt;</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

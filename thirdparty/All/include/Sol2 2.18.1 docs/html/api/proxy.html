@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>proxy, (protected_)function_result - proxy_base derivatives &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="containers" href="containers.html" />
+    <link rel="prev" title="this_environment" href="this_environment.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>proxy, (protected_)function_result - proxy_base derivatives</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="this_environment.html">this_environment</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="containers.html">containers</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="proxy-protected-function-result-proxy-base-derivatives">
+<h1>proxy, (protected_)function_result - proxy_base derivatives<a class="headerlink" href="#proxy-protected-function-result-proxy-base-derivatives" title="Permalink to this headline">¶</a></h1>
+<p><em>``table[x]`` and ``function(…)`` conversion struct</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Recurring</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">proxy_base</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Table</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Key</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nl">proxy</span> <span class="p">:</span> <span class="n">proxy_base</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nl">stack_proxy</span><span class="p">:</span> <span class="n">proxy_base</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nl">function_result</span> <span class="p">:</span> <span class="n">proxy_base</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="k">struct</span> <span class="nl">protected_function_result</span><span class="p">:</span> <span class="n">proxy_base</span><span class="o">&lt;</span><span class="p">...</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>These classes provide implicit assignment operator <code class="docutils literal notranslate"><span class="pre">operator=</span></code> (for <code class="docutils literal notranslate"><span class="pre">set</span></code>) and an implicit conversion operator <code class="docutils literal notranslate"><span class="pre">operator</span> <span class="pre">T</span></code> (for <code class="docutils literal notranslate"><span class="pre">get</span></code>) to support items retrieved from the underlying Lua implementation, specifically <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> and the results of function calls on <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a> and <a class="reference internal" href="protected_function.html"><span class="doc">sol::protected_function</span></a>.</p>
+<div class="section" id="proxy">
+<span id="id1"></span><h2>proxy<a class="headerlink" href="#proxy" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">proxy</span></code> is returned by lookups into <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> and table-like entities. Because it is templated on key and table type, it would be hard to spell: you can capture it using the word <code class="docutils literal notranslate"><span class="pre">auto</span></code> if you feel like you need to carry it around for some reason before using it. <code class="docutils literal notranslate"><span class="pre">proxy</span></code> evaluates its arguments lazily, when you finally call <code class="docutils literal notranslate"><span class="pre">get</span></code> or <code class="docutils literal notranslate"><span class="pre">set</span></code> on it. Here are some examples given the following lua script.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">lua nested table script</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bark</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">woof</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;arf!&quot;</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>After loading that file in or putting it in a string and reading the string directly in lua (see <a class="reference internal" href="state.html"><span class="doc">state</span></a>), you can start kicking around with it in C++ like so:</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// produces proxy, implicitly converts to std::string, quietly destroys proxy</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">x</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">][</span><span class="s">&quot;woof&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+</pre></div>
+</td></tr></table></div>
+<p><code class="docutils literal notranslate"><span class="pre">proxy</span></code> lazy evaluation:</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">multi-get</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">x</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark&quot;</span><span class="p">];</span>
+<span class="k">auto</span> <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">];</span>
+<span class="k">auto</span> <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="c1">// retrivies value inside of lua table above</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">value</span> <span class="o">=</span> <span class="n">z</span><span class="p">;</span> <span class="c1">// &quot;arf!&quot;</span>
+<span class="c1">// Can change the value later...</span>
+<span class="n">z</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+<span class="c1">// Yay, lazy-evaluation!</span>
+<span class="kt">int</span> <span class="n">changed_value</span> <span class="o">=</span> <span class="n">z</span><span class="p">;</span> <span class="c1">// now it&#39;s 20!</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>We don’t recommend the above to be used across classes or between function: it’s more of something you can do to save a reference to a value you like, call a script or run a lua function, and then get it afterwards. You can also set functions (and function objects <a class="reference internal" href="#note-1"><span class="std std-ref">*</span></a>) this way, and retrieve them as well.</p>
+<div class="highlight-c++ notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;bark_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">24</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;chase_tail&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">floof</span><span class="o">::</span><span class="n">chase_tail</span><span class="p">;</span> <span class="c1">// chase_tail is a free function</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="implicit-get">
+<div class="code-block-caption"><span class="caption-text">functions: [overloaded] implicit conversion get</span><a class="headerlink" href="#implicit-get" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">requires</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">is_primitive_type</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span> <span class="o">==</span> <span class="nb">true</span> <span class="p">)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">operator</span> <span class="n">T</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+
+<span class="n">requires</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">is_primitive_type</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span> <span class="o">==</span> <span class="nb">false</span> <span class="p">)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">operator</span> <span class="n">T</span><span class="o">&amp;</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the value associated with the keys the proxy was generated and convers it to the type <code class="docutils literal notranslate"><span class="pre">T</span></code>. Note that this function will always return <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code>, a non-const reference, to types which are not based on <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a> and not a <a class="reference internal" href="types.html"><span class="doc">primitive lua type</span></a></p>
+<div class="literal-block-wrapper docutils container" id="regular-get">
+<div class="code-block-caption"><span class="caption-text">function: get a value</span><a class="headerlink" href="#regular-get" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">get</span><span class="p">(</span> <span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the value associated with the keys and converts it to the type <code class="docutils literal notranslate"><span class="pre">T</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="regular-get-or">
+<div class="code-block-caption"><span class="caption-text">function: optionally get a value</span><a class="headerlink" href="#regular-get-or" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Otherwise</span><span class="o">&gt;</span>
+<span class="n">optional</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">get_or</span><span class="p">(</span> <span class="n">Otherwise</span><span class="o">&amp;&amp;</span> <span class="n">otherise</span> <span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the value associated with the keys and converts it to the type <code class="docutils literal notranslate"><span class="pre">T</span></code>. If it is not of the proper type, it will return a <code class="docutils literal notranslate"><span class="pre">sol::nullopt</span></code> instead.</p>
+</div>
+<div class="section" id="operator-proxy-only-members">
+<h2><code class="docutils literal notranslate"><span class="pre">operator[]</span></code> proxy-only members<a class="headerlink" href="#operator-proxy-only-members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="proxy-valid">
+<div class="code-block-caption"><span class="caption-text">function: valid</span><a class="headerlink" href="#proxy-valid" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">valid</span> <span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Returns whether this proxy actually refers to a valid object. It uses <a class="reference internal" href="stack.html#stack-probe-get-field"><span class="std std-ref">sol::stack::probe_get_field</span></a> to determine whether or not its valid.</p>
+<div class="literal-block-wrapper docutils container" id="implicit-set">
+<div class="code-block-caption"><span class="caption-text">functions: [overloaded] implicit set</span><a class="headerlink" href="#implicit-set" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">requires</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">Function</span><span class="o">&lt;</span><span class="n">Fx</span><span class="o">&gt;</span> <span class="o">==</span> <span class="nb">false</span> <span class="p">)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="p">);</span>
+
+<span class="n">requires</span><span class="p">(</span> <span class="n">sol</span><span class="o">::</span><span class="n">detail</span><span class="o">::</span><span class="n">Function</span><span class="o">&lt;</span><span class="n">Fx</span><span class="o">&gt;</span> <span class="o">==</span> <span class="nb">true</span> <span class="p">)</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fx</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span> <span class="n">Fx</span><span class="o">&amp;&amp;</span> <span class="n">function</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Sets the value associated with the keys the proxy was generated with to <code class="docutils literal notranslate"><span class="pre">value</span></code>. If this is a function, calls <code class="docutils literal notranslate"><span class="pre">set_function</span></code>. If it is not, just calls <code class="docutils literal notranslate"><span class="pre">set</span></code>. Does not exist on <a class="reference internal" href="#function-result"><span class="std std-ref">function_result</span></a> or <a class="reference internal" href="#protected-function-result"><span class="std std-ref">protected_function_result</span></a>. See <a class="reference internal" href="#note-1"><span class="std std-ref">note</span></a> for caveats.</p>
+<div class="literal-block-wrapper docutils container" id="regular-set-function">
+<div class="code-block-caption"><span class="caption-text">function: set a callable</span><a class="headerlink" href="#regular-set-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Fx</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&amp;</span> <span class="n">set_function</span><span class="p">(</span> <span class="n">Fx</span><span class="o">&amp;&amp;</span> <span class="n">fx</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Sets the value associated with the keys the proxy was generated with to a function <code class="docutils literal notranslate"><span class="pre">fx</span></code>. Does not exist on <a class="reference internal" href="#function-result"><span class="std std-ref">function_result</span></a> or <a class="reference internal" href="#protected-function-result"><span class="std std-ref">protected_function_result</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="regular-set">
+<div class="code-block-caption"><span class="caption-text">function: set a value</span><a class="headerlink" href="#regular-set" title="Permalink to this code">¶</a></div>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">proxy</span><span class="o">&amp;</span> <span class="n">set</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Sets the value associated with the keys the proxy was generated with to <code class="docutils literal notranslate"><span class="pre">value</span></code>. Does not exist on <a class="reference internal" href="#function-result"><span class="std std-ref">function_result</span></a> or <a class="reference internal" href="#protected-function-result"><span class="std std-ref">protected_function_result</span></a>.</p>
+</div>
+<div class="section" id="stack-proxy">
+<h2>stack_proxy<a class="headerlink" href="#stack-proxy" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">sol::stack_proxy</span></code> is what gets returned by <a class="reference internal" href="variadic_args.html"><span class="doc">sol::variadic_args</span></a> and other parts of the framework. It is similar to proxy, but is meant to alias a stack index and not a named variable.</p>
+</div>
+<div class="section" id="function-result">
+<span id="id2"></span><h2>function_result<a class="headerlink" href="#function-result" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">function_result</span></code> is a temporary-only, intermediate-only implicit conversion worker for when <a class="reference internal" href="function.html"><span class="doc">function</span></a> is called. It is <em>NOT</em> meant to be stored or captured with <code class="docutils literal notranslate"><span class="pre">auto</span></code>. It provides fast access to the desired underlying value. It does not implement <code class="docutils literal notranslate"><span class="pre">set</span></code> / <code class="docutils literal notranslate"><span class="pre">set_function</span></code> / templated <code class="docutils literal notranslate"><span class="pre">operator=</span></code>, as is present on <a class="reference internal" href="#proxy"><span class="std std-ref">proxy</span></a>.</p>
+</div>
+<div class="section" id="protected-function-result">
+<span id="id3"></span><h2>protected_function_result<a class="headerlink" href="#protected-function-result" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">protected_function_result</span></code> is a nicer version of <code class="docutils literal notranslate"><span class="pre">function_result</span></code> that can be used to detect errors. Its gives safe access to the desired underlying value. It does not implement <code class="docutils literal notranslate"><span class="pre">set</span></code> / <code class="docutils literal notranslate"><span class="pre">set_function</span></code> / templated <code class="docutils literal notranslate"><span class="pre">operator=</span></code> as is present on <a class="reference internal" href="#proxy"><span class="std std-ref">proxy</span></a>.</p>
+</div>
+<div class="section" id="on-function-objects-and-proxies">
+<span id="note-1"></span><h2>on function objects and proxies<a class="headerlink" href="#on-function-objects-and-proxies" title="Permalink to this headline">¶</a></h2>
+<p>Consider the following:</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">Note 1 Case</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">doge</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">bark</span><span class="p">;</span>
+
+        <span class="kt">void</span> <span class="nf">operator</span><span class="p">()()</span> <span class="p">{</span>
+                <span class="n">bark</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;object&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doge</span><span class="p">{};</span> <span class="c1">// bind constructed doge to &quot;object&quot;</span>
+<span class="c1">// but it binds as a function</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>When you use the <code class="docutils literal notranslate"><span class="pre">lua[&quot;object&quot;]</span> <span class="pre">=</span> <span class="pre">doge{};</span></code> from above, keep in mind that Sol detects if this is a function <em>callable with any kind of arguments</em>. Since <code class="docutils literal notranslate"><span class="pre">doge</span></code> has overriden <code class="docutils literal notranslate"><span class="pre">return_type</span> <span class="pre">operator()(</span> <span class="pre">argument_types...</span> <span class="pre">)</span></code> on itself, it results in satisfying the <code class="docutils literal notranslate"><span class="pre">requires</span></code> constraint from above. This means that if you have a user-defined type you want to bind as a <a class="reference internal" href="usertype.html"><span class="doc">userdata with usertype semantics</span></a> with this syntax, it might get bound as a function and not as a user-defined type (d’oh!). use <code class="docutils literal notranslate"><span class="pre">lua[&quot;object&quot;].set(doge)</span></code> directly to avoid this, or <code class="docutils literal notranslate"><span class="pre">lua[&quot;object&quot;].set_function(doge{})</span></code> to perform this explicitly.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="this_environment.html">this_environment</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="containers.html">containers</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

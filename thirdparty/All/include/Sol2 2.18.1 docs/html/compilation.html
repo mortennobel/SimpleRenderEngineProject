@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>supported compilers, binary size, compile time &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="features" href="features.html" />
+    <link rel="prev" title="errors" href="errors.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>supported compilers, binary size, compile time</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="errors.html">errors</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="features.html">features</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="supported-compilers-binary-size-compile-time">
+<h1>supported compilers, binary size, compile time<a class="headerlink" href="#supported-compilers-binary-size-compile-time" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="getting-good-final-product-out-of-sol2">
+<h2>getting good final product out of sol2<a class="headerlink" href="#getting-good-final-product-out-of-sol2" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="supported-compilers">
+<h2>supported compilers<a class="headerlink" href="#supported-compilers" title="Permalink to this headline">¶</a></h2>
+<p>GCC 7.x is now out alongside Visual Studio 2017. This means that <a class="reference external" href="https://github.com/ThePhD/sol2/releases/tag/v2.18.1">sol2 release v2.18.1</a> is the current version of the code targeted at the older compilers not listed below. Newer code will be targeted at working with the following compilers and leveraging their features, possibly taking advantage of whatever C++17 features are made available by the compilers and standard libraries bundled by-default with them.</p>
+<p><code class="docutils literal notranslate"><span class="pre">v2.18.1</span></code> supports:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>VC++</dt><dd><ul>
+<li><p>Visual Studio 2017</p></li>
+<li><p>Visual Studio 2015 (Latest updates)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>GCC (includes MinGW)</dt><dd><ul>
+<li><p>v7.x</p></li>
+<li><p>v6.x</p></li>
+<li><p>v5.x</p></li>
+<li><p>v4.8+</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Clang</dt><dd><ul>
+<li><p>v4.x</p></li>
+<li><p>v3.9.x</p></li>
+<li><p>v3.8.x</p></li>
+<li><p>v3.7.x</p></li>
+<li><p>v3.6.x</p></li>
+<li><p>Note: this applies to XCode’s Apple Clang as well, but that compiler packs its own deficiencies and problems as well</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p><strong>This does not mean we are immediately abandoning older compilers.</strong> We will update this page as relevant bugfixes are backported to the v2.x.x releases. Remember that sol2 is feature-complete: there is nothing more we can add to the library at this time with C++11/C++14 compiler support, so your code will be covered for a long time to come.</p>
+<p>Newer features will be targeted at the following compilers:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>VC++</dt><dd><ul>
+<li><p>Visual Studio vNext</p></li>
+<li><p>Visual Studio 2017</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>GCC (includes MinGW)</dt><dd><ul>
+<li><p>v7.x</p></li>
+<li><p>v6.x</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Clang</dt><dd><ul>
+<li><p>v4.x</p></li>
+<li><p>v3.9.x</p></li>
+<li><p>v3.8.x</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Note that Visual Studio’s 2017 Community Edition is absolutely free now, and installs faster and easier than ever before. It also removes a lot of hacky work arounds and formally supports decltype SFINAE.</p>
+<p>MinGW’s GCC version 7.x of the compiler fixes a long-standing derp in the &lt;codecvt&gt; header that swapped the endianness of utf16 and utf32 strings.</p>
+<p>Clang 3.4, 3.5 and 3.6 have many bugs we have run into when developing sol2 and that have negatively impacted users for a long time now.</p>
+<p>We encourage all users to upgrade immediately. If you need old code for some reason, use <a href="#id1"><span class="problematic" id="id2">`sol2 release v2.18.0`_</span></a>: otherwise, always grab sol2’s latest.</p>
+</div>
+<div class="section" id="feature-support">
+<h2>feature support<a class="headerlink" href="#feature-support" title="Permalink to this headline">¶</a></h2>
+<p>track future compiler and feature support in <a class="reference external" href="https://github.com/ThePhD/sol2/issues/426">this issue here</a>.</p>
+</div>
+<div class="section" id="supported-lua-version">
+<h2>supported Lua version<a class="headerlink" href="#supported-lua-version" title="Permalink to this headline">¶</a></h2>
+<p>We support:</p>
+<ul class="simple">
+<li><p>Lua 5.3+</p></li>
+<li><p>Lua 5.2</p></li>
+<li><p>Lua 5.1</p></li>
+<li><p>LuaJIT 2.0.4+</p></li>
+<li><p>LuaJIT 2.1.x-beta3+</p></li>
+</ul>
+</div>
+<div class="section" id="binary-sizes">
+<h2>binary sizes<a class="headerlink" href="#binary-sizes" title="Permalink to this headline">¶</a></h2>
+<p>For individiauls who use <a class="reference internal" href="api/usertype.html"><span class="doc">usertypes</span></a> a lot, they can find their compilation times increase. This is due to C++11 and C++14 not having very good facilities for handling template parameters and variadic template parameters. There are a few things in cutting-edge C++17 and C++Next that sol can use, but the problem is many people cannot work with the latest and greatest: therefore, we have to use older techniques that result in a fair amount of redundant function specializations that can be subject to the pickiness of the compiler’s inlining and other such techniques.</p>
+</div>
+<div class="section" id="compile-speed-improvemements">
+<h2>compile speed improvemements<a class="headerlink" href="#compile-speed-improvemements" title="Permalink to this headline">¶</a></h2>
+<p>Here are some notes on achieving better compile times without sacrificing too much performance:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>When you bind lots of usertypes, put them all in a <em>single</em> translation unit (one C++ file) so that it is not recompiled multiple times over, only to be discarded later by the linker.</dt><dd><ul>
+<li><p>Remember that the usertype binding ends up being serialized into the Lua state, so you never need them to appear in a header and cause that same compilation overhead for every compiled unit in your project.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Consider placing groups of bindings in multiple different translation units (multiple C++ source files) so that only part of the bindings are recompiled when you have to change the bindings.</dt><dd><ul>
+<li><p>Avoid putting your bindings into headers: it <em>will</em> slow down your compilation</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>For extremely large usertypes, consider using <a class="reference internal" href="api/simple_usertype.html"><span class="doc">simple_usertype</span></a>.</dt><dd><ul>
+<li><p>It performs much more work at runtime rather than compile-time, and should still give comparative performance (but it loses out in some cases for variable bindings or when you bind all functions to a usertype).</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>If you are developing a shared library, restrict your overall surface area by specifically and explicitly marking functions as visible and exported and leaving everything else as hidden or invisible by default</p></li>
+<li><p>For people who already have a tool that retrieves function signatures and arguments, it might be in your best interest to hook into that tool or generator and dump out the information once using sol2’s lower-level abstractions. An <a class="reference external" href="https://github.com/ThePhD/sol2/issues/436#issuecomment-312021508">issue describing preliminary steps can be found here</a>.</p></li>
+</ul>
+</div>
+<div class="section" id="next-steps">
+<h2>next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline">¶</a></h2>
+<p>The next step for Sol from a developer standpoint is to formally make the library a C++17 one. This would mean using Fold Expressions and several other things which will reduce compilation time drastically. Unfortunately, that means also boosting compiler requirements. While most wouldn’t care, others are very slow to upgrade: finding the balance is difficult, and often we have to opt for backwards compatibility and fixes for bad / older compilers (of which there are many in the codebase already).</p>
+<p>Hopefully, as things progress, we move things forward.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="errors.html">errors</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="features.html">features</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

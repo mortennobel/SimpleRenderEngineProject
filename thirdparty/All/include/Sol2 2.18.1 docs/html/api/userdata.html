@@ -1,0 +1,83 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>userdata &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="environment" href="environment.html" />
+    <link rel="prev" title="table" href="table.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>userdata</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="table.html">table</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="environment.html">environment</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="userdata">
+<h1>userdata<a class="headerlink" href="#userdata" title="Permalink to this headline">¶</a></h1>
+<p><em>reference to a userdata</em></p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">(light_)userdata reference</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">userdata</span> <span class="o">:</span> <span class="k">public</span> <span class="n">table</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">light_userdata</span> <span class="o">:</span> <span class="k">public</span> <span class="n">table</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>These types are meant to hold a reference to a (light) userdata from Lua and make it easy to push an existing userdata onto the stack. It is essentially identical to <a class="reference internal" href="table.html"><span class="doc">table</span></a> in every way, just with a definitive C++ type that ensures the type is some form of userdata (helpful for trapping type errors with <a class="reference internal" href="../safety.html"><span class="doc">safety features turned on</span></a>). You can also use its <code class="docutils literal notranslate"><span class="pre">.is&lt;T&gt;()</span></code> and <code class="docutils literal notranslate"><span class="pre">.as&lt;T&gt;()</span></code> methods to check if its of a specific type and retrieve that type, respectively.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="table.html">table</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="environment.html">environment</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

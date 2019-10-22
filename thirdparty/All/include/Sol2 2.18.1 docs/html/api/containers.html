@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>containers &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="as_container" href="as_container.html" />
+    <link rel="prev" title="proxy, (protected_)function_result - proxy_base derivatives" href="proxy.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>containers</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="proxy.html">proxy, (protected_)function_result - proxy_base derivatives</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_container.html">as_container</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="containers">
+<h1>containers<a class="headerlink" href="#containers" title="Permalink to this headline">¶</a></h1>
+<p><em>for handling ``std::vector/map/set`` and others</em></p>
+<p>Sol2 automatically converts containers (detected using the <code class="docutils literal notranslate"><span class="pre">sol::is_container&lt;T&gt;</span></code> type trait, which simply looks for <code class="docutils literal notranslate"><span class="pre">begin</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code>) to be a special kind of userdata with metatable on it. For Lua 5.2 and 5.3, this is extremely helpful as you can make typical containers behave like Lua tables without losing the actual C++ container that they came from, as well as a small amount of indexing and other operations that behave properly given the table type.</p>
+<p>An overview of these traits and additional information can be found <a class="reference internal" href="../containers.html"><span class="doc">at the top level container page</span></a>.</p>
+<p>If you need to deal with these things from and in Lua to be <strong>actual</strong>, true-blue, Lua tables, please consider <a class="reference internal" href="as_table.html"><span class="doc">sol::as_table</span></a> and <a class="reference internal" href="nested.html"><span class="doc">sol::nested</span></a> for serialization and deserialization into and out of the VM with sol2 operations. You can also force something that is marked as not-a-container by using <a class="reference internal" href="as_container.html"><span class="doc">sol::as_container</span></a> for sol2 to push it as a userdata with the aforementioned special usertype metatable into Lua.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Overriding the detection traits and operation traits listed <a class="reference internal" href="../containers.html"><span class="doc">on the top level container page</span></a> and then trying to use <code class="docutils literal notranslate"><span class="pre">sol::as_table</span></code> or similar can result in compilation failures if you do not have a proper <code class="docutils literal notranslate"><span class="pre">begin()</span></code> or <code class="docutils literal notranslate"><span class="pre">end()</span></code> function on the type. If you want things to behave with special usertype considerations, please do not wrap the container in one of the special table-forcing abstractions.</p>
+</div>
+<div class="section" id="a-complete-example">
+<h2>a complete example<a class="headerlink" href="#a-complete-example" title="Permalink to this headline">¶</a></h2>
+<p>Here’s a complete working example of it working for Lua 5.3 and Lua 5.2, and how you can retrieve out the container in all versions:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">containers.cpp</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">();</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">        function f (x)</span>
+<span class="s">                print(&#39;--- Calling f ---&#39;)</span>
+<span class="s">                for k, v in pairs(x) do</span>
+<span class="s">                        print(k, v)</span>
+<span class="s">                end</span>
+<span class="s">        end</span>
+<span class="s">        </span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+
+        <span class="c1">// Have the function we</span>
+        <span class="c1">// just defined in Lua</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">f</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+
+        <span class="c1">// Set a global variable called</span>
+        <span class="c1">// &quot;arr&quot; to be a vector of 5 lements</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;arr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">{</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span> <span class="p">};</span>
+
+        <span class="c1">// Call it, see 5 elements</span>
+        <span class="c1">// printed out</span>
+        <span class="n">f</span><span class="p">(</span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;arr&quot;</span><span class="p">]);</span>
+
+        <span class="c1">// Mess with it in C++</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">reference_to_arr</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;arr&quot;</span><span class="p">];</span>
+        <span class="n">reference_to_arr</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">12</span><span class="p">);</span>
+
+        <span class="c1">// Call it, see *6* elements</span>
+        <span class="c1">// printed out</span>
+        <span class="n">f</span><span class="p">(</span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;arr&quot;</span><span class="p">]);</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Note that this will not work well in Lua 5.1, as it has explicit table checks and does not check metamethods, even when <code class="docutils literal notranslate"><span class="pre">pairs</span></code> or <code class="docutils literal notranslate"><span class="pre">ipairs</span></code> is passed a table. In that case, you will need to use a more manual iteration scheme or you will have to convert it to a table. In C++, you can use <a class="reference internal" href="as_table.html"><span class="doc">sol::as_table</span></a> when passing something to the library to get a table out of it: <code class="docutils literal notranslate"><span class="pre">lua[&quot;arr&quot;]</span> <span class="pre">=</span> <span class="pre">as_table(</span> <span class="pre">std::vector&lt;int&gt;{</span> <span class="pre">...</span> <span class="pre">});</span></code>. For manual iteration in Lua code without using <code class="docutils literal notranslate"><span class="pre">as_table</span></code> for something with indices, try:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">iteration.lua</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">for</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">#</span><span class="n">vec</span> <span class="kr">do</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">vec</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+</div>
+<p>There are also other ways to iterate over key/values, but they can be difficult AND cost your performance due to not having proper support in Lua 5.1. We recommend that you upgrade to Lua 5.2 or 5.3 if this is integral to your infrastructure.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="proxy.html">proxy, (protected_)function_result - proxy_base derivatives</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_container.html">as_container</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

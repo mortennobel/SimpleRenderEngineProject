@@ -1,0 +1,147 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>resolve &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="stack namespace" href="stack.html" />
+    <link rel="prev" title="c_call" href="c_call.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>resolve</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="c_call.html">c_call</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="stack.html">stack namespace</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="resolve">
+<h1>resolve<a class="headerlink" href="#resolve" title="Permalink to this headline">¶</a></h1>
+<p><em>utility to pick overloaded C++ function calls</em></p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">function: resolve C++ overload</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="p">,</span> <span class="k">typename</span> <span class="n">F</span><span class="o">&gt;</span>
+<span class="k">constexpr</span> <span class="k">auto</span> <span class="n">resolve</span><span class="p">(</span> <span class="n">F</span> <span class="n">f</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">resolve</span></code> is a function that is meant to help users pick a single function out of a group of overloaded functions in C++. It works for <em>both member and free functions</em> You can use it to pick overloads by specifying the signature as the first template argument. Given a collection of overloaded functions:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">);</span>
+<span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">z</span><span class="p">);</span>
+
+<span class="k">struct</span> <span class="n">thing</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">overloaded</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="nf">overloaded</span><span class="p">(</span><span class="kt">int</span> <span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="n">y</span><span class="p">,</span> <span class="kt">int</span> <span class="n">z</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</td></tr></table></div>
+<p>You can disambiguate them using <code class="docutils literal notranslate"><span class="pre">resolve</span></code>:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">auto</span> <span class="n">one_argument_func</span> <span class="o">=</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">);</span>
+<span class="k">auto</span> <span class="n">two_argument_func</span> <span class="o">=</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">);</span>
+<span class="k">auto</span> <span class="n">three_argument_func</span> <span class="o">=</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">);</span>
+<span class="k">auto</span> <span class="n">member_three_argument_func</span> <span class="o">=</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">thing</span><span class="o">::</span><span class="n">overloaded</span> <span class="p">);</span>
+<span class="k">auto</span> <span class="n">member_zero_argument_const_func</span> <span class="o">=</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">()</span> <span class="k">const</span><span class="o">&gt;</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">thing</span><span class="o">::</span><span class="n">overloaded</span> <span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<p>It is <em>important</em> to note that <code class="docutils literal notranslate"><span class="pre">const</span></code> is placed at the end for when you desire const overloads. You will get compiler errors if you are not specific and do not properly disambiguate for const member functions. This resolution also becomes useful when setting functions on a <a class="reference internal" href="table.html"><span class="doc">table</span></a> or <a class="reference internal" href="state.html"><span class="doc">state_view</span></a>:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">)</span> <span class="p">);</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">));</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span> <span class="n">overloaded</span> <span class="p">));</span>
+</pre></div>
+</td></tr></table></div>
+<p>It can also be used with <a class="reference internal" href="c_call.html"><span class="doc">sol::c_call</span></a>:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="k">auto</span> <span class="n">f</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="n">c_call</span><span class="o">&lt;</span>
+        <span class="k">decltype</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">overloaded</span><span class="p">)),</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">resolve</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">overloaded</span><span class="p">)</span>
+<span class="o">&gt;</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="n">f</span><span class="p">);</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;f(1, 2)&quot;</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="c_call.html">c_call</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="stack.html">stack namespace</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

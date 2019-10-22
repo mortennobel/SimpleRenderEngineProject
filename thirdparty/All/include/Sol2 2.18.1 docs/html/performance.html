@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>getting performance &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="safety" href="safety.html" />
+    <link rel="prev" title="benchmarks" href="benchmarks.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>getting performance</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="benchmarks.html">benchmarks</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="safety.html">safety</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="getting-performance">
+<h1>getting performance<a class="headerlink" href="#getting-performance" title="Permalink to this headline">¶</a></h1>
+<p><em>things to make Sol as fast as possible</em></p>
+<p>As shown by the <a class="reference internal" href="benchmarks.html"><span class="doc">benchmarks</span></a>, Sol is very performant with its abstractions. However, in the case where you need every last drop of performance from Sol, a number of tips and API usage tricks will be documented here. PLEASE benchmark / profile your code before you start invoking these, as some of them trade in readability / clarity for performance.</p>
+<ul class="simple">
+<li><p>If you have a bound function call / bound member function that you are going to call in a very tight, performance-heavy loop, considering using <a class="reference internal" href="api/c_call.html"><span class="doc">sol::c_call</span></a></p></li>
+<li><p>Be wary of passing by value / reference, and what it means by reading <a class="reference internal" href="functions.html#function-argument-handling"><span class="std std-ref">this note</span></a>.</p></li>
+<li><p>It is currently undocumented that usertypes will “inherit” member function / member variables from bound classes, mostly because the semantics are unclear and it is not the most performant (although it is flexible: you can register base classes after / whenever you want in relation to the derived class, provided that derived class has its bases listed). Specifying all member functions / member variables for the usertype constructor / <code class="docutils literal notranslate"><span class="pre">new_usertype</span></code> function call and not relying on base lookup will boost performance of member lookup</p></li>
+<li><p>Use the <a class="reference internal" href="api/stack_reference.html"><span class="doc">sol::stack_{}</span></a> versions of functions in order to achieve maximum performance benefits when doing things like calling a function from Lua and knowing that certain arguments of certain Lua types will be on the stack. This can save you a very small fraction of performance to not copy to the register (but is also more dangerous and usually not terribly worth it).</p></li>
+<li><p>Specifying base classes can make getting the usertype out of Sol a bit slower since we have to check and cast; if you know the exact type wherever you’re retrieving it, considering not specifying the bases, retrieving the exact type from Sol, and then casting to a base type yourself</p></li>
+<li><p>Member variables can sometimes cost an extra lookup to occur within the Lua system (as mentioned <a class="reference internal" href="api/usertype.html"><span class="doc">bottom of the usertype page</span></a>); until we find out a safe way around this, member variables will always incur that extra lookup cost</p></li>
+</ul>
+<p>That’s it as far as different performance options are avilable to make Sol run faster. Again, please make sure to invoke these only when you know Sol is the bottleneck. If you find some form of the performance unacceptable to you, also feel free to open an issue at the github.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="benchmarks.html">benchmarks</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="safety.html">safety</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

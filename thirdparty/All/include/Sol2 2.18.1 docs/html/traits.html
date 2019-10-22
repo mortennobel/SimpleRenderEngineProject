@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>customization traits &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="api reference manual" href="api/api-top.html" />
+    <link rel="prev" title="threading" href="threading.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>customization traits</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="threading.html">threading</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="api/api-top.html">api reference manual</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="customization-traits">
+<h1>customization traits<a class="headerlink" href="#customization-traits" title="Permalink to this headline">¶</a></h1>
+<p>These are customization points within the library to help you make sol2 work for the types in your framework and types.</p>
+<p>To learn more about various customizable traits, visit:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt><a class="reference internal" href="containers.html"><span class="doc">containers customization traits</span></a></dt><dd><ul>
+<li><p>This is how to work with containers in their entirety and what operations you’re afforded on them</p></li>
+<li><p>when you have an compiler error when serializing a type that has <code class="docutils literal notranslate"><span class="pre">begin</span></code> and <code class="docutils literal notranslate"><span class="pre">end</span></code> functions but isn’t exactly a container</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/unique_usertype_traits.html"><span class="doc">unique usertype (custom pointer) traits</span></a></dt><dd><ul>
+<li><p>This is how to deal with unique usertypes, e.g. <code class="docutils literal notranslate"><span class="pre">boost::shared_ptr</span></code>, reference-counted pointers, etc</p></li>
+<li><p>Useful for custom pointers from all sorts of frameworks or handle types that employ very specific kinds of destruction semantics and access</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="tutorial/customization.html"><span class="doc">customization points</span></a></dt><dd><ul>
+<li><p>This is how to customize a type to work with sol2</p></li>
+<li><p>Can be used for specializations to push strings and other class types that are not natively <code class="docutils literal notranslate"><span class="pre">std::string</span></code> or <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char*</span></code>, like <a class="reference external" href="https://github.com/ThePhD/sol2/issues/140#issuecomment-237934947">a wxString, for example</a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="threading.html">threading</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="api/api-top.html">api reference manual</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

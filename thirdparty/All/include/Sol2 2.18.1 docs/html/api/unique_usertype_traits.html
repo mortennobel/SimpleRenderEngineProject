@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>unique_usertype_traits&lt;T&gt; &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="tie" href="tie.html" />
+    <link rel="prev" title="usertype memory" href="usertype_memory.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>unique_usertype_traits&lt;T&gt;</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usertype_memory.html">usertype memory</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tie.html">tie</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="unique-usertype-traits-t">
+<h1>unique_usertype_traits&lt;T&gt;<a class="headerlink" href="#unique-usertype-traits-t" title="Permalink to this headline">¶</a></h1>
+<p><em>trait for hooking special handles / pointers</em></p>
+<div class="literal-block-wrapper docutils container" id="unique-usertype">
+<div class="code-block-caption"><span class="caption-text">unique_usertype</span><a class="headerlink" href="#unique-usertype" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">unique_usertype_traits</span> <span class="p">{</span>
+        <span class="k">typedef</span> <span class="n">T</span> <span class="n">type</span><span class="p">;</span>
+        <span class="k">typedef</span> <span class="n">T</span> <span class="n">actual_type</span><span class="p">;</span>
+        <span class="k">static</span> <span class="k">const</span> <span class="kt">bool</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+
+        <span class="k">static</span> <span class="kt">bool</span> <span class="nf">is_null</span><span class="p">(</span><span class="k">const</span> <span class="n">actual_type</span><span class="o">&amp;</span><span class="p">)</span> <span class="p">{...}</span>
+
+        <span class="k">static</span> <span class="n">type</span><span class="o">*</span> <span class="nf">get</span> <span class="p">(</span><span class="k">const</span> <span class="n">actual_type</span><span class="o">&amp;</span><span class="p">)</span> <span class="p">{...}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This is a customization point for users who need to <em>work with special kinds of pointers/handles</em>. For generic customization, please review the <a class="reference internal" href="../tutorial/customization.html"><span class="doc">customization tutorial</span></a> A traits type for alerting the library that a certain type is to be pushed as a special userdata with special deletion / destruction semantics. It is already defined for <code class="docutils literal notranslate"><span class="pre">std::unique_ptr&lt;T,</span> <span class="pre">D&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">std::shared_ptr&lt;T&gt;</span></code>. You can specialize this to get <code class="docutils literal notranslate"><span class="pre">unique_usertype_traits</span></code> semantics with your code, for example with <code class="docutils literal notranslate"><span class="pre">boost::shared_ptr&lt;T&gt;</span></code> like so:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">sol</span> <span class="p">{</span>
+        <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+        <span class="k">struct</span> <span class="n">unique_usertype_traits</span><span class="o">&lt;</span><span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+                <span class="k">typedef</span> <span class="n">T</span> <span class="n">type</span><span class="p">;</span>
+                <span class="k">typedef</span> <span class="n">boost</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">actual_type</span><span class="p">;</span>
+                <span class="k">static</span> <span class="k">const</span> <span class="kt">bool</span> <span class="n">value</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+
+                <span class="k">static</span> <span class="kt">bool</span> <span class="nf">is_null</span><span class="p">(</span><span class="k">const</span> <span class="n">actual_type</span><span class="o">&amp;</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="n">value</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">;</span>
+                <span class="p">}</span>
+
+                <span class="k">static</span> <span class="n">type</span><span class="o">*</span> <span class="nf">get</span> <span class="p">(</span><span class="k">const</span> <span class="n">actual_type</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="n">p</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+                <span class="p">}</span>
+        <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This will allow the framework to properly handle <code class="docutils literal notranslate"><span class="pre">boost::shared_ptr&lt;T&gt;</span></code>, with ref-counting and all. The <cite>type</cite> is the  type that lua and sol will interact with, and will allow you to pull out a non-owning reference / pointer to the data when you just ask for a plain <cite>T*</cite> or <cite>T&amp;</cite> or <cite>T</cite> using the getter functions and properties of Sol.</p>
+<p>Note that if <code class="docutils literal notranslate"><span class="pre">is_null</span></code> triggers, a <code class="docutils literal notranslate"><span class="pre">nil</span></code> value will be pushed into Sol.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="usertype_memory.html">usertype memory</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="tie.html">tie</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>readonly &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="as_function" href="as_function.html" />
+    <link rel="prev" title="filters" href="filters.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>readonly</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="filters.html">filters</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_function.html">as_function</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="readonly">
+<h1>readonly<a class="headerlink" href="#readonly" title="Permalink to this headline">¶</a></h1>
+<p><em>routine to mark a member variable as read-only</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">auto</span> <span class="n">readonly</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>The goal of read-only is to protect a variable set on a usertype or a function. Simply wrap it around a member variable, e.g. <code class="docutils literal notranslate"><span class="pre">sol::readonly(</span> <span class="pre">&amp;my_class::my_member_variable</span> <span class="pre">)</span></code> in the appropriate place to use it. If someone tries to set it, it will error their code.</p>
+<p><code class="docutils literal notranslate"><span class="pre">sol::readonly</span></code> is especially important when you’re working with types that do not have a copy constructor. Lua does not understand move semantics, and therefore setters to user-defined-types require a C++ copy constructor. Containers as member variables that contain types that are not copyable but movable – e.g. <code class="docutils literal notranslate"><span class="pre">std::vector&lt;my_move_only_type&gt;</span></code> amongst others – also can erroneously state they are copyable but fail with compiler errors. If your type does not fit a container’s definition of being copyable or is just not copyable in general and it is a member variable, please use <code class="docutils literal notranslate"><span class="pre">sol::readonly</span></code>.</p>
+<p>If you are looking to make a read-only table, you need to go through a bit of a complicated song and dance by overriding the <code class="docutils literal notranslate"><span class="pre">__index</span></code> metamethod. Here’s a complete example on the way to do that using <code class="docutils literal notranslate"><span class="pre">sol</span></code>:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">read-only.cpp</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp"></span>
+
+<span class="k">struct</span> <span class="n">object</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="n">my_func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;hello</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">deny</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">luaL_error</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="s">&quot;HAH! Deniiiiied!&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+    <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+    <span class="n">object</span> <span class="n">my_obj</span><span class="p">;</span>
+
+    <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">obj_table</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_named_table</span><span class="p">(</span><span class="s">&quot;object&quot;</span><span class="p">);</span>
+
+    <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">obj_metatable</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">create_table_with</span><span class="p">();</span>
+    <span class="n">obj_metatable</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;my_func&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">object</span><span class="o">::</span><span class="n">my_func</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">my_obj</span><span class="p">);</span>
+    <span class="c1">// Set whatever else you need to</span>
+    <span class="c1">// on the obj_metatable,</span>
+    <span class="c1">// not on the obj_table itself!</span>
+
+    <span class="c1">// Properly self-index metatable to block things</span>
+    <span class="n">obj_metatable</span><span class="p">[</span><span class="n">sol</span><span class="o">::</span><span class="n">meta_function</span><span class="o">::</span><span class="n">new_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">deny</span><span class="p">;</span>
+    <span class="n">obj_metatable</span><span class="p">[</span><span class="n">sol</span><span class="o">::</span><span class="n">meta_function</span><span class="o">::</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj_metatable</span><span class="p">;</span>
+
+    <span class="c1">// Set it on the actual table</span>
+    <span class="n">obj_table</span><span class="p">[</span><span class="n">sol</span><span class="o">::</span><span class="n">metatable_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">obj_metatable</span><span class="p">;</span>
+
+    <span class="k">try</span> <span class="p">{</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">print(object.my_func)</span>
+<span class="s">object[&quot;my_func&quot;] = 24</span>
+<span class="s">print(object.my_func)</span>
+<span class="s">        </span><span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">exception</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>It is a verbose example, but it explains everything. Because the process is a bit involved and can have unexpected consequences for users that make their own tables, making read-only tables is something that we ask the users to do themselves with the above code, as getting the semantics right for the dozens of use cases would be tremendously difficult.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="filters.html">filters</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="as_function.html">as_function</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

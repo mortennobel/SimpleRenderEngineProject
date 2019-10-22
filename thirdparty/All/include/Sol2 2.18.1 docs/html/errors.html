@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>errors &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="supported compilers, binary size, compile time" href="compilation.html" />
+    <link rel="prev" title="adding your own types" href="tutorial/customization.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>errors</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tutorial/customization.html">adding your own types</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="compilation.html">supported compilers, binary size, compile time</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="errors">
+<h1>errors<a class="headerlink" href="#errors" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-handle-exceptions-or-other-errors">
+<h2>how to handle exceptions or other errors<a class="headerlink" href="#how-to-handle-exceptions-or-other-errors" title="Permalink to this headline">¶</a></h2>
+<p>Here is some advice and some tricks for common errors about iteration, compile time / linker errors, and other pitfalls, especially when dealing with thrown exceptions, error conditions and the like in Sol.</p>
+</div>
+<div class="section" id="running-scripts">
+<h2>Running Scripts<a class="headerlink" href="#running-scripts" title="Permalink to this headline">¶</a></h2>
+<p>Scripts can have syntax errors, can load from the file system wrong, or have runtime issues. Knowing which one can be troublesome. There are various small building blocks to load and run code, but to check errors you can use the overloaded <a class="reference internal" href="api/state.html#state-script-function"><span class="std std-ref">script/script_file functions on sol::state/sol::state_view</span></a>, specifically the <code class="docutils literal notranslate"><span class="pre">safe_script</span></code> variants. These also take an error callback that is called only when something goes wrong, and Sol comes with some default error handlers in the form of <code class="docutils literal notranslate"><span class="pre">sol::script_default_on_error</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::script_pass_on_error</span></code>.</p>
+</div>
+<div class="section" id="compiler-errors-warnings">
+<h2>Compiler Errors / Warnings<a class="headerlink" href="#compiler-errors-warnings" title="Permalink to this headline">¶</a></h2>
+<p>A myriad of compiler errors can occur when something goes wrong. Here is some basic advice about working with these types:</p>
+<ul class="simple">
+<li><p>If there are a myriad of errors relating to <code class="docutils literal notranslate"><span class="pre">std::index_sequence</span></code>, type traits, and other <code class="docutils literal notranslate"><span class="pre">std::</span></code> members, it is likely you have not turned on your C++14 switch for your compiler. Visual Studio 2015 turns these on by default, but g++ and clang++ do not have them as defaults and you should pass the flag <code class="docutils literal notranslate"><span class="pre">--std=c++1y</span></code> or <code class="docutils literal notranslate"><span class="pre">--std=c++14</span></code>, or similar for your compiler.</p></li>
+<li><p>Sometimes, a generated usertype can be very long if you are binding a lot of member functions. You may end up with a myriad of warnings about debug symbols being cut off or about <code class="docutils literal notranslate"><span class="pre">__LINE_VAR</span></code> exceeding maximum length. You can silence these warnings safely for some compilers.</p></li>
+<li><p>Template depth errors may also be a problem on earlier versions of clang++ and g++. Use <code class="docutils literal notranslate"><span class="pre">-ftemplate-depth</span></code> compiler flag and specify really high number (something like 2048 or even double that amount) to let the compiler work freely. Also consider potentially using <a class="reference internal" href="api/simple_usertype.html"><span class="doc">simple usertypes</span></a> to save compilation speed.</p></li>
+<li><p>If you have a move-only type, that type may need to be made <code class="docutils literal notranslate"><span class="pre">readonly</span></code> if it is bound as a member variable on a usertype or bound using <code class="docutils literal notranslate"><span class="pre">state_view::set_function</span></code>. See <a class="reference internal" href="api/readonly.html"><span class="doc">sol::readonly</span></a> for more details.</p></li>
+<li><p>Assigning a <code class="docutils literal notranslate"><span class="pre">std::string</span></code> or a <code class="docutils literal notranslate"><span class="pre">std::pair&lt;T1,</span> <span class="pre">T2&gt;</span></code> using <code class="docutils literal notranslate"><span class="pre">operator=</span></code> after it’s been constructed can result in compiler errors when working with <code class="docutils literal notranslate"><span class="pre">sol::function</span></code> and its results. See <a class="reference external" href="https://github.com/ThePhD/sol2/issues/414#issuecomment-306839439">this issue for fixes to this behavior</a>.</p></li>
+<li><p>Sometimes, using <code class="docutils literal notranslate"><span class="pre">__stdcall</span></code> in a 32-bit (x86) environment on VC++ can cause problems binding functions because of a compiler bug. We have a prelimanry fix in, but if it doesn’t work and there are still problems: put the function in a <code class="docutils literal notranslate"><span class="pre">std::function</span></code> to make the compiler errors and other problems go away. Also see <a class="reference external" href="https://github.com/ThePhD/sol2/issues/463">this __stdcall issue report</a> for more details.</p></li>
+</ul>
+</div>
+<div class="section" id="compiler-out-of-heap-space">
+<h2>“compiler out of heap space”<a class="headerlink" href="#compiler-out-of-heap-space" title="Permalink to this headline">¶</a></h2>
+<p>Typical of Visual Studio, the compiler will complain that it is out of heap space because Visual Studio defaults to using the x86 (32-bit) version of itself (it will still compile x86 or x64 or ARM binaries, just the compiler <strong>itself</strong> is a 32-bit executable). In order to get around heap space requirements, add the following statement in your <code class="docutils literal notranslate"><span class="pre">.vcoxproj</span></code> files under the <code class="docutils literal notranslate"><span class="pre">&lt;Import</span> <span class="pre">.../&gt;</span></code> statement, as instructed by <a href="#id1"><span class="problematic" id="id2">`OrfeasZ in this issue`_</span></a>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">PropertyGroup</span><span class="o">&gt;</span>
+        <span class="o">&lt;</span><span class="n">PreferredToolArchitecture</span><span class="o">&gt;</span><span class="n">x64</span><span class="o">&lt;/</span><span class="n">PreferredToolArchitecture</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">PropertyGroup</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>This should use the 64-bit tools by default, and increase your maximum heap space to whatever a 64-bit windows machine can handle. If you do not have more than 4 GB of RAM, or you still encounter issues, you should look into using <code class="docutils literal notranslate"><span class="pre">create_simple_usertype</span></code> and adding functions 1 by 1 using <code class="docutils literal notranslate"><span class="pre">.set(</span> <span class="pre">...</span> <span class="pre">)</span></code>, as shown in <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/usertype_simple.cpp#L45">the simple usertype example here</a>.</p>
+</div>
+<div class="section" id="linker-errors">
+<h2>Linker Errors<a class="headerlink" href="#linker-errors" title="Permalink to this headline">¶</a></h2>
+<p>There are lots of reasons for compiler linker errors. A common one is not knowing that you’ve compiled the Lua library as C++: when building with C++, it is important to note that every typical (static or dynamic) library expects the C calling convention to be used and that Sol includes the code using <code class="docutils literal notranslate"><span class="pre">extern</span> <span class="pre">'C'</span></code> where applicable.</p>
+<p>However, when the target Lua library is compiled with C++, one must change the calling convention and name mangling scheme by getting rid of the <code class="docutils literal notranslate"><span class="pre">extern</span> <span class="pre">'C'</span></code> block. This can be achieved by adding <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_USING_CXX_LUA</span></code> before including sol2, or by adding it to your compilation’s command line.</p>
+</div>
+<div class="section" id="caught-exception-errors">
+<h2>“caught (…) exception” errors<a class="headerlink" href="#caught-exception-errors" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, you expect properly written errors and instead receive an error about catching a <code class="docutils literal notranslate"><span class="pre">...</span></code> exception instead. This might mean that you either built Lua as C++ or are using a framework like LuaJIT that has full interopability support for exceptions on certain system types (x64 for LuaJIT 2.0.5, x86 and x64 on LuaJIT 2.1.x-beta and later).</p>
+<p>Please make sure to use the <code class="docutils literal notranslate"><span class="pre">SOL_EXCEPTIONS_SAFE_PROPAGATION</span></code> define before including sol2 to make this work out. You can read more <a class="reference internal" href="exceptions.html#exception-interop"><span class="std std-ref">at the exception page here</span></a>.</p>
+</div>
+<div class="section" id="catch-and-crash">
+<h2>Catch and CRASH!<a class="headerlink" href="#catch-and-crash" title="Permalink to this headline">¶</a></h2>
+<p>By default, Sol will add a <code class="docutils literal notranslate"><span class="pre">default_at_panic</span></code> handler. If exceptions are not turned off, this handler will throw to allow the user a chance to recover. However, in almost all cases, when Lua calls <code class="docutils literal notranslate"><span class="pre">lua_atpanic</span></code> and hits this function, it means that something <em>irreversibly wrong</em> occured in your code or the Lua code and the VM is in an unpredictable or dead state. Catching an error thrown from the default handler and then proceeding as if things are cleaned up or okay is NOT the best idea. Unexpected bugs in optimized and release mode builds can result, among other serious issues.</p>
+<p>It is preferred if you catch an error that you log what happened, terminate the Lua VM as soon as possible, and then crash if your application cannot handle spinning up a new Lua state. Catching can be done, but you should understand the risks of what you’re doing when you do it. For more information about catching exceptions, the potentials, not turning off exceptions and other tricks and caveats, read about <a class="reference internal" href="exceptions.html"><span class="doc">exceptions in Sol here</span></a>.</p>
+<p>Lua is a C API first and foremost: exceptions bubbling out of it is essentially last-ditch, terminal behavior that the VM does not expect. You can see an example of handling a panic on the exceptions page <a class="reference internal" href="exceptions.html#typical-panic-function"><span class="std std-ref">here</span></a>. This means that setting up a <code class="docutils literal notranslate"><span class="pre">try</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span> <span class="pre">catch</span> <span class="pre">(...)</span> <span class="pre">{}</span></code> around an unprotected sol2 function or script call is <strong>NOT</strong> enough to keep the VM in a clean state. Lua does not understand exceptions and throwing them results in undefined behavior if they bubble through the C API once and then the state is used again. Please catch, and crash.</p>
+<p>Furthermore, it would be a great idea for you to use the safety features talked about <a class="reference internal" href="safety.html"><span class="doc">safety section</span></a>, especially for those related to functions.</p>
+</div>
+<div class="section" id="destructors-and-safety">
+<h2>Destructors and Safety<a class="headerlink" href="#destructors-and-safety" title="Permalink to this headline">¶</a></h2>
+<p>Another issue is that Lua is a C API. It uses <code class="docutils literal notranslate"><span class="pre">setjmp</span></code> and <code class="docutils literal notranslate"><span class="pre">longjmp</span></code> to jump out of code when an error occurs. This means it will ignore destructors in your code if you use the library or the underlying Lua VM improperly. To solve this issue, build Lua as C++. When a Lua VM error occurs and <code class="docutils literal notranslate"><span class="pre">lua_error</span></code> is triggered, it raises it as an exception which will provoke proper unwinding semantics.</p>
+</div>
+<div class="section" id="protected-functions-and-access">
+<h2>Protected Functions and Access<a class="headerlink" href="#protected-functions-and-access" title="Permalink to this headline">¶</a></h2>
+<p>By default, <a class="reference internal" href="api/function.html"><span class="doc">sol::function</span></a> assumes the code ran just fine and there are no problems. <a class="reference internal" href="api/state.html#state-script-function"><span class="std std-ref">sol::state(_view)::script(_file)</span></a> also assumes that code ran just fine. Use <a class="reference internal" href="api/protected_function.html"><span class="doc">sol::protected_function</span></a> to have function access where you can check if things worked out. Use <a class="reference internal" href="api/optional.html"><span class="doc">sol::optional</span></a> to get a value safely from Lua. Use <a class="reference internal" href="api/state.html#state-do-code"><span class="std std-ref">sol::state(_view)::do_string/do_file/load/load_file</span></a> to safely load and get results from a script. The defaults are provided to be simple and fast with thrown exceptions to violently crash the VM in case things go wrong.</p>
+</div>
+<div class="section" id="protected-functions-are-not-catch-all">
+<h2>Protected Functions Are Not Catch All<a class="headerlink" href="#protected-functions-are-not-catch-all" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes, some scripts load poorly. Even if you protect the function call, the actual file loading or file execution will be bad, in which case <a class="reference internal" href="api/protected_function.html"><span class="doc">sol::protected_function</span></a> will not save you. Make sure you register your own panic handler so you can catch errors, or follow the advice of the catch + crash behavior above. Remember that you can also bind your own functions and forego sol2’s built-in protections for you own by binding a <a class="reference internal" href="functions.html#raw-function-note"><span class="std std-ref">raw lua_CFunction function</span></a></p>
+</div>
+<div class="section" id="iteration">
+<h2>Iteration<a class="headerlink" href="#iteration" title="Permalink to this headline">¶</a></h2>
+<p>Tables may have other junk on them that makes iterating through their numeric part difficult when using a bland <code class="docutils literal notranslate"><span class="pre">for-each</span></code> loop, or when calling sol’s <code class="docutils literal notranslate"><span class="pre">for_each</span></code> function. Use a numeric look to iterate through a table. Iteration does not iterate in any defined order also: see <a class="reference internal" href="api/table.html#iteration-note"><span class="std std-ref">this note in the table documentation for more explanation</span></a>.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tutorial/customization.html">adding your own types</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="compilation.html">supported compilers, binary size, compile time</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

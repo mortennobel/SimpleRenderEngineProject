@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>C++ in Lua &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ownership" href="ownership.html" />
+    <link rel="prev" title="functions and You" href="functions.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>C++ in Lua</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="functions.html">functions and You</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="ownership.html">ownership</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="c-in-lua">
+<h1>C++ in Lua<a class="headerlink" href="#c-in-lua" title="Permalink to this headline">¶</a></h1>
+<p>Using user defined types (“usertype”s, or just “udt”s) is simple with Sol. If you don’t call any member variables or functions, then you don’t even have to ‘register’ the usertype at all: just pass it through. But if you want variables and functions on your usertype inside of Lua, you need to register it. We’re going to give a short example here that includes a bunch of information on how to work with things.</p>
+<p>Take this <code class="docutils literal notranslate"><span class="pre">player</span></code> struct in C++ in a header file:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">test_player.hpp</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">player</span> <span class="p">{</span>
+<span class="k">public</span><span class="o">:</span>
+        <span class="kt">int</span> <span class="n">bullets</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">speed</span><span class="p">;</span>
+
+        <span class="n">player</span><span class="p">()</span>
+        <span class="o">:</span> <span class="n">player</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="p">}</span>
+
+        <span class="n">player</span><span class="p">(</span><span class="kt">int</span> <span class="n">ammo</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">player</span><span class="p">(</span><span class="n">ammo</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="p">}</span>
+
+        <span class="n">player</span><span class="p">(</span><span class="kt">int</span> <span class="n">ammo</span><span class="p">,</span> <span class="kt">int</span> <span class="n">hitpoints</span><span class="p">)</span>
+        <span class="o">:</span> <span class="n">bullets</span><span class="p">(</span><span class="n">ammo</span><span class="p">),</span> <span class="n">hp</span><span class="p">(</span><span class="n">hitpoints</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="p">}</span>
+
+        <span class="kt">void</span> <span class="n">boost</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="n">speed</span> <span class="o">+=</span> <span class="mi">10</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">bool</span> <span class="n">shoot</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">bullets</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+                <span class="o">--</span><span class="n">bullets</span><span class="p">;</span>
+                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">void</span> <span class="n">set_hp</span><span class="p">(</span><span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">hp</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kt">int</span> <span class="n">get_hp</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">hp</span><span class="p">;</span>
+        <span class="p">}</span>
+
+<span class="k">private</span><span class="o">:</span>
+        <span class="kt">int</span> <span class="n">hp</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>It’s a fairly minimal class, but we don’t want to have to rewrite this with metatables in Lua. We want this to be part of Lua easily. The following is the Lua code that we’d like to have work properly:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">player_script.lua</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="c1">-- call single argument integer constructor</span>
+<span class="n">p1</span> <span class="o">=</span> <span class="n">player</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">-- p2 is still here from being</span>
+<span class="c1">-- set with lua[&quot;p2&quot;] = player(0);</span>
+<span class="c1">-- in cpp file</span>
+<span class="kd">local</span> <span class="n">p2shoots</span> <span class="o">=</span> <span class="n">p2</span><span class="p">:</span><span class="n">shoot</span><span class="p">()</span>
+<span class="nb">assert</span><span class="p">(</span><span class="ow">not</span> <span class="n">p2shoots</span><span class="p">)</span>
+<span class="c1">-- had 0 ammo</span>
+
+<span class="c1">-- set variable property setter</span>
+<span class="n">p1</span><span class="p">.</span><span class="n">hp</span> <span class="o">=</span> <span class="mi">545</span><span class="p">;</span>
+<span class="c1">-- get variable through property getter</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="n">hp</span><span class="p">);</span>
+
+<span class="kd">local</span> <span class="n">did_shoot_1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">:</span><span class="n">shoot</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">did_shoot_1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="n">bullets</span><span class="p">)</span>
+<span class="kd">local</span> <span class="n">did_shoot_2</span> <span class="o">=</span> <span class="n">p1</span><span class="p">:</span><span class="n">shoot</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">did_shoot_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="n">bullets</span><span class="p">)</span>
+<span class="kd">local</span> <span class="n">did_shoot_3</span> <span class="o">=</span> <span class="n">p1</span><span class="p">:</span><span class="n">shoot</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">did_shoot_3</span><span class="p">)</span>
+
+<span class="c1">-- can read</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">p1</span><span class="p">.</span><span class="n">bullets</span><span class="p">)</span>
+<span class="c1">-- would error: is a readonly variable, cannot write</span>
+<span class="c1">-- p1.bullets = 20</span>
+
+<span class="n">p1</span><span class="p">:</span><span class="n">boost</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>To do this, you bind things using the <code class="docutils literal notranslate"><span class="pre">new_usertype</span></code> and <code class="docutils literal notranslate"><span class="pre">set_usertype</span></code> methods as shown below. These methods are on both <a class="reference internal" href="../api/table.html"><span class="doc">table</span></a> and <a class="reference internal" href="../api/state.html"><span class="doc">state(_view)</span></a>, but we’re going to just use it on <code class="docutils literal notranslate"><span class="pre">state</span></code>:</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">player_script.cpp</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+        <span class="c1">// note that you can set a</span>
+        <span class="c1">// userdata before you register a usertype,</span>
+        <span class="c1">// and it will still carry</span>
+        <span class="c1">// the right metatable if you register it later</span>
+
+        <span class="c1">// set a variable &quot;p2&quot; of type &quot;player&quot; with 0 ammo</span>
+        <span class="n">lua</span><span class="p">[</span><span class="s">&quot;p2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">player</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+        <span class="c1">// make usertype metatable</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">player</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;player&quot;</span><span class="p">,</span>
+
+                <span class="c1">// 3 constructors</span>
+                <span class="n">sol</span><span class="o">::</span><span class="n">constructors</span><span class="o">&lt;</span><span class="n">player</span><span class="p">(),</span> <span class="n">player</span><span class="p">(</span><span class="kt">int</span><span class="p">),</span> <span class="n">player</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span><span class="p">(),</span>
+
+                <span class="c1">// typical member function that returns a variable</span>
+                <span class="s">&quot;shoot&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">shoot</span><span class="p">,</span>
+                <span class="c1">// typical member function</span>
+                <span class="s">&quot;boost&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">boost</span><span class="p">,</span>
+
+                <span class="c1">// gets or set the value using member variable syntax</span>
+                <span class="s">&quot;hp&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">property</span><span class="p">(</span><span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">get_hp</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">set_hp</span><span class="p">),</span>
+
+                <span class="c1">// read and write variable</span>
+                <span class="s">&quot;speed&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">speed</span><span class="p">,</span>
+                <span class="c1">// can only read from, not write to</span>
+                <span class="s">&quot;bullets&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">readonly</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">player</span><span class="o">::</span><span class="n">bullets</span> <span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span><span class="s">&quot;player_script.lua&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>That script should run fine now, and you can observe and play around with the values. Even more stuff <a class="reference internal" href="../api/usertype.html"><span class="doc">you can do</span></a> is described elsewhere, like initializer functions (private constructors / destructors support), “static” functions callable with <code class="docutils literal notranslate"><span class="pre">name.my_function(</span> <span class="pre">...</span> <span class="pre">)</span></code>, and overloaded member functions. You can even bind global variables (even by reference with <code class="docutils literal notranslate"><span class="pre">std::ref</span></code>) with <code class="docutils literal notranslate"><span class="pre">sol::var</span></code>. There’s a lot to try out!</p>
+<p>This is a powerful way to allow reuse of C++ code from Lua beyond just registering functions, and should get you on your way to having more complex classes and data structures! In the case that you need more customization than just usertypes, however, you can customize Sol to behave more fit to your desires by using the desired <a class="reference internal" href="customization.html"><span class="doc">customization and extension structures</span></a>.</p>
+<p>You can check out this code and more complicated code at the <a class="reference external" href="https://github.com/ThePhD/sol2/tree/develop/examples">examples directory</a> by looking at the <code class="docutils literal notranslate"><span class="pre">usertype_</span></code>-prefixed examples.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="functions.html">functions and You</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="ownership.html">ownership</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>types &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="metatable_key" href="metatable_key.html" />
+    <link rel="prev" title="compatibility.hpp" href="compatibility.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>types</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="compatibility.html">compatibility.hpp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="metatable_key.html">metatable_key</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="types">
+<h1>types<a class="headerlink" href="#types" title="Permalink to this headline">¶</a></h1>
+<p><em>nil, lua_primitive type traits, and other fundamentals</em></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">types.hpp</span></code> header contains various fundamentals and utilities of Sol.</p>
+<div class="section" id="enumerations">
+<h2>enumerations<a class="headerlink" href="#enumerations" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="call-syntax">
+<div class="code-block-caption"><span class="caption-text">syntax of a function called by Lua</span><a class="headerlink" href="#call-syntax" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">call_syntax</span> <span class="p">{</span>
+<span class="n">dot</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="n">colon</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This enumeration indicates the syntax a function was called with in a specific scenario. There are two ways to call a function: with <code class="docutils literal notranslate"><span class="pre">obj:func_name(</span> <span class="pre">...</span> <span class="pre">)</span></code> or <code class="docutils literal notranslate"><span class="pre">obj.func_name(</span> <span class="pre">...</span> <span class="pre">);</span></code> The first one passes “obj” as the first argument: the second one does not. In the case of usertypes, this is used to determine whether the call to a <a class="reference internal" href="usertype.html"><span class="doc">constructor/initializer</span></a> was called with a <code class="docutils literal notranslate"><span class="pre">:</span></code> or a <code class="docutils literal notranslate"><span class="pre">.</span></code>, and not misalign the arguments.</p>
+<div class="literal-block-wrapper docutils container" id="call-status">
+<div class="code-block-caption"><span class="caption-text">status of a Lua function call</span><a class="headerlink" href="#call-status" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">call_status</span> <span class="o">:</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="n">ok</span>      <span class="o">=</span> <span class="n">LUA_OK</span><span class="p">,</span>
+    <span class="n">yielded</span> <span class="o">=</span> <span class="n">LUA_YIELD</span><span class="p">,</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">LUA_ERRRUN</span><span class="p">,</span>
+    <span class="n">memory</span>  <span class="o">=</span> <span class="n">LUA_ERRMEM</span><span class="p">,</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">LUA_ERRERR</span><span class="p">,</span>
+    <span class="n">gc</span>      <span class="o">=</span> <span class="n">LUA_ERRGCMM</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This strongly-typed enumeration contains the errors potentially generated by a call to a <a class="reference internal" href="protected_function.html"><span class="doc">protected function</span></a> or a <a class="reference internal" href="coroutine.html"><span class="doc">coroutine</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="thread-status">
+<div class="code-block-caption"><span class="caption-text">status of a Lua thread</span><a class="headerlink" href="#thread-status" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">thread_status</span> <span class="o">:</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="n">ok</span>  <span class="o">=</span> <span class="n">LUA_OK</span><span class="p">,</span>
+    <span class="n">yielded</span> <span class="o">=</span> <span class="n">LUA_YIELD</span><span class="p">,</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">LUA_ERRRUN</span><span class="p">,</span>
+    <span class="n">memory</span>  <span class="o">=</span> <span class="n">LUA_ERRMEM</span><span class="p">,</span>
+    <span class="n">gc</span>      <span class="o">=</span> <span class="n">LUA_ERRGCMM</span><span class="p">,</span>
+    <span class="n">handler</span> <span class="o">=</span> <span class="n">LUA_ERRERR</span><span class="p">,</span>
+    <span class="n">dead</span><span class="p">,</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This enumeration contains the status of a thread. The <code class="docutils literal notranslate"><span class="pre">thread_status::dead</span></code> state is generated when the thread has nothing on its stack and it is not running anything.</p>
+<div class="literal-block-wrapper docutils container" id="load-status">
+<div class="code-block-caption"><span class="caption-text">status of a Lua load operation</span><a class="headerlink" href="#load-status" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">load_status</span> <span class="o">:</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="n">ok</span>      <span class="o">=</span> <span class="n">LUA_OK</span><span class="p">,</span>
+    <span class="n">runtime</span> <span class="o">=</span> <span class="n">LUA_ERRSYNTAX</span><span class="p">,</span>
+    <span class="n">memory</span>  <span class="o">=</span> <span class="n">LUA_ERRMEM</span><span class="p">,</span>
+    <span class="n">gc</span>      <span class="o">=</span> <span class="n">LUA_ERRGCMM</span><span class="p">,</span>
+    <span class="n">file</span>    <span class="o">=</span> <span class="n">LUA_ERRFILE</span><span class="p">,</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This enumeration contains the status of a load operation from <a class="reference internal" href="state.html#state-load-code"><span class="std std-ref">state::load(_file)</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="type-enum">
+<div class="code-block-caption"><span class="caption-text">type enumeration</span><a class="headerlink" href="#type-enum" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">type</span> <span class="o">:</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="n">none</span>          <span class="o">=</span> <span class="n">LUA_TNONE</span><span class="p">,</span>
+    <span class="n">nil</span>           <span class="o">=</span> <span class="n">LUA_TNIL</span><span class="p">,</span>
+    <span class="n">string</span>        <span class="o">=</span> <span class="n">LUA_TSTRING</span><span class="p">,</span>
+    <span class="n">number</span>        <span class="o">=</span> <span class="n">LUA_TNUMBER</span><span class="p">,</span>
+    <span class="kr">thread</span>        <span class="o">=</span> <span class="n">LUA_TTHREAD</span><span class="p">,</span>
+    <span class="n">boolean</span>       <span class="o">=</span> <span class="n">LUA_TBOOLEAN</span><span class="p">,</span>
+    <span class="n">function</span>      <span class="o">=</span> <span class="n">LUA_TFUNCTION</span><span class="p">,</span>
+    <span class="n">userdata</span>      <span class="o">=</span> <span class="n">LUA_TUSERDATA</span><span class="p">,</span>
+    <span class="n">lightuserdata</span> <span class="o">=</span> <span class="n">LUA_TLIGHTUSERDATA</span><span class="p">,</span>
+    <span class="n">table</span>         <span class="o">=</span> <span class="n">LUA_TTABLE</span><span class="p">,</span>
+    <span class="n">poly</span>          <span class="o">=</span> <span class="n">none</span>   <span class="o">|</span> <span class="n">nil</span>     <span class="o">|</span> <span class="n">string</span>   <span class="o">|</span> <span class="n">number</span>   <span class="o">|</span> <span class="kr">thread</span>          <span class="o">|</span>
+                    <span class="n">table</span>  <span class="o">|</span> <span class="n">boolean</span> <span class="o">|</span> <span class="n">function</span> <span class="o">|</span> <span class="n">userdata</span> <span class="o">|</span> <span class="n">lightuserdata</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>The base types that Lua natively communicates in and understands. Note that “poly” isn’t really a true type, it’s just a symbol used in Sol for something whose type hasn’t been checked (and you should almost never see it).</p>
+</div>
+<div class="section" id="type-traits">
+<h2>type traits<a class="headerlink" href="#type-traits" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="lua-type-of">
+<div class="code-block-caption"><span class="caption-text">lua_type_of trait</span><a class="headerlink" href="#lua-type-of" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">lua_type_of</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This type trait maps a C++ type to a <a class="reference internal" href="#type-enum"><span class="std std-ref">type enumeration</span></a> value. The default value is <code class="docutils literal notranslate"><span class="pre">type::userdata</span></code>.</p>
+<div class="literal-block-wrapper docutils container" id="is-primitive">
+<div class="code-block-caption"><span class="caption-text">primitive checking traits</span><a class="headerlink" href="#is-primitive" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">is_lua_primitive</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">is_proxy_primitive</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>This trait is used by <a class="reference internal" href="proxy.html"><span class="doc">proxy</span></a> to know which types should be returned as references to internal Lua memory (e.g., <code class="docutils literal notranslate"><span class="pre">userdata</span></code> types) and which ones to return as values (strings, numbers, <a class="reference internal" href="reference.html"><span class="doc">references</span></a>). <code class="docutils literal notranslate"><span class="pre">std::reference_wrapper</span></code>, <code class="docutils literal notranslate"><span class="pre">std::tuple&lt;...&gt;</span></code> are returned as values, but their contents can be references. The default value is false.</p>
+</div>
+<div class="section" id="special-types">
+<h2>special types<a class="headerlink" href="#special-types" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="nil">
+<div class="code-block-caption"><span class="caption-text">nil</span><a class="headerlink" href="#nil" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">strunil_t</span> <span class="p">{};</span>
+<span class="k">const</span> <span class="n">nil_t</span> <span class="n">nil</span> <span class="p">{};</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="n">nil_t</span><span class="p">,</span> <span class="n">nil_t</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">!=</span><span class="p">(</span><span class="n">nil_t</span><span class="p">,</span> <span class="n">nil_t</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">nil</span></code> is a constant used to signify Lua’s <code class="docutils literal notranslate"><span class="pre">nil</span></code>, which is a type and object that something does not exist. It is comparable to itself, <a class="reference internal" href="object.html"><span class="doc">sol::object</span></a> and <a class="reference internal" href="proxy.html"><span class="doc">proxy values</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">non_null</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">non_null</span> <span class="p">{};</span>
+</pre></div>
+</div>
+</div>
+<p>A tag type that, when used with <a class="reference internal" href="stack.html"><span class="doc">stack::get&lt;non_null&lt;T*&gt;&gt;</span></a>, does not perform a <code class="docutils literal notranslate"><span class="pre">nil</span></code> check when attempting to retrieve the userdata pointer.</p>
+<div class="literal-block-wrapper docutils container" id="type-list">
+<div class="code-block-caption"><span class="caption-text">type list</span><a class="headerlink" href="#type-list" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">types</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>A type list that, unlike <code class="docutils literal notranslate"><span class="pre">std::tuple&lt;Args...&gt;</span></code>, does not actually contain anything. Used to indicate types and groups of types all over Sol.</p>
+</div>
+<div class="section" id="functions">
+<h2>functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">type_of</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">type</span> <span class="n">type_of</span><span class="p">();</span>
+
+<span class="n">type</span> <span class="nf">type_of</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These functions get the type of a C++ type <code class="docutils literal notranslate"><span class="pre">T</span></code>; or the type at the specified index on the Lua stack.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">type checking convenience functions</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">type_panic</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">type</span> <span class="n">expected</span><span class="p">,</span> <span class="n">type</span> <span class="n">actual</span><span class="p">);</span>
+
+<span class="kt">int</span> <span class="nf">no_panic</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="n">type</span><span class="p">,</span> <span class="n">type</span><span class="p">)</span> <span class="k">noexcept</span><span class="p">;</span>
+
+<span class="kt">void</span> <span class="nf">type_error</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">expected</span><span class="p">,</span> <span class="kt">int</span> <span class="n">actual</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">type_error</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">type</span> <span class="n">expected</span><span class="p">,</span> <span class="n">type</span> <span class="n">actual</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">type_assert</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">type</span> <span class="n">expected</span><span class="p">,</span> <span class="n">type</span> <span class="n">actual</span><span class="p">);</span>
+
+<span class="kt">void</span> <span class="nf">type_assert</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span><span class="p">,</span> <span class="n">type</span> <span class="n">expected</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>The purpose of these functions is to assert / throw / crash / error (or do nothing, as is the case with <code class="docutils literal notranslate"><span class="pre">no_panic</span></code>). They’re mostly used internally in the framework, but they’re provided here if you should need them.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">type name retrieval</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">type_name</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span><span class="n">L</span><span class="p">,</span> <span class="n">type</span> <span class="n">t</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Gets the Lua-specified name of the <a class="reference internal" href="#type-enum"><span class="std std-ref">type</span></a>.</p>
+</div>
+<div class="section" id="structs">
+<h2>structs<a class="headerlink" href="#structs" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">userdata_value</span> <span class="p">{</span>
+        <span class="kt">void</span><span class="o">*</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">light_userdata_value</span> <span class="p">{</span>
+        <span class="kt">void</span><span class="o">*</span> <span class="n">value</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">upvalue_index</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">raw_index</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">absolute_index</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">ref_index</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">index</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Types that differentiate between the two kinds of <code class="docutils literal notranslate"><span class="pre">void*</span></code> Lua hands back from its API: full userdata and light userdata, as well as a type that modifies the index passed to <code class="docutils literal notranslate"><span class="pre">get</span></code> to refer to <a class="reference external" href="http://www.Lua.org/manual/5.3/manual.html#4.4">up values</a> These types can be used to trigger different underlying API calls to Lua when working with <a class="reference internal" href="stack.html"><span class="doc">stack</span></a> namespace and the <code class="docutils literal notranslate"><span class="pre">push</span></code>/<code class="docutils literal notranslate"><span class="pre">get</span></code>/<code class="docutils literal notranslate"><span class="pre">pop</span></code>/<code class="docutils literal notranslate"><span class="pre">check</span></code> functions.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">raw_index</span></code> type is used to tell a <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a> type or similar that the desired index – negative or not – should be passed through directly to the API.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">absolute_index</span></code> type is used to tell a <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a> type or similar that the desired index – negative or not – should be passed through Lua’s <a class="reference external" href="https://www.lua.org/manual/5.3/manual.html#lua_absindex">lua_absindex</a> function first to adjust where it is, and then given to the underlying API.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">ref_index</span></code> type is used to tell a <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a> type or similar that it should look into the Lua C Registry for its type.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="compatibility.html">compatibility.hpp</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="metatable_key.html">metatable_key</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

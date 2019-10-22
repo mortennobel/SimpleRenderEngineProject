@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>functions &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="usertypes" href="usertypes.html" />
+    <link rel="prev" title="features" href="features.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>functions</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="features.html">features</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="usertypes.html">usertypes</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="functions">
+<h1>functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h1>
+<p><em>working with functions in sol2</em></p>
+<p>There are a number of examples dealing with functions and how they can be bound to sol2:</p>
+<ul class="simple">
+<li><p>For a quicker walkthrough that demonstrates almost everything, see <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/functions.cpp">the examples</a> and the <a class="reference internal" href="tutorial/all-the-things.html"><span class="doc">the quick and dirty tutorial</span></a></p></li>
+<li><p>For a full explanation, <a class="reference internal" href="tutorial/functions.html"><span class="doc">read the tutorial</span></a> and consult the subjects below</p></li>
+<li><p>If you have bindings and set-ups that want to leverage the C API without sol2’s interference, you can push a raw function, which has certain implications (noted <a class="reference internal" href="#raw-function-note"><span class="std std-ref">below</span></a>)</p></li>
+<li><dl class="simple">
+<dt>Return multiple values into Lua by:</dt><dd><ul>
+<li><p>returning a <code class="docutils literal notranslate"><span class="pre">std::tuple</span></code></p></li>
+<li><p>using <a class="reference internal" href="api/variadic_results.html"><span class="doc">sol::variadic_results</span></a></p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="api/overload.html"><span class="doc">Overload function calls with different argument types and count on a single name</span></a> (first-bound, first-serve overloading)</dt><dd><ul>
+<li><p>Note: because of this feature, automatic number to string conversion from Lua is not permitted for overloads and does not work when safeties are turned on</p></li>
+<li><p>Use C++ captures and lambdas to bind member functions tied to a single object /</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>You can work with <strong>transparent arguments</strong> that provide you with special information, such as</dt><dd><ul>
+<li><p><a class="reference internal" href="api/variadic_args.html"><span class="doc">sol::variadic_args</span></a>, for handling variable number of arguments at runtime</p></li>
+<li><p><a class="reference internal" href="api/this_state.html"><span class="doc">sol::this_state</span></a>, for getting the current Lua state</p></li>
+<li><p><a class="reference internal" href="api/this_environment.html"><span class="doc">sol::this_environment</span></a>, for potentially retrieving the current Lua environment</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>Control serialization of arguments and return types with <a class="reference internal" href="api/nested.html"><span class="doc">sol::nested</span></a>, <a class="reference internal" href="api/nested.html"><span class="doc">sol::as_table</span></a>, <a class="reference internal" href="api/as_args.html"><span class="doc">sol::as_args</span></a> and <a class="reference internal" href="api/as_function.html"><span class="doc">sol::as_function</span></a></p></li>
+<li><p>Set environments for Lua functions and scripts with <a class="reference internal" href="api/environment.html"><span class="doc">sol::environment</span></a></p></li>
+<li><p>You can use <a class="reference internal" href="api/filters.html"><span class="doc">filters</span></a> to control dependencies and streamline return values, as well as apply custom behavior to a functions return</p></li>
+</ul>
+<div class="section" id="working-with-callables-lambdas">
+<span id="binding-callable-objects"></span><h2>working with callables/lambdas<a class="headerlink" href="#working-with-callables-lambdas" title="Permalink to this headline">¶</a></h2>
+<p>To be explicit about wanting a struct to be interpreted as a function, use <code class="docutils literal notranslate"><span class="pre">mytable.set_function(</span> <span class="pre">key,</span> <span class="pre">func_value</span> <span class="pre">);</span></code>. You can be explicit about wanting a function as well by using the <a class="reference internal" href="api/as_function.html"><span class="doc">sol::as_function</span></a> call, which will wrap and identify your type as a function.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As of sol 2.18.1, the below</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Function objects <code class="docutils literal notranslate"><span class="pre">obj</span></code> – a struct with a <code class="docutils literal notranslate"><span class="pre">return_type</span> <span class="pre">operator()(</span> <span class="pre">...</span> <span class="pre">)</span></code> member defined on them, like all C++ lambdas – are not interpreted as functions when you use <code class="docutils literal notranslate"><span class="pre">set</span></code> for <code class="docutils literal notranslate"><span class="pre">mytable.set(</span> <span class="pre">key,</span> <span class="pre">value</span> <span class="pre">)</span></code> and <code class="docutils literal notranslate"><span class="pre">state.create_table(_with)(</span> <span class="pre">...</span> <span class="pre">)</span></code>. This only happens automagically with <code class="docutils literal notranslate"><span class="pre">mytable[key]</span> <span class="pre">=</span> <span class="pre">obj</span></code>.</p>
+<p>Note that this also applies to calling functions, for example: <code class="docutils literal notranslate"><span class="pre">my_state[&quot;table&quot;][&quot;sort&quot;](</span> <span class="pre">some_table,</span> <span class="pre">sorting_object</span> <span class="pre">);</span></code>.</p>
+</div>
+<p>Furthermore, it is important to know that lambdas without a specified return type (and a non-const, non-reference-qualified <code class="docutils literal notranslate"><span class="pre">auto</span></code>) will decay return values. To capture or return references explicitly, use <code class="docutils literal notranslate"><span class="pre">decltype(auto)</span></code> or specify the return type <strong>exactly</strong> as desired:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SOL_CHECK_ARGUMENTS 1</span>
+<span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+
+        <span class="k">struct</span> <span class="n">test</span> <span class="p">{</span>
+                <span class="kt">int</span> <span class="n">blah</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="n">test</span> <span class="n">t</span><span class="p">;</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">t</span><span class="p">]()</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">t</span><span class="p">;</span>
+        <span class="p">});</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span><span class="s">&quot;g&quot;</span><span class="p">,</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">t</span><span class="p">]()</span> <span class="o">-&gt;</span> <span class="n">test</span><span class="o">&amp;</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="n">t</span><span class="p">;</span>
+        <span class="p">});</span>
+
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;t1 = f()&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;t2 = g()&quot;</span><span class="p">);</span>
+
+        <span class="n">test</span><span class="o">&amp;</span> <span class="n">lt1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;t1&quot;</span><span class="p">];</span>
+        <span class="n">test</span><span class="o">&amp;</span> <span class="n">lt2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;t2&quot;</span><span class="p">];</span>
+
+        <span class="n">assert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lt1</span> <span class="o">!=</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">);</span> <span class="c1">// not the same: &#39;f&#39; lambda copied</span>
+        <span class="n">assert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lt2</span> <span class="o">==</span> <span class="o">&amp;</span><span class="n">t</span><span class="p">);</span> <span class="c1">// the same: &#39;g&#39; lambda returned reference</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="exception-safety-handling">
+<span id="function-exception-handling"></span><h2>exception safety/handling<a class="headerlink" href="#exception-safety-handling" title="Permalink to this headline">¶</a></h2>
+<p>All functions bound to sol2 set up an exception trampoline around the function (unless you are working with a <a class="reference internal" href="#raw-function-note"><span class="std std-ref">raw lua_CFunction you pushed yourself</span></a>). <a class="reference internal" href="api/protected_function.html"><span class="doc">protected_function</span></a> also has an error handler member and an exception trampoline around its internals, but it is not guaranteed safe if an exception bubbles outside of it. Catching that exception is not safe either: if an exception has exploded out from the sol2 API somehow, you must assume the VM is in some indeterminate and/or busted state.</p>
+<p>Please read the <a class="reference internal" href="errors.html"><span class="doc">error page</span></a> and <a class="reference internal" href="exceptions.html"><span class="doc">exception page</span></a> for more details about what to do with exceptions that explode out from the API.</p>
+</div>
+<div class="section" id="functions-and-argument-passing">
+<span id="function-argument-handling"></span><h2>functions and argument passing<a class="headerlink" href="#functions-and-argument-passing" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All arguments are forwarded. Unlike <a class="reference internal" href="api/state.html"><span class="doc">get/set/operator[] on sol::state</span></a> or <a class="reference internal" href="api/table.html"><span class="doc">sol::table</span></a>, value semantics are not used here. It is forwarding reference semantics, which do not copy/move unless it is specifically done by the receiving functions / specifically done by the user.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This also means that you should pass and receive arguments in certain ways to maximize efficiency. For example, <code class="docutils literal notranslate"><span class="pre">sol::table</span></code>, <code class="docutils literal notranslate"><span class="pre">sol::object</span></code>, <code class="docutils literal notranslate"><span class="pre">sol::userdata</span></code> and friends are cheap to copy, and should simply by taken as values. This includes primitive types like <code class="docutils literal notranslate"><span class="pre">int</span></code> and <code class="docutils literal notranslate"><span class="pre">double</span></code>. However, C++ types – if you do not want copies – should be taken as <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">type&amp;</span></code> or <code class="docutils literal notranslate"><span class="pre">type&amp;</span></code>, to save on copies if it’s important. Note that taking references from Lua also means you can modify the data inside of Lua directly, so be careful. Lua by default deals with things mostly by reference (save for primitive types).</p>
+<p>Please avoid taking special unique_usertype arguments, by either reference or value. In many cases, by-value does not work (e.g., with <code class="docutils literal notranslate"><span class="pre">std::unique_ptr</span></code>) because many types are move-only and Lua has no concept of “move” semantics. By-reference is dangerous because sol2 will hand you a reference to the original data: but, any pointers stored in Lua can be invalidated if you call <code class="docutils literal notranslate"><span class="pre">.reset()</span></code> or similar on the core pointer. Please take a pointer (<code class="docutils literal notranslate"><span class="pre">T*</span></code>) if you anticipate <code class="docutils literal notranslate"><span class="pre">nil</span></code>/<code class="docutils literal notranslate"><span class="pre">nullptr</span></code> being passed to your function, or a reference (<code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">T&amp;</span></code> or <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code>) if you do not.</p>
+<p>You can get even more speed out of <code class="docutils literal notranslate"><span class="pre">sol::object</span></code> style of types by taking a <code class="docutils literal notranslate"><span class="pre">sol::stack_object</span></code> (or <code class="docutils literal notranslate"><span class="pre">sol::stack_...</span></code>, where <code class="docutils literal notranslate"><span class="pre">...</span></code> is <code class="docutils literal notranslate"><span class="pre">userdata</span></code>, <code class="docutils literal notranslate"><span class="pre">reference</span></code>, <code class="docutils literal notranslate"><span class="pre">table</span></code>, etc.). These reference a stack position directly rather than cheaply/safely the internal Lua reference to make sure it can’t be swept out from under you. Note that if you manipulate the stack out from under these objects, they may misbehave, so please do not blow up your Lua stack when working with these types.</p>
+<p><code class="docutils literal notranslate"><span class="pre">std::string</span></code> (and <code class="docutils literal notranslate"><span class="pre">std::wstring</span></code>) are special. Lua stores strings as <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char*</span></code> null-terminated strings. <code class="docutils literal notranslate"><span class="pre">std::string</span></code> will copy, so taking a <code class="docutils literal notranslate"><span class="pre">std::string</span></code> by value or by const reference still invokes a copy operation. You can take a <code class="docutils literal notranslate"><span class="pre">const</span> <span class="pre">char*</span></code>, but that will mean you’re exposed to what happens on the Lua stack (if you change it and start chopping off function arguments from it in your function calls and such, as warned about previously).</p>
+</div>
+</div>
+<div class="section" id="function-call-safety">
+<span id="function-argument-safety"></span><h2>function call safety<a class="headerlink" href="#function-call-safety" title="Permalink to this headline">¶</a></h2>
+<p>You can have functions here and on usertypes check to definitely make sure that the types passed to C++ functions are what they’re supposed to be by adding a <code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">SOL_CHECK_ARGUMENTS</span></code> before including Sol, or passing it on the command line. Otherwise, for speed reasons, these checks are only used where absolutely necessary (like discriminating between <a class="reference internal" href="api/overload.html"><span class="doc">overloads</span></a>). See <a class="reference internal" href="safety.html"><span class="doc">safety</span></a> for more information.</p>
+</div>
+<div class="section" id="raw-functions-lua-cfunction">
+<span id="raw-function-note"></span><h2>raw functions (<code class="docutils literal notranslate"><span class="pre">lua_CFunction</span></code>)<a class="headerlink" href="#raw-functions-lua-cfunction" title="Permalink to this headline">¶</a></h2>
+<p>When you push a function into Lua using Sol using any methods and that function exactly matches the signature <code class="docutils literal notranslate"><span class="pre">int(</span> <span class="pre">lua_State*</span> <span class="pre">);</span></code>, it will be treated as a <em>raw C function</em> (a <code class="docutils literal notranslate"><span class="pre">lua_CFunction</span></code>). This means that the usual exception trampoline Sol wraps your other function calls in will not be present. You will be responsible for catching exceptions and handling them before they explode into the C API (and potentially destroy your code). Sol in all other cases adds an exception-handling trampoline that turns exceptions into Lua errors that can be caught by the above-mentioned protected functions and accessors.</p>
+<p>Note that stateless lambdas can be converted to a function pointer, so stateless lambdas similar to the form <code class="docutils literal notranslate"><span class="pre">[](lua_State*)</span> <span class="pre">-&gt;</span> <span class="pre">int</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></code> will also be pushed as raw functions. If you need to get the Lua state that is calling a function, use <a class="reference internal" href="api/this_state.html"><span class="doc">sol::this_state</span></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do NOT assume that building Lua as C++ will allow you to throw directly from a raw function. If an exception is raised and it bubbles into the Lua framework, even if you compile as C++, Lua does not recognize exceptions other than the ones that it uses with <code class="docutils literal notranslate"><span class="pre">lua_error</span></code>. In other words, it will return some completely bogus result, potentially leave your Lua stack thrashed, and the rest of your VM <em>can</em> be in a semi-trashed state. Please avoid this!</p>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="features.html">features</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="usertypes.html">usertypes</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

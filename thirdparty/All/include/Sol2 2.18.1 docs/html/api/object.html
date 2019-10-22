@@ -1,0 +1,129 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>object &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="thread" href="thread.html" />
+    <link rel="prev" title="error" href="error.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>object</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="error.html">error</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="thread.html">thread</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="object">
+<h1>object<a class="headerlink" href="#object" title="Permalink to this headline">¶</a></h1>
+<p><em>general-purpose safety reference to an existing object</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">object</span> <span class="o">:</span> <span class="n">reference</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">object</span></code>’s goal is to allow someone to pass around the most generic form of a reference to something in Lua (or propogate a <code class="docutils literal notranslate"><span class="pre">nil</span></code>). It is the logical extension of <a class="reference internal" href="reference.html"><span class="doc">sol::reference</span></a>, and is used in <a class="reference internal" href="table.html#table-iterators"><span class="std std-ref">sol::table’s iterators</span></a>.</p>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="overloaded-object-constructor">
+<div class="code-block-caption"><span class="caption-text">overloaded constructor: object</span><a class="headerlink" href="#overloaded-object-constructor" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">object</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span><span class="p">);</span>
+<span class="n">object</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">object</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">in_place_t</span><span class="p">,</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">arg</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">object</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">in_place_type_t</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>There are 4 kinds of constructors here. One allows construction of an object from other reference types such as <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> and <a class="reference internal" href="stack_reference.html"><span class="doc">sol::stack_reference</span></a>. The second creates an object which references the specific element at the given index in the specified <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>. The more advanced <code class="docutils literal notranslate"><span class="pre">in_place...</span></code> constructors create a single object by pushing the specified type <code class="docutils literal notranslate"><span class="pre">T</span></code> onto the stack and then setting it as the object. It gets popped from the stack afterwards (unless this is an instance of <code class="docutils literal notranslate"><span class="pre">sol::stack_object</span></code>, in which case it is left on the stack). An example of using this and <a class="reference internal" href="make_reference.html"><span class="doc">sol::make_object</span></a> can be found in the <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/any_return.cpp">any_return example</a>.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">function: type conversion</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">as</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Performs a cast of the item this reference refers to into the type <code class="docutils literal notranslate"><span class="pre">T</span></code> and returns it. It obeys the same rules as <a class="reference internal" href="stack.html#getter"><span class="std std-ref">sol::stack::get&lt;T&gt;</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">function: type check</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="kt">bool</span> <span class="n">is</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Performs a type check using the <a class="reference internal" href="stack.html#checker"><span class="std std-ref">sol::stack::check</span></a> api, after checking if the reference is valid.</p>
+</div>
+<div class="section" id="non-members">
+<h2>non-members<a class="headerlink" href="#non-members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">functions: nil comparators</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span> <span class="n">object</span><span class="o">&amp;</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="n">nil_t</span><span class="o">&amp;</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span> <span class="n">nil_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">object</span><span class="o">&amp;</span> <span class="n">rhs</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">!=</span><span class="p">(</span><span class="k">const</span> <span class="n">object</span><span class="o">&amp;</span> <span class="n">lhs</span><span class="p">,</span> <span class="k">const</span> <span class="n">nil_t</span><span class="o">&amp;</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="k">operator</span><span class="o">!=</span><span class="p">(</span><span class="k">const</span> <span class="n">nil_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">object</span><span class="o">&amp;</span> <span class="n">rhs</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These allow a person to compare an <code class="docutils literal notranslate"><span class="pre">sol::object</span></code> against <a class="reference internal" href="types.html#nil"><span class="std std-ref">nil</span></a>, which essentially checks if an object references a non-nil value, like so:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">myobj</span> <span class="o">==</span> <span class="n">sol</span><span class="o">::</span><span class="n">nil</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// doesn&#39;t have anything...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Use this to check objects.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="error.html">error</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="thread.html">thread</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>light&lt;T&gt;/user&lt;T&gt; &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="compatibility.hpp" href="compatibility.html" />
+    <link rel="prev" title="stack namespace" href="stack.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>light&lt;T&gt;/user&lt;T&gt;</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="stack.html">stack namespace</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="compatibility.html">compatibility.hpp</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="light-t-user-t">
+<h1>light&lt;T&gt;/user&lt;T&gt;<a class="headerlink" href="#light-t-user-t" title="Permalink to this headline">¶</a></h1>
+<p><em>utility class for the cheapest form of (light) userdata</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">user</span><span class="p">;</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="n">light</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">sol::user&lt;T&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::light&lt;T&gt;</span></code> are two utility classes that do not participate in the full <a class="reference internal" href="usertype.html"><span class="doc">sol::usertype&lt;T&gt;</span></a> system. The goal of these classes is to provide the most minimal memory footprint and overhead for putting a single item and getting a single item out of Lua. <code class="docutils literal notranslate"><span class="pre">sol::user&lt;T&gt;</span></code>, when pushed into Lua, will create a thin, unnamed metatable for that instance specifically which will be for calling its destructor. <code class="docutils literal notranslate"><span class="pre">sol::light&lt;T&gt;</span></code> specifically pushes a reference / pointer into Lua as a <code class="docutils literal notranslate"><span class="pre">sol::type::lightuserdata</span></code>.</p>
+<p>If you feel that you do not need to have something participate in the full <a class="reference internal" href="usertype.html"><span class="doc">usertype&lt;T&gt;</span></a> system, use the utility functions <code class="docutils literal notranslate"><span class="pre">sol::make_user(</span> <span class="pre">...</span> <span class="pre">)</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::make_light(</span> <span class="pre">...</span> <span class="pre">)</span></code> to create these types and store them into Lua. You can get them off the Lua stack / out of the Lua system by using the same retrieval techniques on <code class="docutils literal notranslate"><span class="pre">get</span></code> and <code class="docutils literal notranslate"><span class="pre">operator[]</span></code> on tables and with stack operations.</p>
+<p>Both have implicit conversion operators to <code class="docutils literal notranslate"><span class="pre">T*</span></code> and <code class="docutils literal notranslate"><span class="pre">T&amp;</span></code>, so you can set them immediately to their respective pointer and reference types if you need them.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="stack.html">stack namespace</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="compatibility.html">compatibility.hpp</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

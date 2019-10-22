@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>std::(w/u16/u32)string support &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="CMake Script" href="cmake.html" />
+    <link rel="prev" title="run-time type information (rtti)" href="rtti.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>std::(w/u16/u32)string support</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="rtti.html">run-time type information (rtti)</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="cmake.html">CMake Script</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="std-w-u16-u32-string-support">
+<h1>std::(w/u16/u32)string support<a class="headerlink" href="#std-w-u16-u32-string-support" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="because-this-is-surprisingly-hard-using-standard-c">
+<h2>because this is surprisingly hard using standard C++<a class="headerlink" href="#because-this-is-surprisingly-hard-using-standard-c" title="Permalink to this headline">¶</a></h2>
+<p>Individuals using Visual Studio 2015, or on Windows with the VC++ and MinGW compilers (possibly Clang++ on Windows as well) have <code class="docutils literal notranslate"><span class="pre">&lt;codecvt&gt;</span></code> headers, and thusly Sol will attempt to include it. Individuals on GCC 4.9.x, Clang 3.5.x, Clang 3.6.x do not seem to have <code class="docutils literal notranslate"><span class="pre">&lt;codecvt&gt;</span></code> shipped with the standard library that comes with installation of these compilers. If you want <code class="docutils literal notranslate"><span class="pre">std::wstring</span></code>, <code class="docutils literal notranslate"><span class="pre">std::u16string</span></code>, <code class="docutils literal notranslate"><span class="pre">std::u32string</span></code> automatic handling then you need to make sure you have those headers and then define <code class="docutils literal notranslate"><span class="pre">SOL_CODECVT_SUPPORT</span></code> on unsupported compilers.</p>
+<p>ThePhD did not want this to have to be a thing, but slow implementations and such force their hand. When GCC 7.x comes out, ThePhD will consider removing the effect of defining this macro and leaving &lt;codecvt&gt; support in at all times.</p>
+<p>GCC 7.x is now out, and its codecvt support seems to work in it as well. We will be removing the conditional SOL_CODECVT support and deprecating support for GCC 4.x.x, Clang 3.5.x, and Clang 3.6.x in releases past sol2 v2.17.5</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="rtti.html">run-time type information (rtti)</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="cmake.html">CMake Script</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,197 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>overload &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="property" href="property.html" />
+    <link rel="prev" title="as_returns" href="as_returns.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>overload</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_returns.html">as_returns</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="property.html">property</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="overload">
+<h1>overload<a class="headerlink" href="#overload" title="Permalink to this headline">¶</a></h1>
+<p><em>calling different functions based on argument number/type</em></p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">function: create overloaded set</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">struct</span> <span class="nl">overloaded_set</span> <span class="p">:</span> <span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="n">Args</span><span class="p">...</span><span class="o">&gt;</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">overloaded_set</span><span class="o">&lt;</span><span class="n">Args</span><span class="p">...</span><span class="o">&gt;</span> <span class="n">overload</span><span class="p">(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>The actual class produced by <code class="docutils literal notranslate"><span class="pre">sol::overload</span></code> is essentially a type-wrapper around <code class="docutils literal notranslate"><span class="pre">std::tuple</span></code> that signals to the library that an overload is being created. The function helps users make overloaded functions that can be called from Lua using 1 name but multiple arguments. It is meant to replace the spaghetti of code where users mock this up by doing strange if statements and switches on what version of a function to call based on <a class="reference external" href="http://www.Lua.org/manual/5.3/manual.html#luaL_checkinteger">luaL_check{number/udata/string}</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please note that default parameters in a function (e.g., <code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">func(int</span> <span class="pre">a</span> <span class="pre">=</span> <span class="pre">20)</span></code>) do not exist beyond C++’s compile-time fun. When that function gets bound or serialized into Lua’s framework, it is bound as a function taking 1 argument, not 2 functions taking either 0 or 1 argument. If you want to achieve the same effect, then you need to use overloading and explicitly call the version of the function you want. There is no magic in C++ that allows me to retrieve default parameters and set this up automatically.</p>
+</div>
+<p>Its use is simple: wherever you can pass a function type to Lua, whether its on a <a class="reference internal" href="usertype.html"><span class="doc">usertype</span></a> or if you are just setting any kind of function with <code class="docutils literal notranslate"><span class="pre">set</span></code> or <code class="docutils literal notranslate"><span class="pre">set_function</span></code> (for <a class="reference internal" href="table.html"><span class="doc">table</span></a> or <a class="reference internal" href="state.html"><span class="doc">state(_view)</span></a>), simply wrap up the functions you wish to be considered for overload resolution on one function like so:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">overload</span><span class="p">(</span> <span class="n">func1</span><span class="p">,</span> <span class="n">func2</span><span class="p">,</span> <span class="p">...</span> <span class="n">funcN</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>The functions can be any kind of function / function object (lambda). Given these functions and struct:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">pup</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">barks</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+        <span class="kt">void</span> <span class="nf">bark</span> <span class="p">()</span> <span class="p">{</span>
+                <span class="o">++</span><span class="n">barks</span><span class="p">;</span> <span class="c1">// bark!</span>
+        <span class="p">}</span>
+
+        <span class="kt">bool</span> <span class="nf">is_cute</span> <span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">void</span> <span class="nf">ultra_bark</span><span class="p">(</span> <span class="n">pup</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">barks</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(;</span> <span class="n">barks</span> <span class="o">--&gt;</span> <span class="mi">0</span><span class="p">;)</span> <span class="n">p</span><span class="p">.</span><span class="n">bark</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">picky_bark</span><span class="p">(</span> <span class="n">pup</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">s</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span> <span class="n">s</span> <span class="o">==</span> <span class="s">&quot;bark&quot;</span> <span class="p">)</span>
+            <span class="n">p</span><span class="p">.</span><span class="n">bark</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>You then use it just like you would for any other part of the api:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">set_function</span><span class="p">(</span> <span class="s">&quot;bark&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">overload</span><span class="p">(</span>
+        <span class="n">ultra_bark</span><span class="p">,</span>
+        <span class="p">[]()</span> <span class="p">{</span> <span class="k">return</span> <span class="s">&quot;the bark from nowhere&quot;</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">)</span> <span class="p">);</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">pup</span><span class="o">&gt;</span><span class="p">(</span> <span class="s">&quot;pup&quot;</span><span class="p">,</span>
+        <span class="c1">// regular function</span>
+        <span class="s">&quot;is_cute&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">pup</span><span class="o">::</span><span class="n">is_cute</span><span class="p">,</span>
+        <span class="c1">// overloaded function</span>
+        <span class="s">&quot;bark&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">overload</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">pup</span><span class="o">::</span><span class="n">bark</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">picky_bark</span> <span class="p">)</span>
+<span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<p>Thusly, doing the following in Lua:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">pup.lua</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-Lua notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">barker</span> <span class="o">=</span> <span class="n">pup</span><span class="p">.</span><span class="n">new</span><span class="p">()</span>
+<span class="n">pup</span><span class="p">:</span><span class="n">bark</span><span class="p">()</span> <span class="c1">-- calls member function pup::bark</span>
+<span class="n">pup</span><span class="p">:</span><span class="n">bark</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="c1">-- calls ultra_bark</span>
+<span class="n">pup</span><span class="p">:</span><span class="n">bark</span><span class="p">(</span><span class="s2">&quot;meow&quot;</span><span class="p">)</span> <span class="c1">-- picky_bark, no bark</span>
+<span class="n">pup</span><span class="p">:</span><span class="n">bark</span><span class="p">(</span><span class="s2">&quot;bark&quot;</span><span class="p">)</span> <span class="c1">-- picky_bark, bark</span>
+
+<span class="n">bark</span><span class="p">(</span><span class="n">pup</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="c1">-- calls ultra_bark</span>
+<span class="kd">local</span> <span class="n">nowherebark</span> <span class="o">=</span> <span class="n">bark</span><span class="p">()</span> <span class="c1">-- calls lambda which returns that string</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Overloading is done on a first-come, first-serve system. This means if two overloads are compatible, workable overloads, it will choose the first one in the list.</p>
+</div>
+<p>Note that because of this system, you can use <a class="reference internal" href="variadic_args.html"><span class="doc">sol::variadic_args</span></a> to make a function that serves as a “fallback”. Be sure that it is the last specified function in the listed functions for <code class="docutils literal notranslate"><span class="pre">sol::overload(</span> <span class="pre">...</span> <span class="pre">)</span></code>. <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/overloading_with_fallback.cpp">This example shows how</a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please keep in mind that doing this bears a runtime cost to find the proper overload. The cost scales directly not exactly with the number of overloads, but the number of functions that have the same argument count as each other (Sol will early-eliminate any functions that do not match the argument count).</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_returns.html">as_returns</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="property.html">property</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

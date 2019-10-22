@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>make_object/make_reference &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="table" href="table.html" />
+    <link rel="prev" title="stack_reference" href="stack_reference.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>make_object/make_reference</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="stack_reference.html">stack_reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="table.html">table</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="make-object-make-reference">
+<h1>make_object/make_reference<a class="headerlink" href="#make-object-make-reference" title="Permalink to this headline">¶</a></h1>
+<p><em>create a value in the lua registry / on the Lua stack and return it</em></p>
+<div class="literal-block-wrapper docutils container" id="make-reference">
+<div class="code-block-caption"><span class="caption-text">function: make_reference</span><a class="headerlink" href="#make-reference" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">R</span> <span class="o">=</span> <span class="n">reference</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">should_pop</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="n">is</span> <span class="n">not</span> <span class="n">base</span> <span class="n">of</span> <span class="n">sol</span><span class="o">::</span><span class="n">stack_index</span><span class="p">),</span> <span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">R</span> <span class="n">make_reference</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">R</span> <span class="o">=</span> <span class="n">reference</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">should_pop</span> <span class="o">=</span> <span class="p">(</span><span class="n">R</span> <span class="n">is</span> <span class="n">base</span> <span class="n">of</span> <span class="n">sol</span><span class="o">::</span><span class="n">stack_index</span><span class="p">),</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">R</span> <span class="n">make_reference</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Makes an <code class="docutils literal notranslate"><span class="pre">R</span></code> out of the value. The first overload deduces the type from the passed in argument, the second allows you to specify a template parameter and forward any relevant arguments to <code class="docutils literal notranslate"><span class="pre">sol::stack::push</span></code>. The type figured out for <code class="docutils literal notranslate"><span class="pre">R</span></code> is what is referenced from the stack. This allows you to request arbitrary pop-able types from Sol and have it constructed from <code class="docutils literal notranslate"><span class="pre">R(lua_State*</span> <span class="pre">L,</span> <span class="pre">int</span> <span class="pre">stack_index)</span></code>. If the template boolean <code class="docutils literal notranslate"><span class="pre">should_pop</span></code> is <code class="docutils literal notranslate"><span class="pre">true</span></code>, the value that was pushed will be popped off the stack. It defaults to popping, but if it encounters a type such as <a class="reference internal" href="stack_reference.html"><span class="doc">sol::stack_reference</span></a> (or any of its typically derived types in Sol), it will leave the pushed values on the stack.</p>
+<div class="literal-block-wrapper docutils container" id="make-object">
+<div class="code-block-caption"><span class="caption-text">function: make_object</span><a class="headerlink" href="#make-object" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">object</span> <span class="n">make_object</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">object</span> <span class="n">make_object</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Makes an object out of the value. It pushes it onto the stack, then pops it into the returned <code class="docutils literal notranslate"><span class="pre">sol::object</span></code>. The first overload deduces the type from the passed in argument, the second allows you to specify a template parameter and forward any relevant arguments to <code class="docutils literal notranslate"><span class="pre">sol::stack::push</span></code>. The implementation essentially defers to <a class="reference internal" href="#make-reference"><span class="std std-ref">sol::make_reference</span></a> with the specified arguments, <code class="docutils literal notranslate"><span class="pre">R</span> <span class="pre">==</span> <span class="pre">object</span></code> and <code class="docutils literal notranslate"><span class="pre">should_pop</span> <span class="pre">==</span> <span class="pre">true</span></code>. It is preferred that one uses the <a class="reference internal" href="object.html#overloaded-object-constructor"><span class="std std-ref">in_place object constructor instead</span></a>, since it’s probably easier to deal with, but both versions will be supported for forever, since there’s really no reason not to and people already have dependencies on <code class="docutils literal notranslate"><span class="pre">sol::make_object</span></code>.</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="stack_reference.html">stack_reference</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="table.html">table</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

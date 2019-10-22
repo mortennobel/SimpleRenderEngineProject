@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>threading &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script type="text/javascript" src="_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="customization traits" href="traits.html" />
+    <link rel="prev" title="containers" href="containers.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>threading</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="containers.html">containers</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="traits.html">customization traits</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="threading">
+<h1>threading<a class="headerlink" href="#threading" title="Permalink to this headline">¶</a></h1>
+<p>Lua has no thread safety. sol2 does not force thread safety bottlenecks anywhere.</p>
+<p>Assume any access or any call on Lua affects the whole global state (because it does, in a fair bit of cases). Therefore, every call to a state should be blocked off in C++ with some kind of access control. When you start hitting the same state from multiple threads, race conditions (data or instruction) can happen. Individual Lua coroutines might be able to run on separate C++-created threads without tanking the state utterly, since each Lua coroutine has the capability to run on an independent Lua thread which has its own stack, as well as some other associated bits and pieces that won’t quite interfere with the global state.</p>
+<p>To handle multithreaded environments, it is encouraged to either spawn mutliple Lua states for each thread you are working with and keep inter-state communication to synchronized serialization points. Using coroutines and Lua’s threads might also buy you some concurrency and parallelism, but remember that Lua’s threading technique is ultimately cooperative and requires explicit yielding and resuming (simplified as function calls for <a class="reference internal" href="api/coroutine.html"><span class="doc">sol::coroutine</span></a>).</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="containers.html">containers</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="traits.html">customization traits</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

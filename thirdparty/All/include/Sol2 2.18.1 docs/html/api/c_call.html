@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>c_call &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="resolve" href="resolve.html" />
+    <link rel="prev" title="as_function" href="as_function.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>c_call</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_function.html">as_function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="resolve.html">resolve</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="c-call">
+<h1>c_call<a class="headerlink" href="#c-call" title="Permalink to this headline">¶</a></h1>
+<p><em>templated type to transport functions through templates</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Function</span><span class="p">,</span> <span class="n">Function</span> <span class="n">f</span><span class="o">&gt;</span>
+<span class="kt">int</span> <span class="n">c_call</span> <span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">);</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Functions</span><span class="o">&gt;</span>
+<span class="kt">int</span> <span class="n">c_call</span> <span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The goal of <code class="docutils literal notranslate"><span class="pre">sol::c_call&lt;...&gt;</span></code> is to provide a way to wrap a function and transport it through a compile-time context. This enables faster speed at the cost of a much harder to read / poorer interface, and can alleviate some template compilation speed issues. <code class="docutils literal notranslate"><span class="pre">sol::c_call</span></code> expects a type for its first template argument, and a value of the previously provided type for the second template argument. To make a compile-time transported overloaded function, specify multiple functions in the same <code class="docutils literal notranslate"><span class="pre">type,</span> <span class="pre">value</span></code> pairing, but put it inside of a <code class="docutils literal notranslate"><span class="pre">sol::wrap</span></code>. Note that is can also be placed into the argument list for a <a class="reference internal" href="usertype.html"><span class="doc">usertype</span></a> as well.</p>
+<p>This pushes a raw <code class="docutils literal notranslate"><span class="pre">lua_CFunction</span></code> into whatever you pass the resulting <code class="docutils literal notranslate"><span class="pre">c_call</span></code> function pointer into, whether it be a table or a userdata or whatever else using sol2’s API. The resulting <code class="docutils literal notranslate"><span class="pre">lua_CFunction</span></code> can also be used directly with the lua API, just like many of sol2’s types can be intermingled with Lua’s API if you know what you’re doing.</p>
+<p>It is advisable for the user to consider making a macro to do the necessary <code class="docutils literal notranslate"><span class="pre">decltype(</span> <span class="pre">&amp;function_name,</span> <span class="pre">),</span> <span class="pre">function_name</span></code>. Sol does not provide one because many codebases already have <a class="reference external" href="http://stackoverflow.com/a/5628222/5280922">one similar to this</a>.</p>
+<p>Here’s an example below of various ways to use <code class="docutils literal notranslate"><span class="pre">sol::c_call</span></code>:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Compile-time transported function calls</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&quot;sol.hpp&quot;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">32</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="kt">int</span> <span class="nf">f2</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span> <span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">fer</span> <span class="p">{</span>
+        <span class="kt">double</span> <span class="n">f3</span><span class="p">(</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">return</span> <span class="mf">2.5</span><span class="p">;</span>
+        <span class="p">}</span>
+<span class="p">};</span>
+
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="c1">// overloaded function f</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">c_call</span><span class="o">&lt;</span><span class="n">sol</span><span class="o">::</span><span class="n">wrap</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">f1</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">f1</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">wrap</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">f2</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">f2</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">wrap</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fer</span><span class="o">::</span><span class="n">f3</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">fer</span><span class="o">::</span><span class="n">f3</span><span class="o">&gt;&gt;</span><span class="p">);</span>
+        <span class="c1">// singly-wrapped function</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;g&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">c_call</span><span class="o">&lt;</span><span class="n">sol</span><span class="o">::</span><span class="n">wrap</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">f1</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">f1</span><span class="o">&gt;&gt;</span><span class="p">);</span>
+        <span class="c1">// without the &#39;sol::wrap&#39; boilerplate</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;h&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">c_call</span><span class="o">&lt;</span><span class="k">decltype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">f2</span><span class="p">),</span> <span class="o">&amp;</span><span class="n">f2</span><span class="o">&gt;</span><span class="p">);</span>
+        <span class="c1">// object used for the &#39;fer&#39; member function call</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;obj&quot;</span><span class="p">,</span> <span class="n">fer</span><span class="p">());</span>
+
+        <span class="c1">// call them like any other bound function</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;r1 = f(1)&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;r2 = f(1, 2)&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;r3 = f(obj, 1, 2)&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;r4 = g(1)&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;r5 = h(1, 2)&quot;</span><span class="p">);</span>
+
+        <span class="c1">// get the results and see</span>
+        <span class="c1">// if it worked out</span>
+        <span class="kt">int</span> <span class="n">r1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;r1&quot;</span><span class="p">];</span>
+        <span class="c1">// r1 == 32</span>
+        <span class="kt">int</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;r2&quot;</span><span class="p">];</span>
+        <span class="c1">// r2 == 1</span>
+        <span class="kt">double</span> <span class="n">r3</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;r3&quot;</span><span class="p">];</span>
+        <span class="c1">// r3 == 2.5</span>
+        <span class="kt">int</span> <span class="n">r4</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;r4&quot;</span><span class="p">];</span>
+        <span class="c1">// r4 == 32</span>
+        <span class="kt">int</span> <span class="n">r5</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;r5&quot;</span><span class="p">];</span>
+        <span class="c1">// r5 == 1</span>
+
+        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="as_function.html">as_function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="resolve.html">resolve</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

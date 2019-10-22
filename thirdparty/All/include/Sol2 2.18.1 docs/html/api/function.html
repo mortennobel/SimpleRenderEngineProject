@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>function &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="protected_function" href="protected_function.html" />
+    <link rel="prev" title="tie" href="tie.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>function</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tie.html">tie</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="protected_function.html">protected_function</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="function">
+<h1>function<a class="headerlink" href="#function" title="Permalink to this headline">¶</a></h1>
+<p><em>calling functions bound to Lua</em></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This abstraction assumes the function runs safely. If you expect your code to have errors (e.g., you don’t always have explicit control over it or are trying to debug errors), please use <a class="reference internal" href="protected_function.html"><span class="doc">sol::protected_function</span></a> explicitly.</p>
+</div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">unsafe_function</span> <span class="o">:</span> <span class="k">public</span> <span class="n">reference</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">unsafe_function</span> <span class="n">function</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Function is a correct-assuming version of <a class="reference internal" href="protected_function.html"><span class="doc">protected_function</span></a>, omitting the need for typechecks and error handling (thus marginally increasing speed in some cases). It is the default function type of Sol. Grab a function directly off the stack using the constructor:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">constructor: function</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">function</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>When called without the return types being specified by either a <code class="docutils literal notranslate"><span class="pre">sol::types&lt;...&gt;</span></code> list or a <code class="docutils literal notranslate"><span class="pre">call&lt;Ret...&gt;(</span> <span class="pre">...</span> <span class="pre">)</span></code> template type list, it generates a <a class="reference internal" href="proxy.html#function-result"><span class="std std-ref">function_result</span></a> class that gets implicitly converted to the requested return type. For example:</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">func_barks.lua</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bark_power</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+
+<span class="kr">function</span> <span class="nf">woof</span> <span class="p">(</span> <span class="n">bark_energy</span> <span class="p">)</span>
+        <span class="kr">return</span> <span class="p">(</span><span class="n">bark_energy</span> <span class="o">*</span> <span class="p">(</span><span class="n">bark_power</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span>
+<span class="kr">end</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>The following C++ code will call this function from this file and retrieve the return value:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script_file</span><span class="p">(</span> <span class="s">&quot;func_barks.lua&quot;</span> <span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">woof</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">numwoof</span> <span class="o">=</span> <span class="n">woof</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<p>The call <code class="docutils literal notranslate"><span class="pre">woof(20)</span></code> generates a <a class="reference internal" href="proxy.html#function-result"><span class="std std-ref">function_result</span></a>, which is then implicitly converted to an <code class="docutils literal notranslate"><span class="pre">double</span></code> after being called. The intermediate temporary <code class="docutils literal notranslate"><span class="pre">function_result</span></code> is then destructed, popping the Lua function call results off the Lua stack.</p>
+<p>You can also return multiple values by using <code class="docutils literal notranslate"><span class="pre">std::tuple</span></code>, or if you need to bind them to pre-existing variables use <code class="docutils literal notranslate"><span class="pre">sol::tie</span></code>:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span> <span class="s">&quot;function f () return 10, 11, 12 end&quot;</span> <span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">function</span> <span class="n">f</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;f&quot;</span><span class="p">];</span>
+<span class="n">std</span><span class="o">::</span><span class="n">tuple</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">abc</span> <span class="o">=</span> <span class="n">f</span><span class="p">();</span> <span class="c1">// 10, 11, 12 from Lua</span>
+<span class="c1">// or</span>
+<span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">tie</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="n">f</span><span class="p">();</span> <span class="c1">// a = 10, b = 11, c = 12 from Lua</span>
+</pre></div>
+</td></tr></table></div>
+<p>This makes it much easier to work with multiple return values. Using <code class="docutils literal notranslate"><span class="pre">std::tie</span></code> from the C++ standard will result in dangling references or bad behavior because of the very poor way in which C++ tuples/<code class="docutils literal notranslate"><span class="pre">std::tie</span></code> were specified and implemented: please use <code class="docutils literal notranslate"><span class="pre">sol::tie(</span> <span class="pre">...</span> <span class="pre">)</span></code> instead to satisfy any multi-return needs.</p>
+<div class="admonition warning" id="function-result-warning">
+<p class="admonition-title">Warning</p>
+<p>Do NOT save the return type of a <a class="reference internal" href="proxy.html#function-result"><span class="std std-ref">function_result</span></a> with <code class="docutils literal notranslate"><span class="pre">auto</span></code>, as in <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">numwoof</span> <span class="pre">=</span> <span class="pre">woof(20);</span></code>, and do NOT store it anywhere. Unlike its counterpart <a class="reference internal" href="proxy.html#protected-function-result"><span class="std std-ref">protected_function_result</span></a>, <code class="docutils literal notranslate"><span class="pre">function_result</span></code> is NOT safe to store as it assumes that its return types are still at the top of the stack and when its destructor is called will pop the number of results the function was supposed to return off the top of the stack. If you mess with the Lua stack between saving <code class="docutils literal notranslate"><span class="pre">function_result</span></code> and it being destructed, you will be subject to an incredible number of surprising and hard-to-track bugs. Don’t do it.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: call operator / function call</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">function_result</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">call</span><span class="p">(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">types</span><span class="o">&lt;</span><span class="n">Ret</span><span class="p">...</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Calls the function. The second <code class="docutils literal notranslate"><span class="pre">operator()</span></code> lets you specify the templated return types using the <code class="docutils literal notranslate"><span class="pre">my_func(sol::types&lt;int,</span> <span class="pre">std::string&gt;,</span> <span class="pre">...)</span></code> syntax. Function assumes there are no runtime errors, and thusly will call the <code class="docutils literal notranslate"><span class="pre">atpanic</span></code> function if an error does occur.</p>
+<p>To know more about how function arguments are handled, see <a class="reference internal" href="../functions.html#function-argument-handling"><span class="std std-ref">this note</span></a></p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="tie.html">tie</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="protected_function.html">protected_function</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

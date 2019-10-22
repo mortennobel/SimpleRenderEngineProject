@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>optional&lt;T&gt; &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="variadic_args" href="variadic_args.html" />
+    <link rel="prev" title="thread" href="thread.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>optional&lt;T&gt;</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="thread.html">thread</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="variadic_args.html">variadic_args</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="optional-t">
+<h1>optional&lt;T&gt;<a class="headerlink" href="#optional-t" title="Permalink to this headline">¶</a></h1>
+<p>This is an implemention of <a class="reference external" href="http://en.cppreference.com/w/cpp/utility/optional">optional from the standard library</a>. If it detects that a proper optional exists, it will attempt to use it. This is mostly an implementation detail, used in the <a class="reference internal" href="stack.html#stack-check-get"><span class="std std-ref">sol::stack::check_get</span></a> and <a class="reference internal" href="stack.html#stack-get"><span class="std std-ref">sol::stack::get&lt;optional&lt;T&gt;&gt;</span></a> and <code class="docutils literal notranslate"><span class="pre">sol::optional&lt;T&gt;</span> <span class="pre">maybe_value</span> <span class="pre">=</span> <span class="pre">table[&quot;arf&quot;];</span></code> implementations for additional safety reasons.</p>
+<p>See <a class="reference external" href="https://github.com/ThePhD/sol2/blob/develop/examples/optional_with_iteration.cpp">this example here</a> for a demonstration on how to use it and other features!</p>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="thread.html">thread</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="variadic_args.html">variadic_args</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

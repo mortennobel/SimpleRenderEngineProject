@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ownership &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="adding your own types" href="customization.html" />
+    <link rel="prev" title="C++ in Lua" href="cxx-in-lua.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>ownership</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="cxx-in-lua.html">C++ in Lua</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="customization.html">adding your own types</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="ownership">
+<h1>ownership<a class="headerlink" href="#ownership" title="Permalink to this headline">¶</a></h1>
+<p>You can take a reference to something that exists in Lua by pulling out a <a class="reference internal" href="../api/reference.html"><span class="doc">sol::reference</span></a> or a <a class="reference internal" href="../api/object.html"><span class="doc">sol::object</span></a>:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">(</span><span class="n">sol</span><span class="o">::</span><span class="n">lib</span><span class="o">::</span><span class="n">base</span><span class="p">);</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">obj = &quot;please don&#39;t let me die&quot;;</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">keep_alive</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;obj&quot;</span><span class="p">];</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s"></span>
+<span class="s">obj = nil;</span>
+<span class="s">function say(msg)</span>
+<span class="s">        print(msg)</span>
+<span class="s">end</span>
+<span class="dl">)</span><span class="s">&quot;</span><span class="p">);</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">collect_garbage</span><span class="p">();</span>
+
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;say&quot;</span><span class="p">](</span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;obj&quot;</span><span class="p">]);</span>
+<span class="c1">// still accessible here and still alive in Lua</span>
+<span class="c1">// even though the name was cleared</span>
+<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">message</span> <span class="o">=</span> <span class="n">keep_alive</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">message</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+
+<span class="c1">// Can be pushed back into Lua as an argument</span>
+<span class="c1">// or set to a new name,</span>
+<span class="c1">// whatever you like!</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;say&quot;</span><span class="p">](</span><span class="n">keep_alive</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Sol will not take ownership of raw pointers: raw pointers do not own anything. Sol will not delete raw pointers, because they do not (and are not supposed to) own anything:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">my_type</span> <span class="p">{</span>
+        <span class="kt">void</span> <span class="n">stuff</span> <span class="p">()</span> <span class="p">{}</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// AAAHHH BAD</span>
+<span class="c1">// dangling pointer!</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">my_type</span><span class="o">*</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">my_type</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="c1">// AAAHHH!</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;something&quot;</span><span class="p">,</span> <span class="k">new</span> <span class="n">my_type</span><span class="p">());</span>
+
+<span class="c1">// AAAAAAHHH!!!</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;something_else&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="k">new</span> <span class="n">my_type</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>Use/return a <code class="docutils literal notranslate"><span class="pre">unique_ptr</span></code> or <code class="docutils literal notranslate"><span class="pre">shared_ptr</span></code> instead or just return a value:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">my_type</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">my_type</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;something&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">my_type</span><span class="p">()));</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span> <span class="n">my_shared</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;something_else&quot;</span><span class="p">,</span> <span class="n">my_shared</span><span class="p">);</span>
+
+<span class="k">auto</span> <span class="n">my_unique</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_unique</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;other_thing&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">my_unique</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If you have something you know is going to last and you just want to give it to Lua as a reference, then it’s fine too:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// :ok:</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">my_type</span><span class="o">*</span> <span class="p">{</span>
+        <span class="k">static</span> <span class="n">my_type</span> <span class="n">mt</span><span class="p">;</span>
+        <span class="k">return</span> <span class="o">&amp;</span><span class="n">mt</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Sol can detect <code class="docutils literal notranslate"><span class="pre">nullptr</span></code>, so if you happen to return it there won’t be any dangling because a <code class="docutils literal notranslate"><span class="pre">sol::nil</span></code> will be pushed.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">my_type</span> <span class="p">{</span>
+        <span class="kt">void</span> <span class="n">stuff</span> <span class="p">()</span> <span class="p">{}</span>
+<span class="p">};</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="c1">// BUT THIS IS STILL BAD DON&#39;T DO IT AAAHHH BAD</span>
+<span class="c1">// return a unique_ptr still or something!</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]()</span> <span class="o">-&gt;</span> <span class="n">my_type</span><span class="o">*</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;my_func_2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="c1">// default-constructs as a nullptr,</span>
+        <span class="c1">// gets pushed as nil to Lua</span>
+        <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">my_type</span><span class="o">&gt;</span><span class="p">();</span>
+        <span class="c1">// same happens for std::shared_ptr</span>
+<span class="p">}</span>
+
+<span class="c1">// Acceptable, it will set &#39;something&#39; to nil</span>
+<span class="c1">// (and delete it on next GC if there&#39;s no more references)</span>
+<span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;something&quot;</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">);</span>
+
+<span class="c1">// Also fine</span>
+<span class="n">lua</span><span class="p">[</span><span class="s">&quot;something_else&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="cxx-in-lua.html">C++ in Lua</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="customization.html">adding your own types</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

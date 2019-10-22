@@ -1,0 +1,130 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>as_function &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="c_call" href="c_call.html" />
+    <link rel="prev" title="readonly" href="readonly.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>as_function</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="readonly.html">readonly</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="c_call.html">c_call</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="as-function">
+<h1>as_function<a class="headerlink" href="#as-function" title="Permalink to this headline">¶</a></h1>
+<p><em>make sure an object is pushed as a function</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Sig</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="n">function_sig</span><span class="o">&lt;&gt;</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">function_argumants</span><span class="o">&lt;</span><span class="n">Sig</span><span class="p">,</span> <span class="n">Args</span><span class="p">...</span><span class="o">&gt;</span> <span class="n">as_function</span> <span class="p">(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span> <span class="p">...</span> <span class="p">);</span>
+</pre></div>
+</div>
+<p>This function serves the purpose of ensuring that a callable struct (like a lambda) can be passed to the <code class="docutils literal notranslate"><span class="pre">set(</span> <span class="pre">key,</span> <span class="pre">value</span> <span class="pre">)</span></code> calls on <a class="reference internal" href="table.html#set-value"><span class="std std-ref">sol::table</span></a> and be treated like a function binding instead of a userdata. It is recommended that one uses the <a class="reference internal" href="table.html#set-function"><span class="std std-ref">sol::table::set_function</span></a> call instead, but if for some reason one must use <code class="docutils literal notranslate"><span class="pre">set</span></code>, then <code class="docutils literal notranslate"><span class="pre">as_function</span></code> can help ensure a callable struct is handled like a lambda / callable, and not as just a userdata structure.</p>
+<p>This class can also make it so usertypes bind variable types as functions to for usertype bindings.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">struct</span> <span class="n">callable</span> <span class="p">{</span>
+                <span class="kt">int</span> <span class="k">operator</span><span class="p">()(</span> <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">b</span> <span class="p">)</span> <span class="p">{</span>
+                        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">?</span> <span class="mi">10</span> <span class="o">:</span> <span class="mi">20</span><span class="p">;</span>
+                <span class="p">}</span>
+        <span class="p">};</span>
+
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="c1">// Binds struct as userdata</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span> <span class="s">&quot;not_func&quot;</span><span class="p">,</span> <span class="n">callable</span><span class="p">()</span> <span class="p">);</span>
+        <span class="c1">// Binds struct as function</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span> <span class="s">&quot;func&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_function</span><span class="p">(</span> <span class="n">callable</span><span class="p">()</span> <span class="p">)</span> <span class="p">);</span>
+        <span class="c1">// equivalent: lua.set_function( &quot;func&quot;, callable() );</span>
+        <span class="c1">// equivalent: lua[&quot;func&quot;] = callable();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that if you actually want a userdata, but you want it to be callable, you simply need to create a <a class="reference internal" href="table.html#new-usertype"><span class="std std-ref">sol::table::new_usertype</span></a> and then bind the <code class="docutils literal notranslate"><span class="pre">&quot;__call&quot;</span></code> metamethod (or just use <code class="docutils literal notranslate"><span class="pre">sol::meta_function::call</span></code> <a class="reference internal" href="usertype.html#meta-function-enum"><span class="std std-ref">enumeration</span></a>).</p>
+<p>Here’s an example of binding a variable as a function to a usertype:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;sol.hpp&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">class</span> <span class="nc">B</span> <span class="p">{</span>
+        <span class="k">public</span><span class="o">:</span>
+                <span class="kt">int</span> <span class="n">bvar</span> <span class="o">=</span> <span class="mi">24</span><span class="p">;</span>
+        <span class="p">};</span>
+
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">open_libraries</span><span class="p">();</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">new_usertype</span><span class="o">&lt;</span><span class="n">B</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;B&quot;</span><span class="p">,</span>
+                <span class="c1">// bind as variable</span>
+                <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">B</span><span class="o">::</span><span class="n">bvar</span><span class="p">,</span>
+                <span class="c1">// bind as function</span>
+                <span class="s">&quot;f&quot;</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">as_function</span><span class="p">(</span><span class="o">&amp;</span><span class="n">B</span><span class="o">::</span><span class="n">bvar</span><span class="p">)</span>
+        <span class="p">);</span>
+
+        <span class="n">B</span> <span class="n">b</span><span class="p">;</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;x = b:f()&quot;</span><span class="p">);</span>
+        <span class="n">lua</span><span class="p">.</span><span class="n">script</span><span class="p">(</span><span class="s">&quot;y = b.b&quot;</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;x&quot;</span><span class="p">];</span>
+        <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">];</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">24</span><span class="p">);</span>
+        <span class="n">assert</span><span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="mi">24</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="readonly.html">readonly</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="c_call.html">c_call</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

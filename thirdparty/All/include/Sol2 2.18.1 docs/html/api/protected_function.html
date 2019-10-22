@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>protected_function &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="coroutine" href="coroutine.html" />
+    <link rel="prev" title="function" href="function.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>protected_function</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="function.html">function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="coroutine.html">coroutine</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="protected-function">
+<h1>protected_function<a class="headerlink" href="#protected-function" title="Permalink to this headline">¶</a></h1>
+<p><em>Lua function calls that trap errors and provide error handling</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">protected_function</span> <span class="o">:</span> <span class="k">public</span> <span class="n">reference</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">protected_function</span> <span class="n">safe_function</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Inspired by a request from <a class="reference external" href="https://github.com/starwing">starwing</a> in the <a class="reference internal" href="../origin.html"><span class="doc">old sol repository</span></a>, this class provides the same interface as <a class="reference internal" href="function.html"><span class="doc">function</span></a> but with heavy protection and a potential error handler for any Lua errors and C++ exceptions. You can grab a function directly off the stack using the constructor, or pass to it 2 valid functions, which we’ll demonstrate a little later.</p>
+<p>When called without the return types being specified by either a <code class="docutils literal notranslate"><span class="pre">sol::types&lt;...&gt;</span></code> list or a <code class="docutils literal notranslate"><span class="pre">call&lt;Ret...&gt;(</span> <span class="pre">...</span> <span class="pre">)</span></code> template type list, it generates a <a class="reference internal" href="proxy.html"><span class="doc">protected_function_result</span></a> class that gets implicitly converted to the requested return type. For example:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">pfunc_barks.lua</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-lua notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">bark_power</span> <span class="o">=</span> <span class="mi">11</span><span class="p">;</span>
+
+<span class="kr">function</span> <span class="nf">got_problems</span><span class="p">(</span> <span class="n">error_msg</span> <span class="p">)</span>
+        <span class="kr">return</span> <span class="s2">&quot;got_problems handler: &quot;</span> <span class="o">..</span> <span class="n">error_msg</span>
+<span class="kr">end</span>
+
+<span class="kr">function</span> <span class="nf">woof</span> <span class="p">(</span> <span class="n">bark_energy</span> <span class="p">)</span>
+        <span class="kr">if</span> <span class="n">bark_energy</span> <span class="o">&lt;</span> <span class="mi">20</span>
+                <span class="nb">error</span><span class="p">(</span><span class="s2">&quot;*whine*&quot;</span><span class="p">)</span>
+        <span class="kr">end</span>
+        <span class="kr">return</span> <span class="p">(</span><span class="n">bark_energy</span> <span class="o">*</span> <span class="p">(</span><span class="n">bark_power</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span>
+<span class="kr">end</span>
+
+<span class="kr">function</span> <span class="nf">woofers</span> <span class="p">(</span> <span class="n">bark_energy</span> <span class="p">)</span>
+        <span class="kr">if</span> <span class="n">bark_energy</span> <span class="o">&lt;</span> <span class="mi">10</span>
+                <span class="nb">error</span><span class="p">(</span><span class="s2">&quot;*whine*&quot;</span><span class="p">)</span>
+        <span class="kr">end</span>
+        <span class="kr">return</span> <span class="p">(</span><span class="n">bark_energy</span> <span class="o">*</span> <span class="p">(</span><span class="n">bark_power</span> <span class="o">/</span> <span class="mi">4</span><span class="p">))</span>
+<span class="kr">end</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>The following C++ code will call this function from this file and retrieve the return value, unless an error occurs, in which case you can bind an error handling function like so:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_file</span><span class="p">(</span> <span class="s">&quot;pfunc_barks.lua&quot;</span> <span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span> <span class="n">problematicwoof</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">];</span>
+<span class="n">problematicwoof</span><span class="p">.</span><span class="n">error_handler</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;got_problems&quot;</span><span class="p">];</span>
+
+<span class="k">auto</span> <span class="n">firstwoof</span> <span class="o">=</span> <span class="n">problematic_woof</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">firstwoof</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Can work with contents</span>
+        <span class="kt">double</span> <span class="n">numwoof</span> <span class="o">=</span> <span class="n">first_woof</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span><span class="p">{</span>
+        <span class="c1">// An error has occured</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">error</span> <span class="n">err</span> <span class="o">=</span> <span class="n">first_woof</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// errors, calls handler and then returns a string error from Lua at the top of the stack</span>
+<span class="k">auto</span> <span class="n">secondwoof</span> <span class="o">=</span> <span class="n">problematic_woof</span><span class="p">(</span><span class="mi">19</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">secondwoof</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span> <span class="p">{</span>
+        <span class="c1">// Call succeeded</span>
+        <span class="kt">double</span> <span class="n">numwoof</span> <span class="o">=</span> <span class="n">secondwoof</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// Call failed</span>
+        <span class="c1">// Note that if the handler was successfully called, this will include</span>
+        <span class="c1">// the additional appended error message information of</span>
+        <span class="c1">// &quot;got_problems handler: &quot; ...</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">error</span> <span class="n">err</span> <span class="o">=</span> <span class="n">secondwoof</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">what</span> <span class="o">=</span> <span class="n">err</span><span class="p">.</span><span class="n">what</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>This code is much more long-winded than its <a class="reference internal" href="function.html"><span class="doc">function</span></a> counterpart but allows a person to check for errors. The type here for <code class="docutils literal notranslate"><span class="pre">auto</span></code> are <code class="docutils literal notranslate"><span class="pre">sol::protected_function_result</span></code>. They are implicitly convertible to result types, like all <a class="reference internal" href="proxy.html"><span class="doc">proxy-style</span></a> types are.</p>
+<p>Alternatively, with a bad or good function call, you can use <code class="docutils literal notranslate"><span class="pre">sol::optional</span></code> to check if the call succeeded or failed:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_file</span><span class="p">(</span> <span class="s">&quot;pfunc_barks.lua&quot;</span> <span class="p">);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span> <span class="n">problematicwoof</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">];</span>
+<span class="n">problematicwoof</span><span class="p">.</span><span class="n">error_handler</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;got_problems&quot;</span><span class="p">];</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">maybevalue</span> <span class="o">=</span> <span class="n">problematicwoof</span><span class="p">(</span><span class="mi">19</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">maybevalue</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Have a value, use it</span>
+        <span class="kt">double</span> <span class="n">numwoof</span> <span class="o">=</span> <span class="n">maybevalue</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+<span class="p">}</span>
+<span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// No value!</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>That makes the code a bit more concise and easy to reason about if you don’t want to bother with reading the error. Thankfully, unlike <code class="docutils literal notranslate"><span class="pre">sol::function_result</span></code>, you can save <code class="docutils literal notranslate"><span class="pre">sol::protected_function_result</span></code> in a variable and push/pop things above it on the stack where its returned values are. This makes it a bit more flexible  than the rigid, performant <code class="docutils literal notranslate"><span class="pre">sol::function_result</span></code> type that comes from calling <a class="reference internal" href="function.html"><span class="doc">sol::function</span></a>.</p>
+<p>If you’re confident the result succeeded, you can also just put the type you want (like <code class="docutils literal notranslate"><span class="pre">double</span></code> or <code class="docutils literal notranslate"><span class="pre">std::string</span></code> right there and it will get it. But, if it doesn’t work out, sol can throw and/or panic if you have the <a class="reference internal" href="../safety.html"><span class="doc">safety</span></a> features turned on:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_file</span><span class="p">(</span> <span class="s">&quot;pfunc_barks.lua&quot;</span> <span class="p">);</span>
+
+<span class="c1">// construct with function + error handler</span>
+<span class="c1">// shorter than old syntax</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span> <span class="n">problematicwoof</span><span class="p">(</span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">],</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;got_problems&quot;</span><span class="p">]);</span>
+
+<span class="c1">// dangerous if things go wrong!</span>
+<span class="kt">double</span> <span class="n">value</span> <span class="o">=</span> <span class="n">problematicwoof</span><span class="p">(</span><span class="mi">19</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<p>Finally, it is <em>important</em> to note you can set a default handler. The function is described below: please use it to avoid having to constantly set error handlers:</p>
+<div class="highlight-cpp notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+
+<span class="n">lua</span><span class="p">.</span><span class="n">open_file</span><span class="p">(</span> <span class="s">&quot;pfunc_barks.lua&quot;</span> <span class="p">);</span>
+<span class="c1">// sets got_problems as the default</span>
+<span class="c1">// handler for all protected_function errors</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span><span class="o">::</span><span class="n">set_default_handler</span><span class="p">(</span><span class="n">lua</span><span class="p">[</span><span class="s">&quot;got_problems&quot;</span><span class="p">]);</span>
+
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span> <span class="n">problematicwoof</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;woof&quot;</span><span class="p">];</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span> <span class="n">problematicwoofers</span> <span class="o">=</span> <span class="n">lua</span><span class="p">[</span><span class="s">&quot;woofers&quot;</span><span class="p">];</span>
+
+<span class="kt">double</span> <span class="n">value</span> <span class="o">=</span> <span class="n">problematicwoof</span><span class="p">(</span><span class="mi">19</span><span class="p">);</span>
+<span class="kt">double</span> <span class="n">value2</span> <span class="o">=</span> <span class="n">problematicwoof</span><span class="p">(</span><span class="mi">9</span><span class="p">);</span>
+</pre></div>
+</td></tr></table></div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">constructor: protected_function</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+<span class="n">protected_function</span><span class="p">(</span> <span class="n">T</span><span class="o">&amp;&amp;</span> <span class="n">func</span><span class="p">,</span> <span class="n">reference</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span><span class="o">::</span><span class="n">get_default_handler</span><span class="p">()</span> <span class="p">);</span>
+<span class="n">protected_function</span><span class="p">(</span> <span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">reference</span> <span class="n">handler</span> <span class="o">=</span> <span class="n">sol</span><span class="o">::</span><span class="n">protected_function</span><span class="o">::</span><span class="n">get_default_handler</span><span class="p">()</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Constructs a <code class="docutils literal notranslate"><span class="pre">protected_function</span></code>. Use the 2-argument version to pass a custom error handling function more easily. You can also set the <a class="reference internal" href="#protected-function-error-handler"><span class="std std-ref">member variable error_handler</span></a> after construction later. <code class="docutils literal notranslate"><span class="pre">protected_function</span></code> will always use the latest error handler set on the variable, which is either what you passed to it or the default <em>at the time of construction</em>.</p>
+<div class="literal-block-wrapper docutils container" id="id3">
+<div class="code-block-caption"><span class="caption-text">function: call operator / protected function call</span><a class="headerlink" href="#id3" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="n">call</span><span class="p">(</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Ret</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">decltype</span><span class="p">(</span><span class="k">auto</span><span class="p">)</span> <span class="k">operator</span><span class="p">()(</span> <span class="n">types</span><span class="o">&lt;</span><span class="n">Ret</span><span class="p">...</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Calls the function. The second <code class="docutils literal notranslate"><span class="pre">operator()</span></code> lets you specify the templated return types using the <code class="docutils literal notranslate"><span class="pre">my_func(sol::types&lt;int,</span> <span class="pre">std::string&gt;,</span> <span class="pre">...)</span></code> syntax. If you specify no return type in any way, it produces s <code class="docutils literal notranslate"><span class="pre">protected_function_result</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All arguments are forwarded. Unlike <a class="reference internal" href="state.html"><span class="doc">get/set/operator[] on sol::state</span></a> or <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a>, value semantics are not used here. It is forwarding reference semantics, which do not copy/move unless it is specifically done by the receiving functions / specifically done by the user.</p>
+</div>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">default handlers</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span> <span class="k">const</span> <span class="n">reference</span><span class="o">&amp;</span> <span class="n">get_default_handler</span> <span class="p">();</span>
+<span class="k">static</span> <span class="kt">void</span> <span class="nf">set_default_handler</span><span class="p">(</span> <span class="n">reference</span><span class="o">&amp;</span> <span class="n">ref</span> <span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Get and set the Lua entity that is used as the default error handler. The default is a no-ref error handler. You can change that by calling <code class="docutils literal notranslate"><span class="pre">protected_function::set_default_handler(</span> <span class="pre">lua[&quot;my_handler&quot;]</span> <span class="pre">);</span></code> or similar: anything that produces a reference should be fine.</p>
+<div class="literal-block-wrapper docutils container" id="protected-function-error-handler">
+<div class="code-block-caption"><span class="caption-text">variable: handler</span><a class="headerlink" href="#protected-function-error-handler" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">reference</span> <span class="n">error_handler</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>The error-handler that is called should a runtime error that Lua can detect occurs. The error handler function needs to take a single string argument (use type std::string if you want to use a C++ function bound to lua as the error handler) and return a single string argument (again, return a std::string or string-alike argument from the C++ function if you’re using one as the error handler). If <a class="reference internal" href="../exceptions.html"><span class="doc">exceptions</span></a> are enabled, Sol will attempt to convert the <code class="docutils literal notranslate"><span class="pre">.what()</span></code> argument of the exception into a string and then call the error handling function. It is a <a class="reference internal" href="reference.html"><span class="doc">reference</span></a>, as it must refer to something that exists in the lua registry or on the Lua stack. This is automatically set to the default error handler when <code class="docutils literal notranslate"><span class="pre">protected_function</span></code> is constructed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">protected_function_result</span></code> safely pops its values off the stack when its destructor is called, keeping track of the index and number of arguments that were supposed to be returned. If you remove items below it using <code class="docutils literal notranslate"><span class="pre">lua_remove</span></code>, for example, it will not behave as expected. Please do not perform fundamentally stack-rearranging operations until the destructor is called (pushing/popping above it is just fine).</p>
+</div>
+<p>To know more about how function arguments are handled, see <a class="reference internal" href="../functions.html#function-argument-handling"><span class="std std-ref">this note</span></a>.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="function.html">function</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="coroutine.html">coroutine</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>

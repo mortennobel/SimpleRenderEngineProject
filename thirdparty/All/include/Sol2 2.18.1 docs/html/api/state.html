@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>state &#8212; Sol 2.18.1 documentation</title>
+    <link rel="stylesheet" href="../_static/sol2.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script type="text/javascript" src="../_static/search-fix.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="this_state" href="this_state.html" />
+    <link rel="prev" title="api reference manual" href="api-top.html" /> 
+  </head><body>
+      <div class="header" role="banner"> 
+	<div class="header-left">
+		<h1 class="heading"><a href="../index.html">
+          <span>Sol 2.18.1 documentation</span></a></h1>
+        <h2 class="heading"><span>state</span></h2>
+	</div>
+	<div class="header-right">
+		<h3>Search the Documentation</h3>
+		<form action="../search.html" method="get">
+			<input type="text" name="q" value="">
+			<input type="submit" value="search">
+		</form>
+	</div>
+
+      </div>
+      <div class="topnav" role="navigation" aria-label="top navigation">
+      
+        <p>
+        «&#160;&#160;<a href="api-top.html">api reference manual</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="this_state.html">this_state</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content" role="main">
+        
+        
+  <div class="section" id="state">
+<h1>state<a class="headerlink" href="#state" title="Permalink to this headline">¶</a></h1>
+<p><em>owning and non-owning state holders for registry and globals</em></p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">state_view</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">state</span> <span class="o">:</span> <span class="n">state_view</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">lua_State</span><span class="o">*</span><span class="p">,</span> <span class="n">deleter</span><span class="o">&gt;</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>The most important class here is <code class="docutils literal notranslate"><span class="pre">state_view</span></code>. This structure takes a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> that was already created and gives you simple, easy access to Lua’s interfaces without taking ownership. <code class="docutils literal notranslate"><span class="pre">state</span></code> derives from <code class="docutils literal notranslate"><span class="pre">state_view</span></code>, inheriting all of this functionality, but has the additional purpose of creating a fresh <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> and managing its lifetime for you in its constructors.</p>
+<p>The majority of the members between <code class="docutils literal notranslate"><span class="pre">state_view</span></code> and <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> are identical, with a few added for this higher-level type. Therefore, all of the examples and notes in <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> apply here as well.</p>
+<p><code class="docutils literal notranslate"><span class="pre">state_view</span></code> is cheap to construct and creates 2 references to things in the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> while it is alive: the global Lua table, and the Lua C Registry.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It is your responsibility to make sure <code class="docutils literal notranslate"><span class="pre">sol::state_view</span></code> goes out of scope before you call <code class="docutils literal notranslate"><span class="pre">lua_close</span></code> on a pre-existing state, or before <code class="docutils literal notranslate"><span class="pre">sol::state</span></code> goes out of scope and its destructor gets called. Failure to do so can result in intermittent crashes because the <code class="docutils literal notranslate"><span class="pre">sol::state_view</span></code> has outstanding references to an already-dead <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>, and thusly will try to decrement the reference counts for the Lua Registry and the Global Table on a dead state. Please use <code class="docutils literal notranslate"><span class="pre">{</span></code> and <code class="docutils literal notranslate"><span class="pre">}</span></code> to create a new scope when you know you are going to call <code class="docutils literal notranslate"><span class="pre">lua_close</span></code> to specifically control the lifetime of an object.</p>
+</div>
+<div class="section" id="enumerations">
+<h2>enumerations<a class="headerlink" href="#enumerations" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="lib-enum">
+<div class="code-block-caption"><span class="caption-text">in-lua libraries</span><a class="headerlink" href="#lib-enum" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">lib</span> <span class="o">:</span> <span class="kt">char</span> <span class="p">{</span>
+    <span class="n">base</span><span class="p">,</span>
+    <span class="n">package</span><span class="p">,</span>
+    <span class="n">coroutine</span><span class="p">,</span>
+    <span class="n">string</span><span class="p">,</span>
+    <span class="n">os</span><span class="p">,</span>
+    <span class="n">math</span><span class="p">,</span>
+    <span class="n">table</span><span class="p">,</span>
+    <span class="n">debug</span><span class="p">,</span>
+    <span class="n">bit32</span><span class="p">,</span>
+    <span class="n">io</span><span class="p">,</span>
+    <span class="n">ffi</span><span class="p">,</span>
+    <span class="n">jit</span><span class="p">,</span>
+    <span class="n">count</span> <span class="c1">// do not use</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<p>This enumeration details the various base libraries that come with Lua. See the <a class="reference external" href="http://www.lua.org/manual/5.3/manual.html#6">standard lua libraries</a> for details about the various standard libraries.</p>
+</div>
+<div class="section" id="members">
+<h2>members<a class="headerlink" href="#members" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="open-libraries">
+<div class="code-block-caption"><span class="caption-text">function: open standard libraries/modules</span><a class="headerlink" href="#open-libraries" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">open_libraries</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>This function takes a number of <a class="reference internal" href="#lib-enum"><span class="std std-ref">sol::lib</span></a> as arguments and opens up the associated Lua core libraries.</p>
+<div class="literal-block-wrapper docutils container" id="state-script-function">
+<div class="code-block-caption"><span class="caption-text">function: script / safe_script / script_file / safe_script_file / unsafe_script / unsafe_script_file</span><a class="headerlink" href="#state-script-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">function_result</span> <span class="nf">script</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="n">protected_function_result</span> <span class="nf">script</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">ErrorFunc</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="n">script</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="n">ErrorFunc</span><span class="o">&amp;&amp;</span> <span class="n">on_error</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">ErrorFunc</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="n">script</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="n">ErrorFunc</span><span class="o">&amp;&amp;</span> <span class="n">on_error</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+
+<span class="n">function_result</span> <span class="nf">script_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="n">protected_function_result</span> <span class="nf">script_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">ErrorFunc</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="n">script_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="n">ErrorFunc</span><span class="o">&amp;&amp;</span> <span class="n">on_error</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">ErrorFunc</span><span class="o">&gt;</span>
+<span class="n">protected_function_result</span> <span class="n">script_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="k">const</span> <span class="n">environment</span><span class="o">&amp;</span> <span class="n">env</span><span class="p">,</span> <span class="n">ErrorFunc</span><span class="o">&amp;&amp;</span> <span class="n">on_error</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>If you need safety, please use the version of these functions with <code class="docutils literal notranslate"><span class="pre">safe</span></code> (such as <code class="docutils literal notranslate"><span class="pre">safe_script(_file)</span></code>) appended in front of them. They will always check for errors and always return a <code class="docutils literal notranslate"><span class="pre">sol::protected_function_result</span></code>. If you explicitly do not want to check for errors and want to simply invoke <code class="docutils literal notranslate"><span class="pre">lua_error</span></code> in the case of errors (which will call <code class="docutils literal notranslate"><span class="pre">panic</span></code>), use <code class="docutils literal notranslate"><span class="pre">unsafe_script(_file)</span></code> versions.</p>
+<p>These functions run the desired blob of either code that is in a string, or code that comes from a filename, on the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>. It will not run isolated: any scripts or code run will affect code in the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> the object uses as well (unless <code class="docutils literal notranslate"><span class="pre">local</span></code> is applied to a variable declaration, as specified by the Lua language). Code ran in this fashion is not isolated. If you need isolation, consider creating a new state or traditional Lua sandboxing techniques.</p>
+<p>If your script returns a value, you can capture it from the returned <a class="reference internal" href="proxy.html#function-result"><span class="std std-ref">sol::function_result</span></a>/<a class="reference internal" href="proxy.html#protected-function-result"><span class="std std-ref">sol::protected_function_result</span></a>. Note that the plain versions that do not take an environment or a callback function assume that the contents internally not only loaded properly but ran to completion without errors, for the sake of simplicity and performance.</p>
+<p>To handle errors when using the second overload, provide a callable function/object that takes a <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code> as its first argument and a <code class="docutils literal notranslate"><span class="pre">sol::protected_function_result</span></code> as its second argument. <code class="docutils literal notranslate"><span class="pre">sol::script_default_on_error</span></code> and <code class="docutils literal notranslate"><span class="pre">sol::script_pass_on_error</span></code> are 2 functions that will either generate a traceback error to return / throw (if throwing is allowed); or, pass the error on through and return it to the user (respectively). Then, handle the errors any way you like:</p>
+<div class="literal-block-wrapper docutils container" id="state-script-safe">
+<div class="code-block-caption"><span class="caption-text">running code safely</span><a class="headerlink" href="#state-script-safe" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="n">sol</span><span class="o">::</span><span class="n">state</span> <span class="n">lua</span><span class="p">;</span>
+        <span class="c1">// the default handler panics or throws, depending on your settings</span>
+        <span class="k">auto</span> <span class="n">result1</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">safe_script</span><span class="p">(</span><span class="s">&quot;bad.code&quot;</span><span class="p">);</span>
+        <span class="k">auto</span> <span class="n">result2</span> <span class="o">=</span> <span class="n">lua</span><span class="p">.</span><span class="n">safe_script</span><span class="p">(</span><span class="s">&quot;123 bad.code&quot;</span><span class="p">,</span> <span class="p">[](</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">pfr</span><span class="p">)</span> <span class="p">{</span>
+                <span class="c1">// pfr will contain things that went wrong, for either loading or executing the script</span>
+                <span class="c1">// the user can do whatever they like here, including throw. Otherwise,</span>
+                <span class="c1">// they need to return the protected_function_result</span>
+
+                <span class="c1">// You can also just return it, and let the call-site handle the error if necessary.</span>
+                <span class="k">return</span> <span class="n">pfr</span><span class="p">;</span>
+        <span class="p">});</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>You can also pass a <a class="reference internal" href="environment.html"><span class="doc">sol::environment</span></a> to <code class="docutils literal notranslate"><span class="pre">script</span></code>/<code class="docutils literal notranslate"><span class="pre">script_file</span></code> to have the script have sandboxed / contained in a way inside of a state. This is useful for runnig multiple different “perspectives” or “views” on the same state, and even has fallback support. See the <a class="reference internal" href="environment.html"><span class="doc">sol::environment</span></a> documentation for more details.</p>
+<div class="literal-block-wrapper docutils container" id="state-require-function">
+<div class="code-block-caption"><span class="caption-text">function: require / require_file</span><a class="headerlink" href="#state-require-function" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">require</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">lua_CFunction</span> <span class="n">open_function</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">create_global</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">require_script</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">create_global</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">object</span> <span class="n">require_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">file</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">create_global</span> <span class="o">=</span> <span class="nb">true</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These functions play a role similar to <a class="reference external" href="https://www.lua.org/manual/5.3/manual.html#luaL_requiref">luaL_requiref</a> except that they make this functionality available for loading a one-time script or a single file. The code here checks if a module has already been loaded, and if it has not, will either load / execute the file or execute the string of code passed in. If <code class="docutils literal notranslate"><span class="pre">create_global</span></code> is set to true, it will also link the name <code class="docutils literal notranslate"><span class="pre">key</span></code> to the result returned from the open function, the code or the file. Regardless or whether a fresh load happens or not, the returned module is given as a single <a class="reference internal" href="object.html"><span class="doc">sol::object</span></a> for you to use as you see fit.</p>
+<p>Thanks to <a class="reference external" href="https://github.com/ThePhD/sol2/issues/90">Eric (EToreo) for the suggestion on this one</a>!</p>
+<div class="literal-block-wrapper docutils container" id="state-load-code">
+<div class="code-block-caption"><span class="caption-text">function: load / load_file</span><a class="headerlink" href="#state-load-code" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">load</span><span class="p">(</span><span class="n">lua_Reader</span> <span class="n">reader</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">data</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">load</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">load_buffer</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">buff</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">buffsize</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">chunk_name</span> <span class="o">=</span> <span class="s">&quot;[string]&quot;</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">load_result</span> <span class="n">load_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="n">load_mode</span> <span class="n">mode</span> <span class="o">=</span> <span class="n">load_mode</span><span class="o">::</span><span class="n">any</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These functions <em>load</em> the desired blob of either code that is in a string, or code that comes from a filename, on the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>. That blob will be turned into a Lua Function. It will not be run: it returns a <code class="docutils literal notranslate"><span class="pre">load_result</span></code> proxy that can be called to actually run the code, when you are ready. It can also be turned into a <code class="docutils literal notranslate"><span class="pre">sol::function</span></code>, a <code class="docutils literal notranslate"><span class="pre">sol::protected_function</span></code>, or some other abstraction that can serve to call the function. If it is called, it will run on the object’s current <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>: it is not isolated. If you need isolation, consider using <a class="reference internal" href="environment.html"><span class="doc">sol::environment</span></a>, creating a new state, or other Lua sandboxing techniques.</p>
+<p>Finally, if you have a custom source of data, you can use the <code class="docutils literal notranslate"><span class="pre">lua_Reader</span></code> overloaded function alongside passing in a <code class="docutils literal notranslate"><span class="pre">void*</span></code> pointing to a single type that has everything you need to run it. Use that callback to provide data to the underlying Lua implementation to read data, as explained <a class="reference external" href="https://www.lua.org/manual/5.3/manual.html#lua_Reader">in the Lua manual</a>.</p>
+<p>This is a low-level function and if you do not understand the difference between loading a piece of code versus running that code, you should be using <a class="reference internal" href="#state-script-function"><span class="std std-ref">state_view::script</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="state-do-code">
+<div class="code-block-caption"><span class="caption-text">function: do_string / do_file</span><a class="headerlink" href="#state-do-code" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">do_string</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">do_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">do_string</span><span class="p">(</span><span class="k">const</span> <span class="n">string_view</span><span class="o">&amp;</span> <span class="n">code</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">environment</span> <span class="n">env</span><span class="p">);</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">protected_function_result</span> <span class="n">do_file</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">filename</span><span class="p">,</span> <span class="n">sol</span><span class="o">::</span><span class="n">environment</span> <span class="n">env</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>These functions <em>loads and performs</em> the desired blob of either code that is in a string, or code that comes from a filename, on the <code class="docutils literal notranslate"><span class="pre">lua_State*</span></code>. It <em>will</em> run, and then return a <code class="docutils literal notranslate"><span class="pre">protected_function_result</span></code> proxy that can be examined for either an error or the return value. This function does not provide a callback like <a class="reference internal" href="#state-script-function"><span class="std std-ref">state_view::script</span></a> does. It is a lower-level function that performs less checking and directly calls <code class="docutils literal notranslate"><span class="pre">load(_file)</span></code> before running the result, with the optional environment.</p>
+<p>It is advised that, unless you have specific needs or the callback function is not to your liking, that you work directly with <a class="reference internal" href="#state-script-function"><span class="std std-ref">state_view::script</span></a>.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">function: global table / registry table</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">global_table</span> <span class="n">globals</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">registry</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Get either the global table or the Lua registry as a <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a>, which allows you to modify either of them directly. Note that getting the global table from a <code class="docutils literal notranslate"><span class="pre">state</span></code>/<code class="docutils literal notranslate"><span class="pre">state_view</span></code> is usually unnecessary as it has all the exact same functions as a <a class="reference internal" href="table.html"><span class="doc">sol::table</span></a> anyhow.</p>
+<div class="literal-block-wrapper docutils container" id="set-panic">
+<div class="code-block-caption"><span class="caption-text">function: set_panic</span><a class="headerlink" href="#set-panic" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">set_panic</span><span class="p">(</span><span class="n">lua_CFunction</span> <span class="n">panic</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Overrides the panic function Lua calls when something unrecoverable or unexpected happens in the Lua VM. Must be a function of the that matches the <code class="docutils literal notranslate"><span class="pre">int(lua_State*)</span></code> function signature.</p>
+<div class="literal-block-wrapper docutils container" id="memory-used">
+<div class="code-block-caption"><span class="caption-text">function: memory_used</span><a class="headerlink" href="#memory-used" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span> <span class="n">memory_used</span><span class="p">()</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<p>Returns the amount of memory used <em>in bytes</em> by the Lua State.</p>
+<div class="literal-block-wrapper docutils container" id="collect-garbage">
+<div class="code-block-caption"><span class="caption-text">function: collect_garbage</span><a class="headerlink" href="#collect-garbage" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">collect_garbage</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<p>Attempts to run the garbage collector. Note that this is subject to the same rules as the Lua API’s collect_garbage function: memory may or may not be freed, depending on dangling references or other things, so make sure you don’t have tables or other stack-referencing items currently alive or referenced that you want to be collected.</p>
+<div class="literal-block-wrapper docutils container" id="id2">
+<div class="code-block-caption"><span class="caption-text">function: make a table</span><a class="headerlink" href="#id2" title="Permalink to this code">¶</a></div>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">create_table</span><span class="p">(</span><span class="kt">int</span> <span class="n">narr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Value</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">create_table</span><span class="p">(</span><span class="kt">int</span> <span class="n">narr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span><span class="p">,</span> <span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">Value</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">create_table_with</span><span class="p">(</span><span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+
+<span class="k">static</span> <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">create_table</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span> <span class="o">=</span> <span class="mi">0</span><span class="p">);</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">Key</span><span class="p">,</span> <span class="k">typename</span> <span class="n">Value</span><span class="p">,</span> <span class="k">typename</span><span class="p">...</span> <span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">static</span> <span class="n">sol</span><span class="o">::</span><span class="n">table</span> <span class="n">create_table</span><span class="p">(</span><span class="n">lua_State</span><span class="o">*</span> <span class="n">L</span><span class="p">,</span> <span class="kt">int</span> <span class="n">narr</span><span class="p">,</span> <span class="kt">int</span> <span class="n">nrec</span><span class="p">,</span> <span class="n">Key</span><span class="o">&amp;&amp;</span> <span class="n">key</span><span class="p">,</span> <span class="n">Value</span><span class="o">&amp;&amp;</span> <span class="n">value</span><span class="p">,</span> <span class="n">Args</span><span class="o">&amp;&amp;</span><span class="p">...</span> <span class="n">args</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Creates a table. Forwards its arguments to <a class="reference internal" href="table.html#table-create"><span class="std std-ref">table::create</span></a>. Applies the same rules as <a class="reference internal" href="table.html#set-value"><span class="std std-ref">table.set</span></a> when putting the argument values into the table, including how it handles callable objects.</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      
+        <p>
+        «&#160;&#160;<a href="api-top.html">api reference manual</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="../index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="this_state.html">this_state</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, ThePhD.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.0.
+    </div>
+  </body>
+</html>
